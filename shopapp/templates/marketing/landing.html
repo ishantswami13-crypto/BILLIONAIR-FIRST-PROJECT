@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ product_name }} &middot; {{ tagline }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
+</head>
+<body>
+  <div class="landing-shell">
+    <header class="landing-nav">
+      <div class="brand">
+        <span class="brand-mark">SA</span>
+        <span class="brand-name">{{ product_name }}</span>
+      </div>
+      <div class="nav-ctas">
+        <a class="btn btn-link" href="{{ url_for('auth.login') }}">Log in</a>
+        <a class="btn btn-primary" href="{{ url_for('auth.register') }}">Create account</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Retail intelligence in one stack</p>
+          <h1>{{ product_name }}</h1>
+          <p class="tagline">{{ tagline }}</p>
+          <div class="hero-actions">
+            <a class="btn btn-lg btn-primary" href="{{ url_for('auth.register') }}">Launch dashboard</a>
+            {% if payment_url %}
+            <a class="btn btn-lg btn-outline-light" href="{{ payment_url }}" target="_blank" rel="noopener">Buy credits</a>
+            {% elif stripe_url or razorpay_url %}
+            {% set checkout_url = stripe_url or razorpay_url %}
+            <a class="btn btn-lg btn-outline-light" href="{{ checkout_url }}" target="_blank" rel="noopener">Buy credits</a>
+            {% endif %}
+          </div>
+          {% if waitlist_url %}
+          <div class="waitlist-prompt">
+            <span>Not ready yet?</span>
+            <a href="{{ waitlist_url }}" target="_blank" rel="noopener">Join the waitlist</a>
+          </div>
+          {% endif %}
+        </div>
+        <div class="hero-media">
+          {% if demo_gif %}
+          <img src="{{ demo_gif }}" alt="{{ product_name }} demo" class="demo-gif">
+          {% else %}
+          <div class="demo-placeholder">Drop your demo GIF via the DEMO_GIF_URL env.</div>
+          {% endif %}
+        </div>
+      </section>
+
+      <section class="feature-grid">
+        {% for feature in features %}
+        <article class="feature-card">
+          <h2>{{ feature.title }}</h2>
+          <p>{{ feature.description }}</p>
+        </article>
+        {% endfor %}
+      </section>
+
+      {% if waitlist_url %}
+      <section class="waitlist-section">
+        <div class="card glass">
+          <h2>Reserve your slot</h2>
+          <p>We send private onboarding invites weekly. Drop your email and we'll keep you in the loop.</p>
+          <a class="btn btn-light btn-lg" href="{{ waitlist_url }}" target="_blank" rel="noopener">Join the waitlist</a>
+          {% if waitlist_embed %}
+          <div class="waitlist-embed">
+            <iframe src="{{ waitlist_embed }}" title="Waitlist form" frameborder="0" marginheight="0" marginwidth="0">Loading...</iframe>
+          </div>
+          {% endif %}
+        </div>
+      </section>
+      {% endif %}
+
+      <section class="social-proof">
+        <div class="card glass">
+          <h2>Plug-and-play deployments</h2>
+          <ul>
+            <li>&check; Deploy to Render or Railway with one click</li>
+            <li>&check; Serverless-ready for Vercel (Python runtime)</li>
+            <li>&check; Stripe and Razorpay payment links out-of-the-box</li>
+          </ul>
+          <p class="footnote">Need a guided setup? Drop a note on the waitlist form &mdash; we respond within 24 hours.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="landing-footer">
+      <span>&copy; {{ product_name }} {{ year }}</span>
+      <div class="footer-links">
+        <a href="mailto:{{ support_email }}">Support</a>
+        <a href="{{ url_for('auth.login') }}">Login</a>
+        <a href="{{ url_for('auth.register') }}">Create account</a>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
+
+

@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="dashboard-3d">
+    <section class="panel-3d form-panel">
+      <div class="panel-head">
+        <div>
+          <h3 class="mb-1">Reports</h3>
+          <p class="mb-0">Slice your business metrics by time period.</p>
+        </div>
+      </div>
+      <form method="GET" class="row g-3 align-items-end">
+        <div class="col-12 col-md-3">
+          <label class="form-label" for="report-range">Range</label>
+          <select id="report-range" name="range" class="form-select">
+            <option value="today" {% if kind=='today' %}selected{% endif %}>Today</option>
+            <option value="week" {% if kind=='week' %}selected{% endif %}>This Week</option>
+            <option value="month" {% if kind=='month' %}selected{% endif %}>This Month</option>
+            <option value="custom" {% if kind=='custom' %}selected{% endif %}>Custom</option>
+          </select>
+        </div>
+        <div class="col-12 col-md-3">
+          <label class="form-label" for="report-from">From</label>
+          <input type="date" id="report-from" name="from" value="{{ frm }}" class="form-control">
+        </div>
+        <div class="col-12 col-md-3">
+          <label class="form-label" for="report-to">To</label>
+          <input type="date" id="report-to" name="to" value="{{ to }}" class="form-control">
+        </div>
+        <div class="col-12 col-md-3">
+          <button class="btn-cta-3d" type="submit">Apply</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel-3d stat-panel">
+      <div class="panel-head">
+        <h3 class="mb-0">Key Metrics</h3>
+        <p class="mb-0">High level numbers for the selected range.</p>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card">
+          <h5>Total Sales</h5>
+          <p>{{ total_sales }}</p>
+        </div>
+        <div class="stat-card highlight">
+          <h5>Total Revenue</h5>
+          <p>₹{{ total_revenue }}</p>
+        </div>
+        <div class="stat-card">
+          <h5>Expenses</h5>
+          <p>₹{{ expenses_sum }}</p>
+        </div>
+        <div class="stat-card positive">
+          <h5>Profit</h5>
+          <p>₹{{ profit }}</p>
+        </div>
+        {% if advanced_mode == 'on' %}
+          <div class="stat-card warning">
+            <h5>GST Collected</h5>
+            <p>₹{{ gst_collected }}</p>
+          </div>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="panel-3d">
+      <div class="panel-head">
+        <h3 class="mb-0">Best-Selling Item</h3>
+      </div>
+      <p class="mb-0">{{ best_item[0] }} &mdash; {{ best_item[1] }} sold</p>
+    </section>
+
+    <section class="panel-3d">
+      <div class="panel-head">
+        <h3 class="mb-0">Low Stock Alerts</h3>
+        <p class="mb-0">Items that need replenishment soon.</p>
+      </div>
+      {% if low_stock %}
+        <ul class="list-3d">
+          {% for item in low_stock %}
+            <li>
+              <span>{{ item[0] }}</span>
+              <span>Stock {{ item[1] }} / Target {{ item[2] }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="empty-state text-success">All items in stock ✅</div>
+      {% endif %}
+    </section>
+  </div>
+{% endblock %}

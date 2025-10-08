@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="dashboard-3d">
+    <section class="panel-3d form-panel">
+      <div class="panel-head">
+        <div>
+          <h3 class="mb-1">Add Supplier</h3>
+          <p class="mb-0">Keep your vendor contacts handy for quick restocking.</p>
+        </div>
+        <a href="/purchases" class="btn-3d alt sm">View Purchases</a>
+      </div>
+      <form method="POST" class="row g-3">
+        <div class="col-12 col-md-6">
+          <label class="form-label" for="supplier-name">Business Name</label>
+          <input type="text" id="supplier-name" name="name" class="form-control" placeholder="Supplier name" required>
+        </div>
+        <div class="col-12 col-md-6">
+          <label class="form-label" for="supplier-contact">Contact Person</label>
+          <input type="text" id="supplier-contact" name="contact_name" class="form-control" placeholder="Point of contact">
+        </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label" for="supplier-phone">Phone</label>
+          <input type="text" id="supplier-phone" name="phone" class="form-control" placeholder="Phone number">
+        </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label" for="supplier-email">Email</label>
+          <input type="email" id="supplier-email" name="email" class="form-control" placeholder="Email address">
+        </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label" for="supplier-address">Address</label>
+          <input type="text" id="supplier-address" name="address" class="form-control" placeholder="City, Area">
+        </div>
+        <div class="col-12">
+          <label class="form-label" for="supplier-notes">Notes</label>
+          <textarea id="supplier-notes" name="notes" rows="2" class="form-control" placeholder="Payment terms, delivery schedule..."></textarea>
+        </div>
+        <div class="col-12 col-md-3">
+          <button type="submit" class="btn-cta-3d">Save Supplier</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel-3d table-panel">
+      <div class="panel-head">
+        <h3 class="mb-0">Supplier Directory</h3>
+        <p class="mb-0">All vendor details in one place.</p>
+      </div>
+      {% if suppliers %}
+        <div class="table-responsive">
+          <table class="table table-borderless table-3d mb-0">
+            <thead>
+              <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Contact</th>
+                <th scope="col">Phone</th>
+                <th scope="col">Email</th>
+                <th scope="col">Address</th>
+                <th scope="col">Notes</th>
+                <th scope="col" class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for s in suppliers %}
+                <tr>
+                  <td>{{ s[1] }}</td>
+                  <td>{{ s[2] or '-' }}</td>
+                  <td>{{ s[3] or '-' }}</td>
+                  <td>{{ s[4] or '-' }}</td>
+                  <td>{{ s[5] or '-' }}</td>
+                  <td>{{ s[6] or '-' }}</td>
+                  <td class="text-end">
+                    {% if session.get('role') == 'admin' %}
+                      <form method="POST" action="/suppliers/{{ s[0] }}/delete" class="d-inline">
+                        <button type="submit" class="btn-3d alt sm">Delete</button>
+                      </form>
+                    {% else %}
+                      <span class="text-muted">-</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty-state">No suppliers yet. Add your first partner above.</div>
+      {% endif %}
+    </section>
+  </div>
+{% endblock %}

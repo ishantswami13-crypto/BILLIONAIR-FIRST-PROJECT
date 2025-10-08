@@ -1,0 +1,14 @@
+﻿services:
+  - type: web
+    name: shopapp
+    plan: free
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: FLASK_ENV
+        value: production
+    healthCheckPath: /healthz

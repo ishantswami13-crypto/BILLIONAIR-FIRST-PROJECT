@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="dashboard-3d">
+    {% if invoice_ready %}
+    <div class="inline-alert">
+      <div>
+        <strong>Invoice ready</strong>
+        <span class="ms-2">Sale #{{ invoice_ready }} has a freshly generated invoice.</span>
+      </div>
+      <a class="btn-cta-3d" href="{{ url_for('invoice', sale_id=invoice_ready) }}">Download Invoice</a>
+    </div>
+    {% endif %}
+
+    <section class="panel-3d hero-card">
+      <div>
+        <span class="hero-eyebrow">Business Overview</span>
+        <h1>Welcome back{% if session.get('user') %}, {{ session['user'] }}{% endif %}.</h1>
+        <p class="hero-description">Here's the live pulse of {% if shop is defined and shop and shop|length > 1 and shop[1] %}{{ shop[1] }}{% else %}your store{% endif %} &mdash; track sales momentum, inventory health, and keep every customer delighted.</p>
+        <div class="hero-meta">
+          <span class="meta-pill">Today's sales &middot; {{ today_count }}</span>
+          <span class="meta-pill">Revenue &middot; {{ today_rev|inr }}</span>
+          <span class="meta-pill">Low stock &middot; {{ low_stock|length if low_stock else 0 }}</span>
+        </div>
+      </div>
+      <div class="hero-kpis">
+        <div class="kpi-card">
+          <span class="kpi-label">Today's revenue</span>
+          <span class="kpi-value">{{ today_rev|inr }}</span>
+          <span class="text-muted">Gross business captured so far.</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Transactions</span>
+          <span class="kpi-value">{{ today_count }}</span>
+          <span class="text-muted">Completed checkouts for the day.</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Inventory watch</span>
+          <span class="kpi-value">{{ low_stock|length if low_stock else 0 }}</span>
+          <span class="text-muted">Items nearing reorder thresholds.</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid-two">
+      <section class="panel-3d quick-links-panel">
+        <div class="panel-head">
+          <div>
+            <h3 class="mb-1">Mission Control</h3>
+            <p class="mb-0">Jump into the workstreams that keep operations running.</p>
+          </div>
+        </div>
+        <div class="link-grid">
+          <a href="/report" class="link-tile">
+            <div>
+              <strong>Performance Reports</strong>
+              <span>Revenue, profit and trend analytics.</span>
+            </div>
+            <span class="tile-arrow">&rarr;</span>
+          </a>
+          <a href="/expenses" class="link-tile">
+            <div>
+              <strong>Expenses</strong>
+              <span>Log daily spend and keep margins tight.</span>
+            </div>
+            <span class="tile-arrow">&rarr;</span>
+          </a>
+          <a href="/purchases" class="link-tile">
+            <div>
+              <strong>Restock & Suppliers</strong>
+              <span>Raise purchase orders and receive stock.</span>
+            </div>
+            <span class="tile-arrow">&rarr;</span>
+          </a>
+          <a href="/customers" class="link-tile">
+            <div>
+              <strong>Customers & Invoices</strong>
+              <span>Profiles, contact info and invoice history.</span>
+            </div>
+            <span class="tile-arrow">&rarr;</span>
+          </a>
+          <a href="/credits" class="link-tile">
+            <div>
+              <strong>Credits & Receivables</strong>
+              <span>Track outstanding dues and settlements.</span>
+            </div>
+            <span class="tile-arrow">&rarr;</span>
+          </a>
+          <a href="/settings" class="link-tile">
+            <div>
+              <strong>System Settings</strong>
+              <span>Configure automation and advanced mode.</span>
+            </div>
+            <span class="tile-arrow">&rarr;</span>
+          </a>
+        </div>
+      </section>
+
+      <section class="panel-3d">
+        <div class="panel-head">
+          <div>
+            <h3 class="mb-1">Inventory Health</h3>
+            <p class="mb-0">Keep best-sellers available with proactive reorders.</p>
+          </div>
+        </div>
+        {% if low_stock %}
+        <ul class="list-3d">
+          {% for item in low_stock %}
+          <li>
+            <div>
+              <strong>{{ item[1] }}</strong>
+              <span class="d-block text-muted">Target {{ item[3] }}</span>
+            </div>
+            <span class="text-primary">In stock: {{ item[2] }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <div class="empty-state">All inventory levels are healthy. Great job staying ahead of demand!</div>
+        {% endif %}
+      </section>
+    </div>
+
+    <div class="grid-two">
+      <section class="panel-3d form-panel">
+        <div class="panel-head">
+          <div>
+            <h3 class="mb-1">Create a Quick Sale</h3>
+            <p class="mb-0">Capture walk-ins and existing customers in seconds.</p>
+          </div>
+        </div>
+        <form method="POST" action="/sell" class="row gy-3">
+          {% if advanced_mode == 'on' %}
+          <div class="col-12 col-lg-4">
+            <label class="form-label">Barcode</label>
+            <input type="text" name="barcode" class="form-control" placeholder="Scan or enter barcode">
+          </div>
+          {% endif %}
+
+          <div class="col-12 col-md-6">
+            <label class="form-label">Item</label>
+            <select name="item_id" class="form-select" required>
+              {% for item in items %}
+              <option value="{{ item[0] }}">{{ item[1] }} ({{ item[2]|inr }}, stock: {{ item[3] }})</option>
+              {% endfor %}
+            </select>
+          </div>
+
+            <div class="col-12 col-md-3">
+              <label class="form-label">Quantity</label>
+              <input type="number" name="quantity" min="1" class="form-control" required value="1">
+            </div>
+            <div class="col-12 col-md-3">
+              <label class="form-label">Payment</label>
+              <select name="payment_method" class="form-select">
+                <option value="cash">Cash</option>
+                <option value="upi">UPI</option>
+                <option value="card">Card</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-3">
+              <label class="form-label">Discount (Rs)</label>
+              <input type="number" step="0.01" min="0" name="discount" class="form-control" placeholder="0.00">
+            </div>
+
+          <div class="col-12 col-md-3">
+            <label class="form-label">Sale Type</label>
+            <select name="sale_type" class="form-select">
+              <option value="paid">Paid (cash/card/UPI)</option>
+              <option value="udhar">Udhar (on credit)</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label">Existing customer</label>
+            <select name="customer_id" class="form-select">
+              <option value="">Walk-in customer</option>
+              {% for c in customers %}
+              <option value="{{ c[0] }}">{{ c[1] }}{% if c[2] %} ({{ c[2] }}){% elif c[3] %} ({{ c[3] }}){% endif %}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-12">
+            <small class="text-muted">Need to issue an invoice for someone new&mdash; Add their details below and we'll keep them on file.</small>
+          </div>
+
+          <div class="col-12 col-lg-6">
+            <label class="form-label">Customer name</label>
+            <input type="text" name="customer_name" class="form-control" placeholder="Customer name for invoice / udhar">
+          </div>
+          <div class="col-12 col-lg-6">
+            <label class="form-label">Phone</label>
+            <input type="text" name="customer_phone" class="form-control" placeholder="Phone number">
+          </div>
+          <div class="col-12 col-lg-6">
+            <label class="form-label">Email</label>
+            <input type="email" name="customer_email" class="form-control" placeholder="Email (invoice copy)">
+          </div>
+          <div class="col-12">
+            <label class="form-label">Billing address</label>
+            <textarea name="customer_address" class="form-control" rows="2" placeholder="Street, City, PIN"></textarea>
+          </div>
+
+          <div class="col-12 d-flex justify-content-end">
+            <button type="submit" class="btn-cta-3d">Complete Sale</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel-3d">
+        <div class="panel-head">
+          <div>
+            <h3 class="mb-1">Store Profile</h3>
+            <p class="mb-0">Keep your branding sharp for invoices and customer touchpoints.</p>
+          </div>
+          <a href="/shop_profile" class="link-tile" style="padding: 0.6rem 1rem; border-radius: 12px;">
+            <div>
+              <strong>Edit profile</strong>
+              <span>Update name, address &amp; GST</span>
+            </div>
+            <span class="tile-arrow">&rarr;</span>
+          </a>
+        </div>
+        <ul class="list-3d">
+          <li>
+            <div>
+              <strong>Business name</strong>
+            </div>
+            <span>{{ shop[1] if shop and shop|length > 1 else 'Not set' }}</span>
+          </li>
+          <li>
+            <div>
+              <strong>Address</strong>
+            </div>
+            <span>{{ shop[2] if shop and shop|length > 2 else 'Add address' }}</span>
+          </li>
+          <li>
+            <div>
+              <strong>Phone</strong>
+            </div>
+            <span>{{ shop[3] if shop and shop|length > 3 else 'Add phone' }}</span>
+          </li>
+          <li>
+            <div>
+              <strong>GST Number</strong>
+            </div>
+            <span>{{ shop[4] if shop and shop|length > 4 else 'Add GST details' }}</span>
+          </li>
+        </ul>
+      </section>
+    </div>
+
+    <section class="panel-3d table-panel">
+      <div class="panel-head">
+        <div>
+          <h3 class="mb-1">Recent Sales</h3>
+          <p class="mb-0">Latest transactions with quick access to customer records.</p>
+        </div>
+        <a href="/report" class="link-tile" style="padding: 0.75rem 1rem; border-radius: 14px;">
+          <div>
+            <strong>View analytics</strong>
+            <span>Drill into detailed metrics</span>
+          </div>
+          <span class="tile-arrow">&rarr;</span>
+        </a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-borderless table-3d mb-0">
+          <thead>
+            <tr>
+              <th scope="col">ID</th>
+              <th scope="col">Date</th>
+              <th scope="col">Item</th>
+              <th scope="col">Qty</th>
+              <th scope="col">Total</th>
+              <th scope="col">Customer</th>
+              <th scope="col">Invoice</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in sales %}
+            <tr>
+              <td>{{ s[0] }}</td>
+              <td>{{ s[1] }}</td>
+              <td>{{ s[2] }}</td>
+              <td>{{ s[3] }}</td>
+              <td>{{ s[4]|inr }}</td>
+              <td>
+                {% if s[5] %}
+                  <a href="/customer/{{ s[5] }}">View</a>
+                {% else %}
+                  Walk-in
+                {% endif %}
+              </td>
+              <td>
+                <a href="{{ url_for('invoice', sale_id=s[0]) }}" class="btn btn-sm btn-outline-primary">Download</a> <a href="{{ url_for('send_invoice_route', sale_id=s[0]) }}" class="btn btn-sm btn-outline-primary ms-2">Email</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="dashboard-3d">
+    <section class="panel-3d form-panel">
+      <div class="panel-head">
+        <div>
+          <h3 class="mb-1">Sales History</h3>
+          <p class="mb-0">Filter transactions across custom date ranges.</p>
+        </div>
+        <a href="/" class="btn-3d alt sm">Dashboard</a>
+      </div>
+      <form method="GET" class="row g-3 align-items-end">
+        <div class="col-12 col-md-3">
+          <label class="form-label" for="sales-range">Filter</label>
+          <select id="sales-range" name="range" class="form-select">
+            <option value="today" {% if kind=='today' %}selected{% endif %}>Today</option>
+            <option value="week" {% if kind=='week' %}selected{% endif %}>This Week</option>
+            <option value="month" {% if kind=='month' %}selected{% endif %}>This Month</option>
+            <option value="custom" {% if kind=='custom' %}selected{% endif %}>Custom</option>
+          </select>
+        </div>
+        <div class="col-12 col-md-3">
+          <label class="form-label" for="sales-from">From</label>
+          <input type="date" id="sales-from" name="from" value="{{ frm }}" class="form-control">
+        </div>
+        <div class="col-12 col-md-3">
+          <label class="form-label" for="sales-to">To</label>
+          <input type="date" id="sales-to" name="to" value="{{ to }}" class="form-control">
+        </div>
+        <div class="col-12 col-md-3">
+          <button type="submit" class="btn-cta-3d">Apply Filters</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel-3d table-panel">
+      <div class="panel-head">
+        <h3 class="mb-0">Sales</h3>
+        <p class="mb-0">Chronological log of processed sales.</p>
+      </div>
+      {% if sales %}
+        <div class="table-responsive">
+          <table class="table table-borderless table-3d mb-0">
+            <thead>
+              <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Date</th>
+                <th scope="col">Item</th>
+                <th scope="col">Qty</th>
+                <th scope="col">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for s in sales %}
+                <tr>
+                  <td>{{ s[0] }}</td>
+                  <td>{{ s[1] }}</td>
+                  <td>{{ s[2] }}</td>
+                  <td>{{ s[3] }}</td>
+                  <td>₹{{ s[4] }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty-state">No sales match the selected filters.</div>
+      {% endif %}
+    </section>
+  </div>
+{% endblock %}

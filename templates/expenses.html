@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="dashboard-3d">
+    <section class="panel-3d form-panel">
+      <div class="panel-head">
+        <div>
+          <h3 class="mb-1">Log Expense</h3>
+          <p class="mb-0">Track operational spend alongside your sales.</p>
+        </div>
+      </div>
+      <form method="POST" action="{{ url_for('expenses') }}" class="row g-3">
+        <div class="col-12 col-md-3">
+          <label class="form-label" for="expense-date">Date</label>
+          <input type="date" id="expense-date" name="date" class="form-control">
+        </div>
+        <div class="col-12 col-md-3">
+          <label class="form-label" for="expense-category">Category</label>
+          <input type="text" id="expense-category" name="category" class="form-control" placeholder="e.g. Rent" required>
+        </div>
+        <div class="col-12 col-md-3">
+          <label class="form-label" for="expense-amount">Amount</label>
+          <input type="number" step="0.01" id="expense-amount" name="amount" class="form-control" placeholder="₹" required>
+        </div>
+        <div class="col-12 col-md-3">
+          <label class="form-label" for="expense-notes">Notes</label>
+          <input type="text" id="expense-notes" name="notes" class="form-control" placeholder="Details (optional)">
+        </div>
+        <div class="col-12 col-md-3">
+          <button type="submit" class="btn-cta-3d">Add Expense</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel-3d stat-panel">
+      <div class="panel-head">
+        <div>
+          <h3 class="mb-1">Summary</h3>
+          <p class="mb-0">Understand where your cash flow stands today.</p>
+        </div>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card highlight">
+          <h5>Revenue</h5>
+          <p>₹{{ revenue }}</p>
+        </div>
+        <div class="stat-card">
+          <h5>Expenses</h5>
+          <p>₹{{ spent }}</p>
+        </div>
+        <div class="stat-card positive">
+          <h5>Profit</h5>
+          <p>₹{{ profit }}</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel-3d table-panel">
+      <div class="panel-head">
+        <h3 class="mb-0">Expense List</h3>
+        <p class="mb-0">Detailed breakdown of recorded costs.</p>
+      </div>
+      {% if expenses %}
+        <div class="table-responsive">
+          <table class="table table-borderless table-3d mb-0">
+            <thead>
+              <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Date</th>
+                <th scope="col">Category</th>
+                <th scope="col">Amount</th>
+                <th scope="col">Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for e in expenses %}
+                <tr>
+                  <td>{{ e[0] }}</td>
+                  <td>{{ e[1] }}</td>
+                  <td>{{ e[2] }}</td>
+                  <td>₹{{ e[3] }}</td>
+                  <td>{{ e[4] }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty-state">No expenses recorded for this range yet.</div>
+      {% endif %}
+    </section>
+  </div>
+{% endblock %}

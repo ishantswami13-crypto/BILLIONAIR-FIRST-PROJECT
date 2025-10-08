@@ -1,0 +1,38 @@
+﻿import os
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / '.env', override=False)
+
+LOCAL_ENV = BASE_DIR / '.env.local'
+if LOCAL_ENV.exists():
+    load_dotenv(LOCAL_ENV, override=True)
+
+
+class Config:
+    SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key')
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', f"sqlite:///{BASE_DIR / 'shop.db'}")
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    ADVANCED_MODE = os.getenv('ADVANCED_MODE', 'off').lower()
+    TIMEZONE = os.getenv('TZ', 'UTC')
+
+    MAIL_SENDER = os.getenv('MAIL_SENDER')
+    MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
+    MAIL_SMTP = os.getenv('MAIL_SMTP', 'smtp.gmail.com')
+    MAIL_PORT = int(os.getenv('MAIL_PORT', '587'))
+
+    DEFAULT_ADMIN_USERNAME = os.getenv('DEFAULT_ADMIN_USERNAME', 'admin')
+    DEFAULT_ADMIN_PASSWORD = os.getenv('DEFAULT_ADMIN_PASSWORD', 'admin123')
+    DEFAULT_ADMIN_EMAIL = os.getenv('DEFAULT_ADMIN_EMAIL', 'admin@example.com')
+
+    STRIPE_CHECKOUT_URL = os.getenv('STRIPE_CHECKOUT_URL')
+    RAZORPAY_PAYMENT_LINK = os.getenv('RAZORPAY_PAYMENT_LINK')
+    PAYMENT_LINK = (os.getenv('PAYMENT_LINK')
+                    or STRIPE_CHECKOUT_URL
+                    or RAZORPAY_PAYMENT_LINK)
+    WAITLIST_URL = os.getenv('WAITLIST_URL')
+    DEMO_GIF_URL = os.getenv('DEMO_GIF_URL', 'https://media.giphy.com/media/tXL4FHPSnVJ0A/giphy.gif')
+    PRODUCT_NAME = os.getenv('PRODUCT_NAME', 'ShopApp SaaS')
+    PRODUCT_TAGLINE = os.getenv('PRODUCT_TAGLINE', 'Retail OS for high-velocity stores')

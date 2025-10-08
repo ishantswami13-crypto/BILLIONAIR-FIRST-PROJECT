@@ -1,0 +1,17 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<div class="glass-card p-4 w-50 mx-auto">
+  <h3>Verify Email OTP</h3>
+  <p>We sent a 6-digit code to <strong>{{ email }}</strong>. Check your inbox (and spam).</p>
+  <form method="POST">
+    <input type="hidden" name="username" value="{{ username }}">
+    <input type="hidden" name="email" value="{{ email }}">
+    <div class="mb-3">
+      <label>OTP</label>
+      <input type="text" name="otp" class="form-control" maxlength="6" required>
+    </div>
+    <button class="btn btn-success">Verify</button>
+  </form>
+  <p class="mt-3"><a href="/register">Back to register</a></p>
+</div>
+{% endblock %}

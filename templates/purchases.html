@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="dashboard-3d">
+    <section class="panel-3d form-panel">
+      <div class="panel-head">
+        <div>
+          <h3 class="mb-1">Record Purchase</h3>
+          <p class="mb-0">Log new stock arriving from your suppliers.</p>
+        </div>
+        <a href="/suppliers" class="btn-3d alt sm">Manage Suppliers</a>
+      </div>
+      <form method="POST" class="row g-3 align-items-end">
+        <div class="col-12 col-md-4">
+          <label class="form-label" for="purchase-supplier">Supplier</label>
+          <select id="purchase-supplier" name="supplier_id" class="form-select">
+            <option value="">Direct purchase / walk-in</option>
+            {% for s in suppliers %}
+              <option value="{{ s[0] }}">{{ s[1] }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label" for="purchase-item">Item</label>
+          <select id="purchase-item" name="item_id" class="form-select" required>
+            {% for i in items %}
+              <option value="{{ i[0] }}">{{ i[1] }} (in stock: {{ i[2] }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="form-label" for="purchase-qty">Quantity</label>
+          <input type="number" id="purchase-qty" name="quantity" class="form-control" min="1" value="1" required>
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="form-label" for="purchase-cost">Cost per unit</label>
+          <input type="number" id="purchase-cost" name="cost_price" class="form-control" step="0.01" placeholder="₹">
+        </div>
+        <div class="col-12 col-md-3">
+          <label class="form-label" for="purchase-date">Purchase date</label>
+          <input type="date" id="purchase-date" name="order_date" class="form-control">
+        </div>
+        <div class="col-12 col-md-6">
+          <label class="form-label" for="purchase-notes">Notes</label>
+          <input type="text" id="purchase-notes" name="notes" class="form-control" placeholder="Invoice no., payment mode...">
+        </div>
+        <div class="col-12 col-md-3">
+          <button type="submit" class="btn-cta-3d">Add Stock</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel-3d table-panel">
+      <div class="panel-head">
+        <h3 class="mb-0">Recent Purchases</h3>
+        <p class="mb-0">Track inbound inventory and supplier spend.</p>
+      </div>
+      {% if purchases %}
+        <div class="table-responsive">
+          <table class="table table-borderless table-3d mb-0">
+            <thead>
+              <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Date</th>
+                <th scope="col">Supplier</th>
+                <th scope="col">Items</th>
+                <th scope="col">Status</th>
+                <th scope="col" class="text-end">Total Cost</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in purchases %}
+                <tr>
+                  <td>#{{ p[0] }}</td>
+                  <td>{{ p[1] }}</td>
+                  <td>{{ p[2] }}</td>
+                  <td>{{ p[3] or '-' }}</td>
+                  <td>{{ p[5] }}</td>
+                  <td class="text-end">₹{{ '%.2f'|format(p[4]) }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty-state">No purchase history yet. Record your first restock above.</div>
+      {% endif %}
+    </section>
+  </div>
+{% endblock %}

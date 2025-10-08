@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="dashboard-3d">
+    <section class="panel-3d table-panel">
+      <div class="panel-head">
+        <div>
+          <h3 class="mb-1">Credit Ledger</h3>
+          <p class="mb-0">Monitor outstanding and settled udhar transactions.</p>
+        </div>
+        <a href="/" class="btn-3d alt sm">Dashboard</a>
+      </div>
+      {% if credits %}
+        <div class="table-responsive">
+          <table class="table table-borderless table-3d mb-0">
+            <thead>
+              <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Customer</th>
+                <th scope="col">Item</th>
+                <th scope="col">Qty</th>
+                <th scope="col">Total</th>
+                <th scope="col">Status</th>
+                <th scope="col">Date</th>
+                <th scope="col" class="text-end">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for c in credits %}
+                <tr>
+                  <td>{{ c[0] }}</td>
+                  <td>{{ c[1] }}</td>
+                  <td>{{ c[2] }}</td>
+                  <td>{{ c[3] }}</td>
+                  <td>₹{{ c[4] }}</td>
+                  <td>{{ c[5] }}</td>
+                  <td>{{ c[6] }}</td>
+                  <td class="text-end">
+                    {% if c[5] == 'unpaid' %}
+                      <a href="/pay_credit/{{ c[0] }}" class="btn-3d sm">Mark Paid</a>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty-state">No credit entries recorded yet.</div>
+      {% endif %}
+    </section>
+  </div>
+{% endblock %}

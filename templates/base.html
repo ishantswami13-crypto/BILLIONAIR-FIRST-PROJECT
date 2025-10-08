@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title or "Shop Manager" }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: radial-gradient(circle at 10% 20%, #0b1224 0%, #060913 55%, #02040a 100%);
+      --bg-overlay: rgba(14, 21, 38, 0.85);
+      --surface-01: rgba(16, 22, 38, 0.88);
+      --surface-02: rgba(24, 32, 52, 0.55);
+      --surface-03: rgba(255, 255, 255, 0.04);
+      --border-soft: rgba(255, 255, 255, 0.07);
+      --border-strong: rgba(130, 150, 255, 0.38);
+      --shadow-soft: 0 32px 70px -32px rgba(6, 13, 32, 0.65);
+      --shadow-strong: 0 42px 90px -42px rgba(12, 21, 46, 0.75);
+      --text-primary: #f5f8ff;
+      --text-muted: rgba(214, 224, 255, 0.72);
+      --text-soft: rgba(214, 224, 255, 0.55);
+      --accent: #7b8fff;
+      --accent-strong: #5fd7ff;
+      --accent-gradient: linear-gradient(135deg, #6a7bff, #4a90ff 45%, #39d9ff 100%);
+      --font-sans: 'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+      --radius-large: 26px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body.app-body {
+      min-height: 100vh;
+      margin: 0;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.6;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body.app-body::before,
+    body.app-body::after {
+      content: "";
+      position: fixed;
+      width: 420px;
+      height: 420px;
+      background: radial-gradient(circle, rgba(90, 142, 255, 0.35), rgba(58, 214, 255, 0));
+      filter: blur(120px);
+      opacity: 0.45;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    body.app-body::before {
+      top: -180px;
+      right: -140px;
+    }
+
+    body.app-body::after {
+      bottom: -220px;
+      left: -160px;
+    }
+
+    .app-nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(22px);
+      background: linear-gradient(180deg, rgba(6, 10, 24, 0.85) 0%, rgba(6, 10, 24, 0.7) 100%);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: 0 24px 60px rgba(5, 8, 18, 0.55);
+    }
+
+    .app-nav .nav-shell {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.1rem 0;
+      gap: 1.5rem;
+    }
+
+    .brand-block {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .brand {
+      font-size: 1.3rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    .brand:hover {
+      color: var(--accent-strong);
+    }
+
+    .brand-subtitle {
+      font-size: 0.82rem;
+      color: var(--text-soft);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .nav-meta {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .user-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      background: rgba(90, 106, 255, 0.22);
+      color: var(--accent-strong);
+      border: 1px solid rgba(124, 140, 255, 0.45);
+      border-radius: 999px;
+      padding: 0.45rem 1.1rem;
+    }
+
+    .nav-meta .btn-logout {
+      border-radius: 999px;
+      padding: 0.45rem 1.3rem;
+      border: none;
+      font-size: 0.85rem;
+      letter-spacing: 0.02em;
+      background: rgba(255, 95, 109, 0.18);
+      color: #ff8795;
+      transition: background 0.25s ease, color 0.25s ease;
+    }
+
+    .nav-meta .btn-logout:hover {
+      background: rgba(255, 95, 109, 0.32);
+      color: #fff1f3;
+    }
+
+    main.page-shell {
+      position: relative;
+      z-index: 1;
+    }
+
+    .container-xl {
+      max-width: 1220px;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text-primary);
+      margin: 0;
+    }
+
+    p, label, span, th, td, small {
+      color: var(--text-muted);
+    }
+
+    a {
+      color: var(--accent-strong);
+      text-decoration: none;
+    }
+
+    a:hover {
+      color: #ffffff;
+    }
+
+    .dashboard-3d {
+      display: grid;
+      gap: 2.2rem;
+    }
+
+    .grid-two {
+      display: grid;
+      gap: 1.8rem;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      align-items: stretch;
+    }
+
+    .panel-3d {
+      background: linear-gradient(160deg, rgba(19, 27, 46, 0.92), rgba(12, 18, 34, 0.9));
+      border-radius: var(--radius-large);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: var(--shadow-soft);
+      padding: 2.2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel-3d::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(130deg, rgba(123, 143, 255, 0.12), rgba(89, 240, 255, 0));
+      opacity: 0;
+      transition: opacity 0.35s ease;
+      pointer-events: none;
+    }
+
+    .panel-3d:hover::after {
+      opacity: 1;
+    }
+
+    .panel-3d:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-strong);
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .panel-head p {
+      margin: 0;
+      font-size: 0.92rem;
+    }
+
+    .inline-alert {
+      border-radius: 18px;
+      border: 1px solid rgba(106, 207, 255, 0.35);
+      background: rgba(29, 51, 71, 0.7);
+      padding: 1.4rem 1.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.2rem;
+      box-shadow: 0 22px 60px rgba(14, 32, 66, 0.55);
+    }
+
+    .inline-alert strong {
+      color: #7ad9ff;
+      letter-spacing: 0.02em;
+    }
+
+    .hero-card {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 2.4rem;
+      align-items: center;
+      background: linear-gradient(145deg, rgba(26, 36, 62, 0.95), rgba(16, 24, 42, 0.92));
+    }
+
+    .hero-eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-size: 0.75rem;
+      color: var(--text-soft);
+    }
+
+    .hero-card h1 {
+      font-size: clamp(1.8rem, 2.3vw, 2.35rem);
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      margin-top: 0.3rem;
+    }
+
+    .hero-description {
+      margin: 0.9rem 0 1.6rem;
+      color: var(--text-muted);
+      max-width: 520px;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+    }
+
+    .meta-pill {
+      padding: 0.55rem 0.95rem;
+      border-radius: 999px;
+      border: 1px solid rgba(123, 143, 255, 0.25);
+      background: rgba(37, 50, 79, 0.55);
+      font-size: 0.82rem;
+      letter-spacing: 0.04em;
+      color: var(--accent-strong);
+    }
+
+    .hero-kpis {
+      display: grid;
+      gap: 1.2rem;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    }
+
+    .kpi-card {
+      background: rgba(20, 29, 50, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 18px;
+      padding: 1.5rem;
+      display: grid;
+      gap: 0.4rem;
+    }
+
+    .kpi-label {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-soft);
+    }
+
+    .kpi-value {
+      font-size: 1.6rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .link-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 1rem;
+    }
+
+    .link-tile {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.1rem 1.3rem;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(26, 35, 60, 0.85);
+      color: var(--text-primary);
+      transition: transform 0.3s ease, border 0.3s ease;
+    }
+
+    .link-tile:hover {
+      transform: translateY(-4px);
+      border-color: rgba(123, 143, 255, 0.35);
+    }
+
+    .link-tile span {
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+      color: var(--text-soft);
+    }
+
+    .form-panel form .form-control,
+    .form-panel form .form-select,
+    .form-panel form textarea {
+      background: rgba(20, 28, 47, 0.65);
+      border: 1px solid rgba(120, 140, 255, 0.18);
+      color: var(--text-primary);
+    }
+
+    .form-panel form .form-control:focus,
+    .form-panel form .form-select:focus,
+    .form-panel form textarea:focus {
+      background: rgba(24, 34, 57, 0.85);
+      border-color: rgba(123, 143, 255, 0.35);
+      box-shadow: 0 0 0 0.2rem rgba(123, 143, 255, 0.15);
+      color: var(--text-primary);
+    }
+
+    .btn-cta-3d {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem 1.6rem;
+      border-radius: 14px;
+      border: none;
+      background: var(--accent-gradient);
+      color: #ffffff;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .btn-cta-3d:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(74, 150, 255, 0.35);
+    }
+
+    .list-3d {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 0.9rem;
+    }
+
+    .list-3d li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.05rem 1.3rem;
+      border-radius: 16px;
+      background: rgba(23, 32, 54, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
+      font-size: 0.95rem;
+    }
+
+    .table-panel .table-responsive {
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      background: rgba(18, 27, 48, 0.85);
+    }
+
+    .table-3d thead {
+      background: rgba(15, 23, 42, 0.85);
+    }
+
+    .table-3d thead th {
+      font-size: 0.78rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    }
+
+    .table-3d tbody td {
+      padding: 1.05rem 1.4rem;
+      border-color: rgba(255, 255, 255, 0.04) !important;
+      color: var(--text-muted);
+    }
+
+    .empty-state {
+      background: rgba(18, 27, 48, 0.85);
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 1.8rem;
+      text-align: center;
+      color: var(--text-soft);
+    }
+
+    .glass-card {
+      background: rgba(27, 39, 63, 0.75);
+      border-radius: 20px;
+      border: 1px solid rgba(129, 146, 255, 0.22);
+      box-shadow: 0 26px 60px rgba(12, 24, 52, 0.4);
+    }
+
+    @media (max-width: 992px) {
+      .panel-3d {
+        padding: 1.9rem;
+      }
+
+      .hero-card {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .nav-shell {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .inline-alert {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .btn-cta-3d {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body class="app-body">
+  <nav class="app-nav">
+    <div class="container-xl nav-shell">
+      {% set brand_title = (shop[1] if shop is defined and shop and shop|length > 1 and shop[1] else "Shop App") %}
+      <div class="brand-block">
+        <a class="brand" href="/">{{ brand_title }}</a>
+        <span class="brand-subtitle">Operations Command Center</span>
+      </div>
+      {% if session.get('user') %}
+        <div class="nav-meta">
+          <span class="user-chip">{{ session['user'] }}</span>
+          <a href="/logout" class="btn btn-logout">Logout</a>
+        </div>
+      {% endif %}
+    </div>
+  </nav>
+
+  <main class="page-shell container-xl py-5">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

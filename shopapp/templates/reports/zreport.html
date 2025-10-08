@@ -1,0 +1,63 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="card-glass p-4">
+  <h1 class="h4">Day close report - {{ report.display_date }}</h1>
+  <div class="row g-3 mt-2">
+    <div class="col-md-3">
+      <div class="card card-body" style="background: rgba(35,45,84,0.7); border-radius: 16px;">
+        <div class="small text-muted">Revenue</div>
+        <div class="fs-5">Rs {{ '%.2f'|format(report.totals.revenue) }}</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card card-body" style="background: rgba(35,45,84,0.7); border-radius: 16px;">
+        <div class="small text-muted">Transactions</div>
+        <div class="fs-5">{{ report.totals.transactions }}</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card card-body" style="background: rgba(35,45,84,0.7); border-radius: 16px;">
+        <div class="small text-muted">Discount</div>
+        <div class="fs-5">Rs {{ '%.2f'|format(report.totals.discount) }}</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card card-body" style="background: rgba(35,45,84,0.7); border-radius: 16px;">
+        <div class="small text-muted">GST</div>
+        <div class="fs-5">Rs {{ '%.2f'|format(report.totals.tax) }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="mt-4 d-flex gap-2">
+    <a class="btn btn-outline-light" href="{{ url_for('reports.zreport_pdf', date=report.date) }}">Download PDF</a>
+    <a class="btn btn-outline-light" href="{{ url_for('sales.index') }}">Back to dashboard</a>
+  </div>
+  <div class="mt-4">
+    <h2 class="h5">Payment split</h2>
+    <ul class="list-unstyled">
+      {% for row in report.payment_breakdown %}
+      <li>{{ row.method|capitalize }}: {{ row.transactions }} tx, Rs {{ '%.2f'|format(row.amount) }}</li>
+      {% endfor %}
+      {% if not report.payment_breakdown %}
+      <li class="text-muted">No sales for the selected day.</li>
+      {% endif %}
+    </ul>
+  </div>
+  <div class="mt-4">
+    <h2 class="h5">Top items</h2>
+    <ul class="list-unstyled">
+      {% for item in report.top_items %}
+      <li>{{ item.item }}: {{ item.quantity }} pcs, Rs {{ '%.2f'|format(item.amount) }}</li>
+      {% endfor %}
+      {% if not report.top_items %}
+      <li class="text-muted">No items sold.</li>
+      {% endif %}
+    </ul>
+  </div>
+  <div class="mt-4">
+    <h2 class="h5">Udhar</h2>
+    <p>Today: {{ report.udhar.count }} tx, Rs {{ '%.2f'|format(report.udhar.amount) }}</p>
+    <p>Outstanding: Rs {{ '%.2f'|format(report.udhar.outstanding_total) }} across {{ report.udhar.outstanding_accounts }} accounts</p>
+  </div>
+</div>
+{% endblock %}
