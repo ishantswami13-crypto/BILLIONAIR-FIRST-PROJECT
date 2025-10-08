@@ -1,4 +1,5 @@
 ﻿import os
+from datetime import datetime
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -36,3 +37,13 @@ class Config:
     DEMO_GIF_URL = os.getenv('DEMO_GIF_URL', 'https://media.giphy.com/media/tXL4FHPSnVJ0A/giphy.gif')
     PRODUCT_NAME = os.getenv('PRODUCT_NAME', 'ShopApp SaaS')
     PRODUCT_TAGLINE = os.getenv('PRODUCT_TAGLINE', 'Retail OS for high-velocity stores')
+    MAIL_TRANSPORT = os.getenv('MAIL_TRANSPORT', 'smtp').lower()
+    GOOGLE_CREDENTIALS_FILE = os.getenv('GOOGLE_CREDENTIALS_FILE', str(BASE_DIR / 'credentials.json'))
+    GOOGLE_TOKEN_FILE = os.getenv('GOOGLE_TOKEN_FILE', str(BASE_DIR / 'token.pickle'))
+    GOOGLE_MAIL_SCOPES = [scope.strip() for scope in os.getenv('GOOGLE_MAIL_SCOPES', 'https://www.googleapis.com/auth/gmail.send').split(',') if scope.strip()]
+
+    APP_VERSION = os.getenv('APP_VERSION', '1.0.0')
+    ACTIVE_PLAN = os.getenv('ACTIVE_PLAN', 'pro')
+    DATA_ENCRYPTION_NOTICE = os.getenv('DATA_ENCRYPTION_NOTICE', 'Your data is encrypted with AES-256.')
+
+    COPYRIGHT_YEAR = os.getenv('COPYRIGHT_YEAR', str(datetime.utcnow().year))

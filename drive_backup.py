@@ -1,4 +1,4 @@
-"""Utility for backing up the local SQLite database to Google Drive.
+﻿"""Utility for backing up the local SQLite database to Google Drive.
 
 The job is triggered nightly by APScheduler (see shopapp.__init__), but it can
 also be run manually::
@@ -6,7 +6,7 @@ also be run manually::
     python drive_backup.py
 
 For the upload to work you must provide credentials.json (client secrets from
-Google Cloud) and the first run will create/refresh 	oken.pickle. When the
+Google Cloud) and the first run will create/refresh token.pickle. When the
 files or Google access are missing, the backup quietly aborts instead of crashing
 scheduled jobs.
 """
@@ -90,7 +90,7 @@ def _get_drive_service() -> Optional[object]:
     if not creds:
         return None
     try:
-        return build("drive", "v3", credentials=creds)
+        return build("drive", "v3", credentials=creds)  # type: ignore[no-untyped-call]
     except Exception as exc:  # pragma: no cover - Google client failure
         logger.exception("Google Drive service creation failed: %s", exc)
         return None
@@ -114,7 +114,7 @@ def backup_to_drive() -> bool:
 
     backup_path.write_bytes(DB_PATH.read_bytes())
 
-    media = MediaFileUpload(str(backup_path), mimetype="application/x-sqlite3")
+    media = MediaFileUpload(str(backup_path), mimetype="application/x-sqlite3")  # type: ignore[call-arg]
     metadata = {"name": backup_name}
 
     try:
@@ -137,3 +137,5 @@ if __name__ == "__main__":
         print("Backup completed successfully.")
     else:
         print("Backup skipped or failed. See logs for details.")
+
+

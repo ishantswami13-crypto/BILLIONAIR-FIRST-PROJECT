@@ -29,6 +29,12 @@ MAIL_PASSWORD=
 
 Keep .env.local out of source control (the provided .gitignore already ignores it).
 
+## Email transport options
+
+- Default mode (`MAIL_TRANSPORT=smtp`) uses classic SMTP with `MAIL_SENDER` and `MAIL_PASSWORD` (for Gmail this should be an app password).
+- Set `MAIL_TRANSPORT=google` to send via the Gmail API instead. Place your OAuth `credentials.json` and `token.pickle` in the project root (or point the env vars elsewhere) and make sure the token includes the `https://www.googleapis.com/auth/gmail.send` scope.
+- If the Gmail API send fails the code silently falls back to SMTP when those credentials are still present, so scheduled jobs keep running.
+
 ## Run with Docker (Postgres + Gunicorn)
 
 `ash
@@ -96,6 +102,7 @@ Feel free to extend the SQLAlchemy models and create Alembic migrations if you n
   - `PAYMENT_LINK` **or** `STRIPE_CHECKOUT_URL` / `RAZORPAY_PAYMENT_LINK`
   - `WAITLIST_URL`
 - To embed a Google Form waitlist, share the public form URL (`.../viewform`) and drop it into `WAITLIST_URL`. The app automatically switches to the embeddable `?embedded=true` version. Notion or other tools still open in a new tab.
+- The landing page now highlights plan tiers (Free / Pro / Enterprise), testimonials, and the ShopApp Cloud trust badge with encryption notice.
 
 ### Configure Stripe or Razorpay buttons
 
@@ -131,3 +138,5 @@ Feel free to extend the SQLAlchemy models and create Alembic migrations if you n
 2. The included `vercel.json` deploys `app.py` via the `@vercel/python` runtime.
 3. Add environment variables in the Vercel dashboard. Background schedulers do not run in serverless mode, so scheduled reports/backups require a Render/Railway deployment or an external cron.
 4. If you need health checks, target `/healthz`.
+
+

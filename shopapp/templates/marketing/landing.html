@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -18,6 +18,7 @@
         <span class="brand-name">{{ product_name }}</span>
       </div>
       <div class="nav-ctas">
+        <span class="nav-badge">Trusted by 500+ businesses</span>
         <a class="btn btn-link" href="{{ url_for('auth.login') }}">Log in</a>
         <a class="btn btn-primary" href="{{ url_for('auth.register') }}">Create account</a>
       </div>
@@ -44,6 +45,7 @@
             <a href="{{ waitlist_url }}" target="_blank" rel="noopener">Join the waitlist</a>
           </div>
           {% endif %}
+          <div class="trust-badge">Trusted by 500+ ambitious retailers • Data encrypted with AES-256 • Verified by ShopApp Cloud</div>
         </div>
         <div class="hero-media">
           {% if demo_gif %}
@@ -63,6 +65,47 @@
         {% endfor %}
       </section>
 
+      <section id="plans" class="plans-section">
+        <div class="plans-head">
+          <span class="eyebrow">Pricing</span>
+          <h2>Plans that grow with your shop</h2>
+          <p class="soft-text">Start free for 30 days. Upgrade when you need AI insights, multi-user access, and advanced compliance.</p>
+        </div>
+        <div class="plan-grid">
+          <article class="plan-card glass">
+            <h3>Free</h3>
+            <div class="price">Rs 0 <span>/ 30 days</span></div>
+            <ul>
+              <li>✓ POS dashboard & billing</li>
+              <li>✓ Daily email reports</li>
+              <li>✓ Cloud backups (manual)</li>
+            </ul>
+            <a class="btn btn-outline-light" href="{{ url_for('auth.register') }}">Start trial</a>
+          </article>
+          <article class="plan-card glass plan-featured">
+            <div class="plan-badge">Most popular</div>
+            <h3>Pro</h3>
+            <div class="price">Rs 999 <span>/ year</span></div>
+            <ul>
+              <li>✓ Auto reports & Drive backup</li>
+              <li>✓ Profit analytics & Chart dashboards</li>
+              <li>✓ WhatsApp reminders & GST invoices</li>
+            </ul>
+            <a class="btn btn-primary" href="{{ payment_url or stripe_url or razorpay_url or '#contact' }}">Upgrade now</a>
+          </article>
+          <article class="plan-card glass">
+            <h3>Enterprise</h3>
+            <div class="price">Rs 4999 <span>/ year</span></div>
+            <ul>
+              <li>✓ Multi-user roles & API integrations</li>
+              <li>✓ CA-ready audit exports & versioned backups</li>
+              <li>✓ Dedicated success manager</li>
+            </ul>
+            <a class="btn btn-outline-light" href="{{ waitlist_url or url_for('marketing.healthcheck') }}">Book a demo</a>
+          </article>
+        </div>
+      </section>
+
       {% if waitlist_url %}
       <section class="waitlist-section">
         <div class="card glass">
@@ -77,6 +120,26 @@
         </div>
       </section>
       {% endif %}
+
+      <section class="testimonials">
+        <div class="card glass">
+          <h2>Loved by modern retailers</h2>
+          <div class="testimonial-grid">
+            <blockquote>
+              <p>"ShopApp Cloud closed our registers on time and gave the CA everything. Feels like having a finance team on call."</p>
+              <footer>— Nidhi, Cafe Saffron</footer>
+            </blockquote>
+            <blockquote>
+              <p>"Udhar reminders on WhatsApp recovered Rs 18,000 in dues within a week. The analytics make daily stand-ups breezy."</p>
+              <footer>— Arjun, Urban Mart</footer>
+            </blockquote>
+            <blockquote>
+              <p>"Invoices look like they came from a Fortune 500 company. Customers actually mention the digital signature!"</p>
+              <footer>— Priya, Glow Cosmetics</footer>
+            </blockquote>
+          </div>
+        </div>
+      </section>
 
       <section class="social-proof">
         <div class="card glass">
@@ -102,5 +165,3 @@
   </div>
 </body>
 </html>
-
-

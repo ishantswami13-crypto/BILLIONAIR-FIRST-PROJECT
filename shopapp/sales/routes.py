@@ -1,11 +1,11 @@
-from datetime import datetime, timedelta
+﻿from datetime import datetime, timedelta
 
 from flask import (Blueprint, redirect, render_template, request, send_file,
                    session, url_for)
 from sqlalchemy import func
 
 from ..extensions import db
-from ..models import AuditLog, Credit, Customer, Item, Sale
+from ..models import AuditLog, Credit, Customer, Expense, Item, Sale
 from ..utils.decorators import login_required
 from ..utils.mailer import send_mail
 from ..utils.pdfs import create_invoice_pdf
@@ -67,6 +67,35 @@ def index():
         .scalar() or 0
     )
 
+    start_window = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=6)
+    window_days = [start_window.date() + timedelta(days=i) for i in range(7)]
+
+    sales_rows = (
+        db.session.query(func.date(Sale.date), func.coalesce(func.sum(Sale.net_total), 0))
+        .filter(Sale.date >= start_window)
+        .group_by(func.date(Sale.date))
+        .all()
+    )
+    expenses_rows = (
+        db.session.query(Expense.date, func.coalesce(func.sum(Expense.amount), 0))
+        .filter(Expense.date >= window_days[0])
+        .group_by(Expense.date)
+        .all()
+    )
+
+    sales_map = {row[0]: float(row[1] or 0) for row in sales_rows}
+    expenses_map = {row[0]: float(row[1] or 0) for row in expenses_rows}
+
+    chart_labels = [day.strftime('%d %b') for day in window_days]
+    chart_sales = [round(sales_map.get(day, 0.0), 2) for day in window_days]
+    chart_expenses = [round(expenses_map.get(day, 0.0), 2) for day in window_days]
+    chart_profit = [round(s - e, 2) for s, e in zip(chart_sales, chart_expenses)]
+
+    payment_chart = {
+        'labels': [row['method'].title() for row in payment_summary],
+        'amounts': [row['amount'] for row in payment_summary]
+    }
+
     invoice_ready = session.pop('invoice_ready', None)
 
     return render_template(
@@ -82,7 +111,12 @@ def index():
         payment_summary=payment_summary,
         low_stock=low_stock,
         outstanding_udhar=outstanding_udhar,
-        invoice_ready=invoice_ready
+        invoice_ready=invoice_ready,
+        chart_labels=chart_labels,
+        chart_sales=chart_sales,
+        chart_expenses=chart_expenses,
+        chart_profit=chart_profit,
+        payment_chart=payment_chart
     )
 
 
