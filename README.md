@@ -73,6 +73,7 @@ flask --app manage.py run
 - Automatic loading of `.env.local` overrides for painless local development.
 - On startup the app creates missing tables and seeds a default shop profile + admin user.
 - Added analytics hooks (GA4 + Mixpanel), plan-aware feature flags, and a `/settings/branding` admin page for GST-ready invoices with logo/signature support.
+- Expense categories now support colour-coded tags, keyword auto-suggestions, and a dedicated analytics breakdown.
 - Nightly reports now lock the sales ledger until an admin overrides the lock from the settings page.
 
 ## Background jobs

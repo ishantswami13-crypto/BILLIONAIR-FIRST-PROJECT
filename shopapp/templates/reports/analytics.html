@@ -1,0 +1,262 @@
+{% extends 'layout.html' %}
+{% block title %}Analytics{% endblock %}
+{% block crumb %}Reports / Analytics{% endblock %}
+
+{% block head %}
+<style>
+  .heatmap-grid {
+    display: grid;
+    grid-template-columns: 80px repeat(24, 1fr);
+    gap: 4px;
+    font-size: 0.75rem;
+  }
+  .heatmap-cell {
+    min-height: 28px;
+    background: var(--bg, rgba(98, 181, 255, 0.1));
+    color: #0e1629;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .heatmap-legend {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .heatmap-legend span {
+    width: 40px;
+    height: 12px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bo-card mb-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+    <div>
+      <h1 class="h4 mb-1">Business analytics</h1>
+      <p class="bo-soft mb-0">Revenue, expenses, profit trend and customer insights.</p>
+    </div>
+    <form class="d-flex gap-2 align-items-center" method="get">
+      <label class="form-label mb-0">Window</label>
+      <select class="form-select form-select-sm" name="days" onchange="this.form.submit()">
+        {% for option in [30, 60, 90, 180, 365] %}
+        <option value="{{ option }}" {% if days == option %}selected{% endif %}>Last {{ option }} days</option>
+        {% endfor %}
+      </select>
+      <a class="btn btn-sm bo-btn-outline" href="{{ url_for('reports.analytics_export', days=days) }}">Export CSV</a>
+    </form>
+  </div>
+  <div class="row g-3 mt-2">
+    <div class="col-6 col-lg-3">
+      <div class="bo-card bo-card--soft">
+        <div class="bo-eyebrow small text-uppercase mb-1">Revenue</div>
+        <div class="h4 mb-0">Rs {{ '%.2f'|format(analytics.summary.total_revenue) }}</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="bo-card bo-card--soft">
+        <div class="bo-eyebrow small text-uppercase mb-1">Expenses</div>
+        <div class="h4 mb-0">Rs {{ '%.2f'|format(analytics.summary.total_expenses) }}</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="bo-card bo-card--soft">
+        <div class="bo-eyebrow small text-uppercase mb-1">Profit</div>
+        <div class="h4 mb-0 text-success">Rs {{ '%.2f'|format(analytics.summary.total_profit) }}</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="bo-card bo-card--soft">
+        <div class="bo-eyebrow small text-uppercase mb-1">Avg daily profit</div>
+        <div class="h4 mb-0">Rs {{ '%.2f'|format(analytics.summary.average_daily_profit) }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bo-card mb-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+    <div>
+      <h2 class="h5 mb-1">Revenue vs expenses</h2>
+      <p class="bo-soft mb-0">Track cashflow and profit across time.</p>
+    </div>
+  </div>
+  <ul class="nav nav-pills mb-3" id="analytics-tabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="daily-tab" data-bs-toggle="pill" data-bs-target="#daily-pane" type="button">Daily</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="weekly-tab" data-bs-toggle="pill" data-bs-target="#weekly-pane" type="button">Weekly</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="monthly-tab" data-bs-toggle="pill" data-bs-target="#monthly-pane" type="button">Monthly</button>
+    </li>
+  </ul>
+  <div class="tab-content">
+    <div class="tab-pane fade show active" id="daily-pane">
+      <canvas id="dailyChart" height="160"></canvas>
+    </div>
+    <div class="tab-pane fade" id="weekly-pane">
+      <canvas id="weeklyChart" height="160"></canvas>
+    </div>
+    <div class="tab-pane fade" id="monthly-pane">
+      <canvas id="monthlyChart" height="160"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-lg-7">
+    <div class="bo-card h-100">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 class="h5 mb-0">Sales heatmap (last 30 days)</h2>
+        <div class="heatmap-legend">
+          <span style="background: rgba(98,181,255,0.08);"></span>
+          <small class="bo-soft">Low</small>
+          <span style="background: rgba(98,181,255,0.6);"></span>
+          <small class="bo-soft">High</small>
+        </div>
+      </div>
+      <div class="heatmap-grid" id="heatmapGrid"></div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="bo-card h-100">
+      <h2 class="h5 mb-3">Top customers (LTV)</h2>
+      <div class="table-responsive">
+        <table class="table table-dark table-sm mb-0">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Orders</th>
+              <th>Total</th>
+              <th>Last purchase</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in analytics.ltv %}
+            <tr>
+              <td>{{ row.customer }}</td>
+              <td>{{ row.orders }}</td>
+              <td>Rs {{ '%.2f'|format(row.total) }}</td>
+              <td>{{ row.last_purchase or '—' }}</td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="4" class="bo-soft">No customer data yet.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bo-card mb-4">
+  <h2 class="h5 mb-3">Expense categories</h2>
+  <p class="bo-soft">Breakdown of spend by category across the selected window.</p>
+  <div class="list-group list-group-flush">
+    {% for cat in analytics.categories %}
+    <div class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge" style="background-color: {{ cat.color }}; color: #0e1629;">{{ cat.name }}</span>
+        <span class="bo-soft small">{{ cat.share }}% of spend</span>
+      </div>
+      <div class="flex-grow-1 w-100 w-md-auto">
+        <div class="progress" style="height: 6px;">
+          <div class="progress-bar" role="progressbar" style="width: {{ cat.share }}%; background-color: {{ cat.color }};"></div>
+        </div>
+      </div>
+      <div class="fw-semibold">Rs {{ '%.2f'|format(cat.amount) }}</div>
+    </div>
+    {% else %}
+    <div class="list-group-item bo-soft">No expenses recorded in this period.</div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+  const analytics = {{ analytics|tojson }};
+
+  function buildLineChart(ctx, data) {
+    if (!ctx || !window.Chart) return;
+    const labels = data.map(row => row.label);
+    const revenue = data.map(row => row.revenue);
+    const expenses = data.map(row => row.expenses);
+    const profit = data.map(row => row.profit);
+
+    return new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Revenue', data: revenue, borderColor: '#62b5ff', backgroundColor: 'rgba(98,181,255,.15)', tension: .35, fill: true },
+          { label: 'Expenses', data: expenses, borderColor: '#ffb74d', backgroundColor: 'rgba(255,183,77,.12)', tension: .35, fill: true },
+          { label: 'Profit', data: profit, borderColor: '#7cf29c', backgroundColor: 'rgba(124,242,156,.12)', tension: .35, fill: true },
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { labels: { color: '#e9f0ff' } }
+        },
+        scales: {
+          x: { ticks: { color: '#c9d3ea' }, grid: { color: 'rgba(255,255,255,.05)' } },
+          y: { ticks: { color: '#c9d3ea' }, grid: { color: 'rgba(255,255,255,.05)' } }
+        }
+      }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    buildLineChart(document.getElementById('dailyChart'), analytics.daily);
+    buildLineChart(document.getElementById('weeklyChart'), analytics.weekly);
+    buildLineChart(document.getElementById('monthlyChart'), analytics.monthly);
+
+    const heatmap = analytics.heatmap;
+    const grid = document.getElementById('heatmapGrid');
+    if (grid) {
+      const max = heatmap.max || 1;
+      const formatter = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+      const headerRow = document.createElement('div');
+      headerRow.className = 'heatmap-cell';
+      headerRow.textContent = '';
+      grid.appendChild(headerRow);
+      heatmap.hours.forEach(hour => {
+        const cell = document.createElement('div');
+        cell.className = 'heatmap-cell';
+        cell.textContent = hour;
+        grid.appendChild(cell);
+      });
+
+      heatmap.days.forEach((dayLabel, rowIdx) => {
+        const labelCell = document.createElement('div');
+        labelCell.className = 'heatmap-cell';
+        labelCell.textContent = dayLabel;
+        grid.appendChild(labelCell);
+
+        heatmap.matrix[rowIdx].forEach(value => {
+          const intensity = value / max;
+          const bg = `rgba(98,181,255, ${0.1 + intensity * 0.6})`;
+          const cell = document.createElement('div');
+          cell.className = 'heatmap-cell';
+          cell.style.setProperty('--bg', bg);
+          cell.style.background = bg;
+          cell.title = formatter.format(value);
+          cell.textContent = value > 0 ? formatter.format(value / 1000) + 'k' : '';
+          grid.appendChild(cell);
+        });
+      });
+    }
+  });
+</script>
+{% endblock %}

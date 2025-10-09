@@ -1,10 +1,13 @@
 from datetime import datetime, timedelta
+import csv
+import io
 
-from flask import Blueprint, render_template, request, send_file
+from flask import Blueprint, make_response, render_template, request, send_file
 from sqlalchemy import func
 
 from ..extensions import db
 from ..models import Credit, Expense, Sale
+from ..utils.analytics import build_daily_csv, load_analytics
 from ..utils.decorators import login_required
 from ..utils.pdfs import create_zreport_pdf
 
@@ -140,3 +143,36 @@ def zreport_pdf():
         download_name=f"zreport_{summary['date']}.pdf",
         mimetype='application/pdf'
     )
+
+
+def _resolve_days() -> int:
+    try:
+        days = int(request.args.get('days', 90))
+    except (TypeError, ValueError):
+        days = 90
+    return max(7, min(days, 365))
+
+
+@reports_bp.route('/analytics')
+@login_required
+def analytics_view():
+    days = _resolve_days()
+    analytics = load_analytics(days=days)
+    return render_template('reports/analytics.html', analytics=analytics, days=days)
+
+
+@reports_bp.route('/analytics/export.csv')
+@login_required
+def analytics_export():
+    days = _resolve_days()
+    analytics = load_analytics(days=days)
+    csv_rows = build_daily_csv(analytics['daily'])
+
+    buffer = io.StringIO()
+    writer = csv.writer(buffer)
+    writer.writerows(csv_rows)
+
+    response = make_response(buffer.getvalue())
+    response.headers['Content-Type'] = 'text/csv'
+    response.headers['Content-Disposition'] = f'attachment; filename=analytics_{days}d.csv'
+    return response

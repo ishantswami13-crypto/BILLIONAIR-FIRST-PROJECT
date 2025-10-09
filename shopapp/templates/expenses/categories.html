@@ -1,0 +1,70 @@
+{% extends 'layout.html' %}
+{% block title %}Expense Categories{% endblock %}
+{% block crumb %}Expenses / Categories{% endblock %}
+
+{% block content %}
+<div class="bo-card mb-4">
+  <h1 class="h4 mb-3">Create category</h1>
+  <form class="row g-3" method="POST">
+    <div class="col-md-4">
+      <label class="form-label">Name</label>
+      <input class="form-control bo-input" type="text" name="name" required>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label">Colour</label>
+      <input class="form-control form-control-color" type="color" name="color" value="#62b5ff">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Keywords</label>
+      <input class="form-control bo-input" type="text" name="keywords" placeholder="Comma separated: rent, electricity">
+      <small class="bo-soft">Used to auto-suggest this category when notes match.</small>
+    </div>
+    <div class="col-12 text-end">
+      <button class="btn bo-btn" type="submit">Add category</button>
+    </div>
+  </form>
+</div>
+
+<div class="bo-card">
+  <h2 class="h5 mb-3">Existing categories</h2>
+  <div class="table-responsive">
+    <table class="table table-dark table-hover align-middle mb-0 bo-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Colour</th>
+          <th>Keywords</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cat in categories %}
+        <tr>
+          <td>
+            <input class="form-control bo-input" type="text" name="name" value="{{ cat.name }}" form="cat-form-{{ cat.id }}">
+          </td>
+          <td>
+            <input class="form-control form-control-color" type="color" name="color" value="{{ cat.color or '#62b5ff' }}" form="cat-form-{{ cat.id }}">
+          </td>
+          <td>
+            <input class="form-control bo-input" type="text" name="keywords" value="{{ cat.keywords or '' }}" placeholder="Comma separated" form="cat-form-{{ cat.id }}">
+          </td>
+          <td class="d-flex gap-2">
+            <form id="cat-form-{{ cat.id }}" method="POST" action="{{ url_for('expenses.update_category', category_id=cat.id) }}">
+              <button class="btn btn-sm bo-btn-outline" type="submit">Save</button>
+            </form>
+            <form method="POST" action="{{ url_for('expenses.delete_category', category_id=cat.id) }}" onsubmit="return confirm('Delete category {{ cat.name }}?');">
+              <button class="btn btn-sm btn-danger" type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="4" class="bo-soft">No categories yet. Create one above.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

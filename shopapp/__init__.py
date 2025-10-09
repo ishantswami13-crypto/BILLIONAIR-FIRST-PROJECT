@@ -52,7 +52,10 @@ SCHEMA_PATCHES = {
     },
     "users": {
         "phone": "phone VARCHAR(50)",
-        "email": "email VARCHAR(255)",
+        "email": "email VARCHAR(255)"
+    },
+    "expenses": {
+        "category_id": "category_id INTEGER"
     },
 }
 

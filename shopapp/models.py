@@ -135,14 +135,27 @@ class PurchaseItem(db.Model):
     cost_price = db.Column(db.Float)
 
 
+class ExpenseCategory(db.Model):
+    __tablename__ = 'expense_categories'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), unique=True, nullable=False)
+    color = db.Column(db.String(20), default='#62b5ff')
+    keywords = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 class Expense(db.Model):
     __tablename__ = 'expenses'
 
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date, default=date.today)
     category = db.Column(db.String(255))
+    category_id = db.Column(db.Integer, db.ForeignKey('expense_categories.id'))
     amount = db.Column(db.Float)
     notes = db.Column(db.Text)
+
+    category_rel = db.relationship('ExpenseCategory', backref='expenses', lazy=True)
 
 
 class AuditLog(db.Model):
