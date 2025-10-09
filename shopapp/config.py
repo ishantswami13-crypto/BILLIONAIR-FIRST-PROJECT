@@ -41,6 +41,8 @@ class Config:
     GOOGLE_CREDENTIALS_FILE = os.getenv('GOOGLE_CREDENTIALS_FILE', str(BASE_DIR / 'credentials.json'))
     GOOGLE_TOKEN_FILE = os.getenv('GOOGLE_TOKEN_FILE', str(BASE_DIR / 'token.pickle'))
     GOOGLE_MAIL_SCOPES = [scope.strip() for scope in os.getenv('GOOGLE_MAIL_SCOPES', 'https://www.googleapis.com/auth/gmail.send').split(',') if scope.strip()]
+    GA_MEASUREMENT_ID = os.getenv('GA_MEASUREMENT_ID')
+    MIXPANEL_TOKEN = os.getenv('MIXPANEL_TOKEN')
 
     APP_VERSION = os.getenv('APP_VERSION', '1.0.0')
     ACTIVE_PLAN = os.getenv('ACTIVE_PLAN', 'pro')

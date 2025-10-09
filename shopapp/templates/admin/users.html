@@ -1,0 +1,61 @@
+{% extends 'layout.html' %}
+{% block title %}Admin • Users{% endblock %}
+{% block crumb %}Admin / Users{% endblock %}
+
+{% block content %}
+<div class="bo-card mb-3">
+  <form class="d-flex flex-wrap gap-2" method="get">
+    <input class="form-control bo-input" name="q" value="{{ q or '' }}" placeholder="Search username, email, phone">
+    <button class="btn bo-btn" type="submit">Search</button>
+  </form>
+</div>
+
+<div class="bo-card">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h1 class="h5 mb-0">Users</h1>
+    <span class="badge bo-badge">{{ users|length }} on this page</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-dark table-hover align-middle bo-table mb-0">
+      <thead>
+        <tr>
+          <th scope="col">ID</th>
+          <th scope="col">Username</th>
+          <th scope="col">Email</th>
+          <th scope="col">Phone</th>
+          <th scope="col">Email verified</th>
+          <th scope="col">Role</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td>{{ u.id }}</td>
+          <td>{{ u.username }}</td>
+          <td>{{ u.email or '—' }}</td>
+          <td>{{ u.phone or '—' }}</td>
+          <td>{{ 'Yes' if u.email_verified else 'No' }}</td>
+          <td>{{ u.role or '—' }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="6" class="bo-soft">No users found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center mt-3">
+    <div class="bo-soft">Page {{ p.page }} of {{ p.pages or 1 }}</div>
+    <div class="d-flex gap-2">
+      {% if p.has_prev %}
+      <a class="btn btn-sm bo-btn-outline" href="?page={{ p.prev_num }}&amp;q={{ q }}">Prev</a>
+      {% endif %}
+      {% if p.has_next %}
+      <a class="btn btn-sm bo-btn-outline" href="?page={{ p.next_num }}&amp;q={{ q }}">Next</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
