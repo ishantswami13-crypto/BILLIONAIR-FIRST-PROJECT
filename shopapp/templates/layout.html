@@ -1,249 +1,97 @@
-﻿<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ title or 'ShopApp' }}</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-  <style>
-    :root {
-      --bg: #050b1e;
-      --sidebar: rgba(6, 12, 30, 0.95);
-      --surface: rgba(18, 26, 52, 0.85);
-      --accent: #62b5ff;
-      --text-soft: rgba(255, 255, 255, 0.75);
-      --text: #f7f9ff;
-    }
-    body {
-      margin: 0;
-      background: radial-gradient(circle at 10% 20%, #0b1537 0%, #040918 55%, #01030c 100%);
-      color: var(--text);
-      min-height: 100vh;
-      font-family: 'Inter', 'Segoe UI', sans-serif;
-    }
-    .app-frame {
-      display: flex;
-      min-height: 100vh;
-    }
-    .app-sidebar {
-      width: 240px;
-      background: var(--sidebar);
-      border-right: 1px solid rgba(255, 255, 255, 0.08);
-      display: flex;
-      flex-direction: column;
-      padding: 2rem 1.5rem;
-      gap: 2rem;
-      position: sticky;
-      top: 0;
-      height: 100vh;
-    }
-    .app-brand {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-    .app-brand h1 {
-      font-size: 1.3rem;
-      margin: 0;
-      font-weight: 600;
-    }
-    .verified-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      font-size: 0.75rem;
-      padding: 0.35rem 0.7rem;
-      border-radius: 999px;
-      background: rgba(98, 181, 255, 0.15);
-      color: var(--accent);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-    .sidebar-nav {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-    .sidebar-link {
-      text-decoration: none;
-      color: var(--text-soft);
-      font-weight: 500;
-      padding: 0.55rem 0.75rem;
-      border-radius: 12px;
-      transition: background 0.15s ease, color 0.15s ease;
-    }
-    .sidebar-link:hover,
-    .sidebar-link.active {
-      background: rgba(98, 181, 255, 0.15);
-      color: var(--text);
-    }
-    .plan-card {
-      margin-top: auto;
-      border-radius: 16px;
-      padding: 1rem;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      font-size: 0.85rem;
-      color: var(--text-soft);
-    }
-    .app-main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1.5rem 2.5rem 1rem;
-    }
-    .top-bar .breadcrumb {
-      margin-bottom: 0;
-      background: transparent;
-      padding: 0;
-      color: var(--text-soft);
-    }
-    .app-shell {
-      padding: 0 2.5rem 3rem;
-    }
-    .card-glass {
-      background: var(--surface);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 20px;
-      box-shadow: 0 30px 70px rgba(4, 8, 18, 0.45);
-    }
-    .soft-text { color: var(--text-soft); }
-    a { color: var(--accent); }
-    a:hover { color: #8fd6ff; }
-    .compliance-banner {
-      margin-bottom: 1.25rem;
-      border-radius: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(9, 16, 37, 0.75);
-      padding: 0.9rem 1.2rem;
-      font-size: 0.85rem;
-      display: flex;
-      justify-content: space-between;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-    .shimmer {
-      position: relative;
-      overflow: hidden;
-      background: rgba(255, 255, 255, 0.05);
-    }
-    .shimmer::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      transform: translateX(-100%);
-      background: linear-gradient(120deg, transparent, rgba(255,255,255,0.2), transparent);
-      animation: shimmer 1.8s infinite;
-    }
-    @keyframes shimmer {
-      100% { transform: translateX(100%); }
-    }
-    .app-footer {
-      padding: 1.5rem 2.5rem 2rem;
-      font-size: 0.8rem;
-      color: var(--text-soft);
-      display: flex;
-      justify-content: space-between;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-    @media (max-width: 992px) {
-      .app-frame { flex-direction: column; }
-      .app-sidebar {
-        position: relative;
-        width: 100%;
-        height: auto;
-        flex-direction: row;
-        gap: 1rem;
-        align-items: center;
-        justify-content: space-between;
-      }
-      .sidebar-nav {
-        flex-direction: row;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-      }
-      .plan-card { display: none; }
-      .top-bar,
-      .app-shell,
-      .app-footer { padding-left: 1.5rem; padding-right: 1.5rem; }
-    }
-  </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}Billionair OS{% endblock %}</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/billionair.css') }}">
+  {% block head %}{% endblock %}
 </head>
-<body>
-  <div class="app-frame">
-    {% if session.get('user') %}
-    <aside class="app-sidebar">
-      <div class="app-brand">
-        <h1>ShopApp Cloud</h1>
-        <span class="verified-pill">✔ Verified by ShopApp</span>
+<body class="bo-body">
+  <div class="bo-backdrop"></div>
+
+  <aside class="bo-sidebar">
+    <div class="bo-brand">
+      <div class="bo-glyph">B</div>
+      <div>
+        <div class="bo-title">Billionair OS</div>
+        <div class="bo-verified">Verified by Billionair Labs</div>
       </div>
-      <nav class="sidebar-nav">
-        <a class="sidebar-link {% if request.endpoint == 'sales.index' %}active{% endif %}" href="{{ url_for('sales.index') }}">Dashboard</a>
-        <a class="sidebar-link {% if request.endpoint and request.endpoint.startswith('reports.') %}active{% endif %}" href="{{ url_for('reports.zreport_view') }}">Reports</a>
-        <a class="sidebar-link {% if request.endpoint and request.endpoint.startswith('inventory.') %}active{% endif %}" href="{{ url_for('inventory.items') }}">Inventory</a>
-        <a class="sidebar-link {% if request.endpoint and request.endpoint.startswith('expenses.') %}active{% endif %}" href="{{ url_for('expenses.expenses') }}">Expenses</a>
-        <a class="sidebar-link {% if request.endpoint and request.endpoint.startswith('customers.') %}active{% endif %}" href="{{ url_for('customers.customers') }}">Customers</a>
-        <a class="sidebar-link" href="{{ url_for('reports.zreport_pdf') }}">Export</a>
-      </nav>
-      <div class="plan-card">
-        <div><strong>Plan:</strong> {{ config.get('ACTIVE_PLAN', 'pro')|capitalize }}</div>
-        <div class="small">Need more? <a href="{{ url_for('marketing.landing') }}#plans" class="text-decoration-none">See plans →</a></div>
+    </div>
+
+    <nav class="bo-nav">
+      <a href="{{ url_for('sales.index')|default('#', true) }}" class="bo-nav__item {% if request.path.startswith('/app') %}active{% endif %}">
+        <i class="bo-ico">⌂</i> Dashboard
+      </a>
+      <a href="{{ url_for('reports.zreport_view')|default('#', true) }}" class="bo-nav__item {% if request.path.startswith('/zreport') %}active{% endif %}">
+        <i class="bo-ico"></i> Reports
+      </a>
+      <a href="{{ url_for('inventory.items')|default('#', true) }}" class="bo-nav__item {% if request.path.startswith('/items') %}active{% endif %}">
+        <i class="bo-ico">⟲</i> Inventory
+      </a>
+      <a href="{{ url_for('expenses.expenses')|default('#', true) }}" class="bo-nav__item {% if request.path.startswith('/expenses') %}active{% endif %}">
+        <i class="bo-ico">₪</i> Expenses
+      </a>
+      <a href="{{ url_for('customers.customers')|default('#', true) }}" class="bo-nav__item {% if request.path.startswith('/customers') %}active{% endif %}">
+        <i class="bo-ico">◎</i> Customers
+      </a>
+      <a href="{{ url_for('sales.index')|default('#', true) }}#pos" class="bo-nav__item {% if request.path.endswith('#pos') %}active{% endif %}">
+        <i class="bo-ico">↗</i> POS
+      </a>
+    </nav>
+
+    <div class="bo-plan">
+      <div class="bo-card bo-metal">
+        <div class="bo-card__label">Access</div>
+        <div class="bo-card__title">Lux Core</div>
+        <div class="bo-card__meta">Build X.0 • Quantum-AES Shielded</div>
       </div>
-    </aside>
-    {% endif %}
-    <div class="app-main">
-      <div class="top-bar">
-        <div>
-          <ol class="breadcrumb">
-            <li class="breadcrumb-item soft-text">{{ config.get('PRODUCT_NAME', 'ShopApp SaaS') }}</li>
-            <li class="breadcrumb-item active text-white">{{ title or 'Dashboard' }}</li>
-          </ol>
-        </div>
-        <div class="d-flex align-items-center gap-3">
-          <span class="badge bg-secondary bg-opacity-50 text-white">{{ config.get('DATA_ENCRYPTION_NOTICE') }}</span>
-          {% if session.get('user') %}
-          <span class="soft-text">{{ session['user'] }}</span>
-          <a class="btn btn-outline-light btn-sm" href="{{ url_for('auth.logout') }}">Logout</a>
-          {% else %}
-          <a class="btn btn-outline-light btn-sm" href="{{ url_for('auth.login') }}">Login</a>
-          {% endif %}
-        </div>
+    </div>
+  </aside>
+
+  <main class="bo-main">
+    <header class="bo-topbar">
+      <div class="bo-breadcrumb">
+        <span class="bo-app">Billionair OS</span>
+        <span class="bo-chevron">/</span>
+        <span class="bo-page">{% block crumb %}Dashboard{% endblock %}</span>
       </div>
-      <div class="app-shell">
-        {% with messages = get_flashed_messages() %}
-          {% if messages %}
-          <div class="alert alert-info card-glass mb-4">
-            {% for message in messages %}
-              <div>{{ message }}</div>
-            {% endfor %}
-          </div>
-          {% endif %}
-        {% endwith %}
+      <div class="d-flex align-items-center gap-3">
+        <span class="badge bo-badge">Your data is shielded with Quantum-AES</span>
         {% if session.get('user') %}
-        <div class="compliance-banner">
-          <span>Powered by ShopApp Cloud • Version {{ config.get('APP_VERSION', '1.0.0') }}</span>
-          <span class="soft-text">AES-256 Encryption • SOC-ready audit trails • Daily secure backups</span>
+          <span class="bo-user">{{ session['user'] }}</span>
+          <a class="btn btn-sm bo-btn-outline" href="{{ url_for('auth.logout')|default('#', true) }}">Logout</a>
+        {% else %}
+          <a class="btn btn-sm bo-btn-outline" href="{{ url_for('auth.login')|default('#', true) }}">Login</a>
+        {% endif %}
+      </div>
+    </header>
+
+    <section class="bo-content">
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="alert alert-info bo-card bo-card--soft mb-4">
+          {% for message in messages %}
+            <div>{{ message }}</div>
+          {% endfor %}
         </div>
         {% endif %}
-        {% block content %}{% endblock %}
-      </div>
-      <footer class="app-footer">
-        <span>© {{ config.get('PRODUCT_NAME', 'ShopApp SaaS') }} {{ config.get('COPYRIGHT_YEAR', '2025') }}</span>
-        <span>Data encrypted with AES-256 • Verified by ShopApp Cloud</span>
-      </footer>
-    </div>
-  </div>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      document.querySelectorAll('[data-shimmer]').forEach(node => node.classList.add('shimmer'));
-    });
-  </script>
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </section>
+
+    <footer class="bo-footer">
+      <span>© Billionair Labs</span>
+      <span class="text-muted">•</span>
+      <span>Latency-optimized • SOC-ready trails • Secure backups</span>
+    </footer>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  {% block scripts %}{% endblock %}
 </body>
 </html>
