@@ -90,13 +90,14 @@ Both require valid SMTP credentials and Google API tokens (credentials.json, 	ok
 | ------- | --- |
 | OperationalError: could not translate host name "db" when running locally | Ensure .env.local points to sqlite:///shop.db. Remove/rename the Postgres DATABASE_URL value or run through Docker. |
 | Login page refuses credentials | Confirm the default admin values in .env.local and rerun lask seed-admin if you changed them. |
-| Emails/OTP are not delivered | Provide MAIL_SENDER + MAIL_PASSWORD (Gmail app password) or disable OTP in settings. |
+| Emails/OTP are not delivered | Supply MAIL_SENDER + MAIL_PASSWORD (Gmail app password) or switch to `MAIL_TRANSPORT=google` with credentials. For a manual fallback, run `flask otp-latest` to view the most recent code. |
 
 Feel free to extend the SQLAlchemy models and create Alembic migrations if you need production-grade schema evolution.
 
 ## Marketing site, payments, and waitlist
 
-- The Flask app now serves a marketing landing page at `/`. Authenticated users are redirected to `/app/`.
+- The marketing landing page now lives at `/landing` (alias `/marketing`). The root `/` redirects 
+  authenticated users to `/app/` and everyone else to `/login`.
 - Configure the landing copy via these environment variables (see `.env` / `.env.example`):
   - `PRODUCT_NAME`, `PRODUCT_TAGLINE`, `DEMO_GIF_URL`
   - `PAYMENT_LINK` **or** `STRIPE_CHECKOUT_URL` / `RAZORPAY_PAYMENT_LINK`

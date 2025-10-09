@@ -1,7 +1,9 @@
+from datetime import datetime
+
 import click
 
 from .extensions import db
-from .models import ShopProfile, User
+from .models import Otp, ShopProfile, User
 
 
 def register_cli(app):
@@ -22,3 +24,22 @@ def register_cli(app):
 
         db.session.commit()
         click.echo('Admin seeded.')
+
+    @app.cli.command('otp-latest')
+    def otp_latest():
+        """Print the most recent OTP for manual verification fallback."""
+        record = Otp.query.order_by(Otp.id.desc()).first()
+        if not record:
+            click.echo('No OTP records found.')
+            return
+
+        expires = record.expires_at.isoformat() if record.expires_at else 'unknown'
+        click.echo(f'Latest OTP: {record.otp}')
+        click.echo(f'User: {record.username} <{record.email}>')
+        click.echo(f'Expires at: {expires}')
+        if record.expires_at:
+            remaining = (record.expires_at - datetime.utcnow()).total_seconds() / 60
+            if remaining > 0:
+                click.echo(f'Remaining: ~{remaining:.0f} minute(s)')
+            else:
+                click.echo('Status: expired')

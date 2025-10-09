@@ -108,59 +108,74 @@
 </div>
 
 <div class="row g-4">
-  <div class="col-lg-6">
-    <div class="bo-card h-100" id="pos">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="h5 mb-0">Create a quick sale</h2>
-        <span class="badge bo-badge">POS</span>
-      </div>
-      <form class="row g-3" method="POST" action="{{ url_for('sales.sell') }}">
-        <div class="col-12">
-          <label class="form-label">Item</label>
-          <select class="form-select bo-input" name="item_id" required>
+    <div class="col-lg-6">
+      <div class="bo-card h-100" id="pos" data-voice-pos>
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+          <div class="d-flex align-items-center gap-2">
+            <h2 class="h5 mb-0">Create a quick sale</h2>
+            <span class="badge bo-badge">POS</span>
+          </div>
+          <button type="button" class="btn btn-sm bo-btn-outline d-flex align-items-center gap-2" data-voice-toggle>
+            <span class="bo-ico">Mic</span>
+            <span data-voice-toggle-label>Start voice</span>
+          </button>
+        </div>
+        <div class="alert alert-warning bo-card bo-card--soft d-none" data-voice-unsupported>
+          Voice capture isn’t available in this browser. Use the form manually.
+        </div>
+        <div class="bo-soft small mb-2" data-voice-status role="status" aria-live="polite"></div>
+        <div class="bo-card bo-card--soft p-3 mb-3 d-none" data-voice-preview-wrapper>
+          <div class="bo-eyebrow small text-uppercase mb-1">Voice transcript</div>
+          <p class="mb-0" data-voice-transcript-preview></p>
+        </div>
+        <form class="row g-3" method="POST" action="{{ url_for('sales.sell') }}" data-voice-pos-form data-voice-lang="en-IN">
+          <input type="hidden" name="voice_transcript" value="" data-voice-transcript>
+          <div class="col-12">
+            <label class="form-label">Item</label>
+            <select class="form-select bo-input" name="item_id" required data-voice-item>
             {% for item in items %}
-            <option value="{{ item.id }}">{{ item.name }} (Rs {{ '%.2f'|format(item.price) }}, stock {{ item.current_stock }})</option>
+            <option value="{{ item.id }}" data-voice-name="{{ item.name|lower }}">{{ item.name }} (Rs {{ '%.2f'|format(item.price) }}, stock {{ item.current_stock }})</option>
             {% endfor %}
           </select>
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Quantity</label>
-          <input class="form-control bo-input" type="number" min="1" name="quantity" value="1" required>
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Payment method</label>
-          <select class="form-select bo-input" name="payment_method">
-            <option value="cash">Cash</option>
-            <option value="upi">UPI</option>
-            <option value="card">Card</option>
-          </select>
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Discount (Rs)</label>
-          <input class="form-control bo-input" type="number" step="0.01" name="discount" value="0">
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Sale type</label>
-          <select class="form-select bo-input" name="sale_type">
-            <option value="paid">Paid</option>
-            <option value="udhar">Udhar (credit)</option>
-          </select>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Existing customer</label>
-          <select class="form-select bo-input" name="customer_id">
-            <option value="">Walk-in</option>
-            {% for customer in customers %}
-            <option value="{{ customer.id }}">{{ customer.name }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="col-12 text-end">
-          <button class="btn bo-btn" type="submit">Complete sale</button>
-        </div>
-      </form>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Quantity</label>
+            <input class="form-control bo-input" type="number" min="1" name="quantity" value="1" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Payment method</label>
+            <select class="form-select bo-input" name="payment_method">
+              <option value="cash">Cash</option>
+              <option value="upi">UPI</option>
+              <option value="card">Card</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Discount (Rs)</label>
+            <input class="form-control bo-input" type="number" step="0.01" name="discount" value="0">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Sale type</label>
+            <select class="form-select bo-input" name="sale_type">
+              <option value="paid">Paid</option>
+              <option value="udhar">Udhar (credit)</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Existing customer</label>
+            <select class="form-select bo-input" name="customer_id">
+              <option value="">Walk-in</option>
+              {% for customer in customers %}
+              <option value="{{ customer.id }}" data-voice-name="{{ customer.name|lower }}">{{ customer.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-12 text-end">
+            <button class="btn bo-btn" type="submit">Complete sale</button>
+          </div>
+        </form>
+      </div>
     </div>
-  </div>
 
   <div class="col-lg-6">
     <div class="bo-card mb-4">
@@ -253,6 +268,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/voice_pos.js') }}"></script>
 <script>
   const labels = {{ chart_labels|tojson|default([], true) }};
   const salesData = {{ chart_sales|tojson|default([], true) }};

@@ -133,6 +133,7 @@ def sell():
     if sale_type == 'udhar':
         payment_method = 'udhar'
     discount = float(request.form.get('discount') or 0)
+    voice_transcript = (request.form.get('voice_transcript') or '').strip()
 
     item = Item.query.get(item_id)
     if not item:
@@ -182,10 +183,14 @@ def sell():
             status='unpaid'
         ))
 
+    audit_details = {'item': item.name, 'quantity': quantity}
+    if voice_transcript:
+        audit_details['voice_transcript'] = voice_transcript
+
     db.session.add(AuditLog(
         user=session.get('user'),
         action='sell',
-        details=str({'item': item.name, 'quantity': quantity})
+        details=str(audit_details)
     ))
 
     db.session.commit()
