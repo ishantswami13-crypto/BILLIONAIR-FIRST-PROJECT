@@ -74,6 +74,7 @@ flask --app manage.py run
 - On startup the app creates missing tables and seeds a default shop profile + admin user.
 - Added analytics hooks (GA4 + Mixpanel), plan-aware feature flags, and a `/settings/branding` admin page for GST-ready invoices with logo/signature support.
 - Expense categories now support colour-coded tags, keyword auto-suggestions, and a dedicated analytics breakdown.
+- Inventory heuristics now surface reorder prompts, slow-mover alerts, and high-demand warnings on the analytics dashboard.
 - Nightly reports now lock the sales ledger until an admin overrides the lock from the settings page.
 
 ## Background jobs

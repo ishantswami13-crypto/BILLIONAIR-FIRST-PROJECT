@@ -179,6 +179,36 @@
     {% endfor %}
   </div>
 </div>
+
+<div class="bo-card">
+  <h2 class="h5 mb-3">Operational recommendations</h2>
+  <p class="bo-soft">Heuristics based on inventory movement to keep shelves optimised.</p>
+  <div class="list-group list-group-flush">
+    {% for rec in analytics.recommendations %}
+    <div class="list-group-item">
+      <div class="d-flex justify-content-between align-items-start gap-3">
+        <div>
+          {% set badge_class = 'bo-badge' %}
+          {% if rec.type == 'reorder' %}
+            {% set badge_class = 'bo-badge-warning' %}
+          {% elif rec.type == 'slow' %}
+            {% set badge_class = 'bo-badge-danger' %}
+          {% elif rec.type == 'info' %}
+            {% set badge_class = 'bo-badge-light' %}
+          {% endif %}
+          <span class="badge {{ badge_class }} text-uppercase small">
+            {{ rec.type }}
+          </span>
+          <h3 class="h6 mt-2 mb-1">{{ rec.title }}</h3>
+          <p class="mb-0 bo-soft">{{ rec.message }}</p>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="list-group-item bo-soft">No recommendations right now.</div>
+    {% endfor %}
+  </div>
+</div>
 {% endblock %}
 
 {% block scripts %}

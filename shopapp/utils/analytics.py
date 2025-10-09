@@ -8,7 +8,7 @@ from typing import Dict, Iterable, List, Tuple
 from sqlalchemy import func
 
 from ..extensions import db
-from ..models import Customer, Expense, ExpenseCategory, Sale
+from ..models import Customer, Expense, ExpenseCategory, Sale, Item
 
 
 @dataclass
@@ -188,10 +188,81 @@ def _category_breakdown(start: datetime) -> List[Dict[str, object]]:
     return breakdown
 
 
+def _item_metrics(items: Iterable[Item], sales: Iterable[Sale]) -> Dict[str, Dict[str, object]]:
+    metrics: Dict[str, Dict[str, object]] = {}
+    for item in items:
+        metrics[item.name.lower()] = {
+            "item": item,
+            "units_sold": 0,
+            "revenue": 0.0,
+            "last_sale": None,
+            "sale_count": 0,
+        }
+
+    for sale in sales:
+        key = (sale.item or '').lower()
+        if key not in metrics:
+            continue
+        entry = metrics[key]
+        entry["units_sold"] += int(sale.quantity or 0)
+        entry["revenue"] += float(sale.net_total or 0)
+        entry["sale_count"] += 1
+        if entry["last_sale"] is None or sale.date > entry["last_sale"]:
+            entry["last_sale"] = sale.date
+
+    return metrics
+
+
+def _recommendations(items: Iterable[Item], item_metrics: Dict[str, Dict[str, object]]) -> List[Dict[str, str]]:
+    recs: List[Dict[str, str]] = []
+    now = datetime.utcnow()
+
+    for item in items:
+        key = item.name.lower()
+        data = item_metrics.get(key, {"units_sold": 0, "revenue": 0.0, "last_sale": None, "sale_count": 0})
+        reorder_level = item.reorder_level if item.reorder_level is not None else 5
+        stock = item.current_stock or 0
+
+        if stock <= reorder_level:
+            recs.append({
+                "type": "reorder",
+                "title": f"Reorder {item.name}",
+                "message": f"{stock} left in stock (reorder at {reorder_level}). Place a purchase order soon.",
+            })
+
+        last_sale = data.get("last_sale")
+        days_since = (now - last_sale).days if last_sale else None
+        if stock > reorder_level and (data.get("units_sold", 0) == 0 or (days_since and days_since > 30)):
+            reason = "No sales recorded yet" if data.get("units_sold", 0) == 0 else f"Last sold {days_since} days ago"
+            recs.append({
+                "type": "slow",
+                "title": f"Review pricing for {item.name}",
+                "message": f"{reason}. Consider promotions, bundling, or adjusting reorder level.",
+            })
+
+        if data.get("units_sold", 0) >= max(10, reorder_level * 2) and stock <= reorder_level * 2:
+            recs.append({
+                "type": "fast",
+                "title": f"High demand for {item.name}",
+                "message": f"{data['units_sold']} units sold recently. Stock at {stock}; plan replenishment to avoid stock-outs.",
+            })
+
+    if not recs:
+        recs.append({
+            "type": "info",
+            "title": "All clear",
+            "message": "Inventory levels look balanced. Keep monitoring analytics for new opportunities.",
+        })
+
+    return recs
+
+
 def load_analytics(days: int = 90) -> Dict[str, object]:
     start = datetime.utcnow() - timedelta(days=days)
     sales = _collect_sales(start)
     expenses = _collect_expenses(start)
+    items = Item.query.order_by(Item.name.asc()).all()
+    item_metrics = _item_metrics(items, sales)
     daily_rows_map = _aggregate_daily(sales, expenses)
     daily_rows = [daily_rows_map[day] for day in sorted(daily_rows_map.keys())]
 
@@ -223,6 +294,7 @@ def load_analytics(days: int = 90) -> Dict[str, object]:
         "heatmap": heatmap,
         "ltv": _ltv_leaderboard(),
         "categories": _category_breakdown(start),
+        "recommendations": _recommendations(items, item_metrics),
     }
 
 
