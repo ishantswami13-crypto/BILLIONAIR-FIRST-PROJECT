@@ -43,6 +43,7 @@ class Config:
     GOOGLE_MAIL_SCOPES = [scope.strip() for scope in os.getenv('GOOGLE_MAIL_SCOPES', 'https://www.googleapis.com/auth/gmail.send').split(',') if scope.strip()]
     GA_MEASUREMENT_ID = os.getenv('GA_MEASUREMENT_ID')
     MIXPANEL_TOKEN = os.getenv('MIXPANEL_TOKEN')
+    EXTRA_PLAN_FEATURES = {}
 
     APP_VERSION = os.getenv('APP_VERSION', '1.0.0')
     ACTIVE_PLAN = os.getenv('ACTIVE_PLAN', 'pro')

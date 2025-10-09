@@ -46,6 +46,12 @@
 </div>
 {% endif %}
 
+{% if sales_lock %}
+<div class="alert alert-warning bo-card bo-card--soft">
+  Sales were locked on {{ sales_lock.value }}. Admins can unlock the day from Settings.
+</div>
+{% endif %}
+
 <div class="row g-3 mb-4">
   <div class="col-12 col-md-6 col-xl-3">
     <a class="bo-tile bo-card" href="{{ url_for('reports.zreport_view') }}">
@@ -236,7 +242,7 @@
     <table class="table table-dark table-hover align-middle mb-0 bo-table">
       <thead>
         <tr>
-          <th>ID</th>
+          <th>Invoice</th>
           <th>Date</th>
           <th>Item</th>
           <th>Qty</th>
@@ -248,7 +254,7 @@
       <tbody>
         {% for sale in sales %}
         <tr>
-          <td>{{ sale.id }}</td>
+          <td>{{ sale.invoice_number or ('INV-' ~ "%05d"|format(sale.id)) }}</td>
           <td>{{ sale.date.strftime('%Y-%m-%d %H:%M') }}</td>
           <td>{{ sale.item }}</td>
           <td>{{ sale.quantity }}</td>

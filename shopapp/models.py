@@ -39,6 +39,12 @@ class ShopProfile(db.Model):
     address = db.Column(db.Text)
     phone = db.Column(db.String(50))
     gst = db.Column(db.String(50))
+    logo_path = db.Column(db.String(255))
+    invoice_prefix = db.Column(db.String(20), default='INV')
+    primary_color = db.Column(db.String(20))
+    secondary_color = db.Column(db.String(20))
+    signature_path = db.Column(db.String(255))
+    watermark_path = db.Column(db.String(255))
 
 
 class Item(db.Model):
@@ -80,6 +86,8 @@ class Sale(db.Model):
     discount = db.Column(db.Float, default=0)
     tax = db.Column(db.Float, default=0)
     net_total = db.Column(db.Float, default=0)
+    invoice_number = db.Column(db.String(64), unique=True)
+    locked = db.Column(db.Boolean, default=False, nullable=False)
 
 
 class Credit(db.Model):
@@ -145,6 +153,12 @@ class AuditLog(db.Model):
     user = db.Column(db.String(80))
     action = db.Column(db.String(120))
     details = db.Column(db.Text)
+    resource_type = db.Column(db.String(64))
+    resource_id = db.Column(db.Integer)
+    before_state = db.Column(db.Text)
+    after_state = db.Column(db.Text)
+    ip_address = db.Column(db.String(64))
+    user_agent = db.Column(db.String(255))
 
 
 class Return(db.Model):

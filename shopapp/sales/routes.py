@@ -1,12 +1,14 @@
 ﻿from datetime import datetime, timedelta
 
-from flask import (Blueprint, redirect, render_template, request, send_file,
-                   session, url_for)
+from flask import (Blueprint, flash, redirect, render_template, request,
+                   send_file, session, url_for)
 from sqlalchemy import func
 
 from ..extensions import db
-from ..models import AuditLog, Credit, Customer, Expense, Item, Sale
+from ..models import AuditLog, Credit, Customer, Expense, Item, Sale, Setting
 from ..utils.decorators import login_required
+from ..utils.audit import log_event
+from ..utils.invoices import next_invoice_number
 from ..utils.mailer import send_mail
 from ..utils.pdfs import create_invoice_pdf
 
@@ -97,6 +99,7 @@ def index():
     }
 
     invoice_ready = session.pop('invoice_ready', None)
+    sales_lock = Setting.query.filter_by(key='sales_lock_date').first()
 
     return render_template(
         'index.html',
@@ -116,13 +119,20 @@ def index():
         chart_sales=chart_sales,
         chart_expenses=chart_expenses,
         chart_profit=chart_profit,
-        payment_chart=payment_chart
+        payment_chart=payment_chart,
+        sales_lock=sales_lock
     )
 
 
 @sales_bp.route('/sell', methods=['POST'])
 @login_required
 def sell():
+    lock = Setting.query.filter_by(key='sales_lock_date').first()
+    today_str = datetime.utcnow().strftime('%Y-%m-%d')
+    if lock and lock.value == today_str and not (session.get('role') == 'admin' or session.get('admin')):
+        flash('Sales are locked for today. An administrator must unlock before recording new sales.', 'warning')
+        return redirect(url_for('sales.index'))
+
     item_id = int(request.form['item_id'])
     quantity = int(request.form['quantity'])
     customer_id_raw = request.form.get('customer_id')
@@ -167,9 +177,11 @@ def sell():
         payment_method=payment_method,
         discount=discount,
         tax=tax,
-        net_total=net_total
+        net_total=net_total,
+        invoice_number=next_invoice_number()
     )
     db.session.add(sale)
+    db.session.flush()
 
     if sale_type == 'udhar':
         credit_name = customer.name if customer else customer_name
@@ -183,15 +195,21 @@ def sell():
             status='unpaid'
         ))
 
-    audit_details = {'item': item.name, 'quantity': quantity}
+    audit_details = {
+        'item': item.name,
+        'quantity': quantity,
+        'invoice_number': sale.invoice_number,
+    }
     if voice_transcript:
         audit_details['voice_transcript'] = voice_transcript
 
-    db.session.add(AuditLog(
-        user=session.get('user'),
+    log_event(
         action='sell',
-        details=str(audit_details)
-    ))
+        resource_type='sale',
+        resource_id=sale.id if sale.id else None,
+        before=None,
+        after=audit_details
+    )
 
     db.session.commit()
 
@@ -228,19 +246,23 @@ def send_invoice_route(sale_id: int):
         return 'Customer email not found.', 400
 
     create_invoice_pdf(sale_id)
+    invoice_no = sale.invoice_number or f"{sale_id:05d}"
+
     body = (
         f'Dear {customer.name},\n\n'
-        f'Your invoice for sale #{sale_id} is ready.\n'
+        f'Your invoice {invoice_no} is ready.\n'
         'You can download it from your account.\n\n'
         'Thank you for shopping with us.'
     )
-    send_mail(customer.email, f'Invoice #{sale_id:05d}', body)
+    send_mail(customer.email, f'Invoice {invoice_no}', body)
 
-    db.session.add(AuditLog(
-        user=session.get('user'),
+    log_event(
         action='send_invoice_email',
-        details=str({'sale_id': sale_id, 'to': customer.email})
-    ))
+        resource_type='sale',
+        resource_id=sale_id,
+        before=None,
+        after={'sale_id': sale_id, 'to': customer.email}
+    )
     db.session.commit()
 
     return redirect(url_for('sales.index'))

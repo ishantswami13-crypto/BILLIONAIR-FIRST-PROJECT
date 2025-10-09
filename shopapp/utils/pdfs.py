@@ -1,13 +1,17 @@
 import os
 import io
 from datetime import datetime
+from pathlib import Path
 
+from flask import current_app
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
+from reportlab.lib.utils import ImageReader
 
 from ..extensions import db
-from ..models import Sale, Customer, Item, ShopProfile
+from ..models import Customer, Sale, ShopProfile
 
 
 def invoices_dir() -> str:
@@ -31,12 +35,16 @@ def create_invoice_pdf(sale_id: int) -> str | None:
     shop = ShopProfile.query.get(1)
     shop_name = shop.name if shop and shop.name else 'ShopApp'
 
-    invoice_path = os.path.join(invoices_dir(), f'invoice_{sale_id}.pdf')
+    primary_color = colors.HexColor(shop.primary_color) if shop and shop.primary_color else colors.HexColor('#0A2540')
+    secondary_color = colors.HexColor(shop.secondary_color) if shop and shop.secondary_color else colors.HexColor('#62b5ff')
+
+    invoice_number = sale.invoice_number or f"{sale.id:05d}"
+    invoice_path = os.path.join(invoices_dir(), f'invoice_{invoice_number}.pdf')
     buf = io.BytesIO()
     pdf = canvas.Canvas(buf, pagesize=A4)
     width, height = A4
 
-    brand = colors.HexColor('#0A2540')
+    brand = primary_color
     text_color = colors.HexColor('#333333')
 
     pdf.setFillColor(brand)
@@ -45,33 +53,86 @@ def create_invoice_pdf(sale_id: int) -> str | None:
     pdf.setFont('Helvetica-Bold', 22)
     pdf.drawString(40, height - 60, shop_name)
 
+    if shop and shop.logo_path:
+        logo_path = Path(current_app.root_path) / shop.logo_path
+        if logo_path.exists():
+            try:
+                pdf.drawImage(ImageReader(logo_path.open('rb')), width - 120, height - 90, width=80, height=50, mask='auto')
+            except Exception:
+                pass
+
+    if shop and shop.watermark_path:
+        watermark_path = Path(current_app.root_path) / shop.watermark_path
+        if watermark_path.exists():
+            try:
+                pdf.saveState()
+                pdf.translate(width / 2, height / 2)
+                pdf.rotate(30)
+                pdf.setFillAlpha(0.08)
+                pdf.drawImage(ImageReader(watermark_path.open('rb')), -200, -150, width=400, height=300, mask='auto')
+                pdf.restoreState()
+            except Exception:
+                pass
+
     pdf.setFillColor(text_color)
     pdf.setFont('Helvetica', 11)
     pdf.drawString(40, height - 130, 'Invoice summary')
-    pdf.drawString(40, height - 148, f'Sale ID: {sale.id}')
-    pdf.drawString(40, height - 166, f'Date: {sale.date}')
+    pdf.drawString(40, height - 148, f'Invoice: {invoice_number}')
+    pdf.drawString(40, height - 166, f'Date: {sale.date.strftime("%d %b %Y %H:%M")}')
+    if shop and shop.gst:
+        pdf.drawString(40, height - 184, f'GSTIN: {shop.gst}')
 
     pdf.setFont('Helvetica-Bold', 11)
-    pdf.drawString(40, height - 198, 'Billed to:')
+    pdf.drawString(40, height - 210, 'Billed to:')
     pdf.setFont('Helvetica', 10)
     if customer:
-        pdf.drawString(40, height - 214, customer.name)
+        pdf.drawString(40, height - 226, customer.name)
         if customer.phone:
-            pdf.drawString(40, height - 230, f'Phone: {customer.phone}')
+            pdf.drawString(40, height - 242, f'Phone: {customer.phone}')
         if customer.email:
-            pdf.drawString(40, height - 246, f'Email: {customer.email}')
+            pdf.drawString(40, height - 258, f'Email: {customer.email}')
     else:
-        pdf.drawString(40, height - 214, 'Walk-in customer')
+        pdf.drawString(40, height - 226, 'Walk-in customer')
 
     pdf.setFont('Helvetica-Bold', 10)
-    pdf.drawString(40, height - 275, 'Item')
-    pdf.drawString(320, height - 275, 'Qty')
-    pdf.drawRightString(width - 80, height - 275, 'Amount')
+    table_top = height - 300
+    pdf.drawString(40, table_top, 'Item')
+    pdf.drawString(320, table_top, 'Qty')
+    pdf.drawRightString(width - 80, table_top, 'Amount')
 
     pdf.setFont('Helvetica', 10)
-    pdf.drawString(40, height - 291, sale.item)
-    pdf.drawString(320, height - 291, str(sale.quantity))
-    pdf.drawRightString(width - 80, height - 291, f'Rs {sale.net_total:,.2f}')
+    pdf.drawString(40, table_top - 16, sale.item)
+    pdf.drawString(320, table_top - 16, str(sale.quantity))
+    pdf.drawRightString(width - 80, table_top - 16, f'Rs {sale.total:,.2f}')
+
+    subtotal = sale.net_total - sale.tax + sale.discount
+
+    summary_y = table_top - 70
+    pdf.setFont('Helvetica', 10)
+    pdf.drawString(320, summary_y, 'Subtotal')
+    pdf.drawRightString(width - 80, summary_y, f'Rs {subtotal:,.2f}')
+    summary_y -= 16
+    pdf.drawString(320, summary_y, 'Discount')
+    pdf.drawRightString(width - 80, summary_y, f'Rs {sale.discount:,.2f}')
+    summary_y -= 16
+    pdf.drawString(320, summary_y, 'GST')
+    pdf.drawRightString(width - 80, summary_y, f'Rs {sale.tax:,.2f}')
+    summary_y -= 20
+    pdf.setFont('Helvetica-Bold', 12)
+    pdf.drawString(320, summary_y, 'Total')
+    pdf.setFillColor(secondary_color)
+    pdf.drawRightString(width - 80, summary_y, f'Rs {sale.net_total:,.2f}')
+    pdf.setFillColor(text_color)
+
+    if shop and shop.signature_path:
+        signature_path = Path(current_app.root_path) / shop.signature_path
+        if signature_path.exists():
+            try:
+                pdf.drawImage(ImageReader(signature_path.open('rb')), 40, 100, width=50 * mm, height=20 * mm, mask='auto')
+                pdf.setFont('Helvetica', 9)
+                pdf.drawString(40, 90, 'Authorised Signature')
+            except Exception:
+                pass
 
     pdf.save()
     buf.seek(0)

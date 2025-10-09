@@ -14,7 +14,17 @@ def register_cli(app):
     def seed_admin(username, password, email):
         profile = ShopProfile.query.get(1)
         if not profile:
-            db.session.add(ShopProfile(id=1, name='My Shop', address='', phone='', gst=''))
+            profile = ShopProfile(
+                id=1,
+                name='My Shop',
+                address='',
+                phone='',
+                gst='',
+                invoice_prefix='INV',
+                primary_color='#0A2540',
+                secondary_color='#62b5ff',
+            )
+            db.session.add(profile)
 
         user = User.query.filter_by(username=username).first()
         if not user:

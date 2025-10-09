@@ -66,33 +66,47 @@ flask --app manage.py run
 `
 
 - The app now auto-creates all tables and seeds a default admin using the values from the config (DEFAULT_ADMIN_*).
-- Visit <http://127.0.0.1:5000/> for the landing page and <http://127.0.0.1:5000/app/> for the dashboard. Log in with the default admin credentials above and rotate them immediately. Change the password immediately from the UI or by rerunning lask seed-admin with new values.
+- Visit <http://127.0.0.1:5000/> for the landing page and <http://127.0.0.1:5000/app/> for the dashboard. Log in with the default admin credentials above and rotate them immediately. Change the password immediately from the UI or by rerunning lask seed-admin with new values.
 
-## What was fixed in this pass
+## Recent improvements
 
-- Added automatic loading of .env.local overrides for painless local development.
-- On startup the app now creates missing tables and seeds a default shop profile + admin user, preventing OperationalError during login.
-- Documented the two execution modes and provided sensible defaults for both.
-- Added a .gitignore so local artefacts (.env, SQLite DB, venvs, etc.) stay out of commits.
+- Automatic loading of `.env.local` overrides for painless local development.
+- On startup the app creates missing tables and seeds a default shop profile + admin user.
+- Added analytics hooks (GA4 + Mixpanel), plan-aware feature flags, and a `/settings/branding` admin page for GST-ready invoices with logo/signature support.
+- Nightly reports now lock the sales ledger until an admin overrides the lock from the settings page.
 
 ## Background jobs
 
 APScheduler runs two tasks while the server is up:
 
-1. daily_report.send_daily_report – email summary at 22:00.
-2. drive_backup.backup_to_drive – Google Drive backup at 23:59.
+1. `daily_report.send_daily_report` – email summary at 22:00 (UTC).
+2. `drive_backup.backup_to_drive` – Google Drive backup at 23:59 (UTC).
 
-Both require valid SMTP credentials and Google API tokens (credentials.json, 	oken.pickle). If those files/credentials are absent, the jobs will safely no-op.
+Both require valid SMTP credentials and Google API tokens (`credentials.json`, `token.pickle`). If those files/credentials are absent, the jobs will safely no-op.
+
+## Analytics & feature gating
+
+- Set `GA_MEASUREMENT_ID` to wire Google Analytics 4; the base layout includes the gtag snippet automatically.
+- Set `MIXPANEL_TOKEN` to enable event tracking (a helper `track(event, props)` is exposed globally).
+- Use `DAILY_REPORT_EMAIL` to override who receives the nightly summary (defaults to the admin email).
+- Feature access is controlled via plan flags (`shopapp/plans.py`). Templates can call `feature_enabled('feature.key')`, and server code can import `feature_enabled` from `shopapp.utils.feature_flags`.
 
 ## Troubleshooting
 
 | Symptom | Fix |
 | ------- | --- |
 | OperationalError: could not translate host name "db" when running locally | Ensure .env.local points to sqlite:///shop.db. Remove/rename the Postgres DATABASE_URL value or run through Docker. |
-| Login page refuses credentials | Confirm the default admin values in .env.local and rerun lask seed-admin if you changed them. |
+| Login page refuses credentials | Confirm the default admin values in .env.local and rerun lask seed-admin if you changed them. |
 | Emails/OTP are not delivered | Supply MAIL_SENDER + MAIL_PASSWORD (Gmail app password) or switch to `MAIL_TRANSPORT=google` with credentials. For a manual fallback, run `flask otp-latest` to view the most recent code. |
+| Sales locked after nightly report | Visit `/settings/branding` as an admin and click “Override & unlock” to reopen the day. |
 
 Feel free to extend the SQLAlchemy models and create Alembic migrations if you need production-grade schema evolution.
+
+## Branding & invoices
+
+- Update business identity, colours, and invoice prefix at /settings/branding.
+- Upload signature and watermark assets for GST-compliant invoices.
+- Invoice PDFs now carry auto-generated numbers and branding details.
 
 ## Marketing site, payments, and waitlist
 

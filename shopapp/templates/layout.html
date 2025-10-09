@@ -51,6 +51,9 @@
       <a href="{{ url_for('sales.index')|default('#', true) }}#pos" class="bo-nav__item {% if request.path.endswith('#pos') %}active{% endif %}">
         <i class="bo-ico">↗</i> POS
       </a>
+      <a href="{{ url_for('settings.branding')|default('#', true) }}" class="bo-nav__item {% if request.path.startswith('/settings') %}active{% endif %}">
+        <i class="bo-ico">⚙</i> Settings
+      </a>
     </nav>
 
     <div class="bo-plan">

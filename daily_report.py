@@ -1,114 +1,139 @@
-import sqlite3
-import datetime
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-import requests
+from __future__ import annotations
 
-DB = "shop.db"
+from datetime import datetime, timedelta
+from typing import Any, Dict, List
 
-def generate_report():
-    conn = sqlite3.connect(DB)
-    cur = conn.cursor()
+from flask import current_app
+from sqlalchemy import func
 
-    # Today’s sales only
-    today = datetime.date.today().isoformat()
-
-    cur.execute("SELECT COUNT(*), SUM(total) FROM sales WHERE date LIKE ?", (today+"%",))
-    sales_data = cur.fetchone()
-    total_sales = sales_data[0] or 0
-    total_revenue = sales_data[1] or 0
-
-    # Best-selling item
-    cur.execute("SELECT item, SUM(quantity) as qty FROM sales WHERE date LIKE ? GROUP BY item ORDER BY qty DESC LIMIT 1", (today+"%",))
-    best_item = cur.fetchone()
-    best_item = best_item if best_item else ("None", 0)
-
-    # Low-stock items
-    cur.execute("SELECT name, current_stock FROM items WHERE current_stock <= 5")
-    low_stock = cur.fetchall()
-
-    # Unpaid credits
-    cur.execute("SELECT customer_name, item, quantity, total, date FROM credits WHERE status='unpaid'")
-    unpaid_credits = cur.fetchall()
-
-    conn.close()
-
-    # Build report
-    report = f"""
-📅 Daily Report - {today}
-
-🛒 Total Sales: {total_sales}
-💰 Total Revenue: ₹{total_revenue}
-🏆 Best-Selling Item: {best_item[0]} ({best_item[1]} sold)
-
-⚠️ Low Stock Alerts:
-"""
-    if low_stock:
-        for item in low_stock:
-            report += f"- {item[0]} → only {item[1]} left\n"
-    else:
-        report += "All items in stock ✅\n"
-
-    report += "\n💳 Unpaid Credits (Udhar):\n"
-    if unpaid_credits:
-        for c in unpaid_credits:
-            report += f"- {c[0]} took {c[2]} x {c[1]} (₹{c[3]}) on {c[4]}\n"
-    else:
-        report += "No unpaid credits ✅\n"
-
-    return report
+from shopapp.extensions import db
+from shopapp.models import Credit, Item, Sale, Setting
+from shopapp.utils.mailer import send_mail
 
 
-# ----------------------------
-# Send Email
-# ----------------------------
-def send_email(report):
-    sender = "ishantswami13@gmail.com"
-    password = "atyfiyssaptwpzuk"   # use App Password if Gmail
-    receiver = "ishantchatgpt@gmail.com"
-
-    msg = MIMEMultipart()
-    msg["From"] = sender
-    msg["To"] = receiver
-    msg["Subject"] = "Daily Shop Report"
-    msg.attach(MIMEText(report, "plain"))
-
-    with smtplib.SMTP("smtp.gmail.com", 587) as server:
-        server.starttls()
-        server.login(sender, password)
-        server.sendmail(sender, receiver, msg.as_string())
+def _format_currency(value: float) -> str:
+    return f"Rs {value:,.2f}"
 
 
-# ----------------------------
-# Send WhatsApp via API (Twilio or UltraMsg)
-# ----------------------------
-def send_whatsapp(report):
-    url = "https://api.ultramsg.com/instanceXXXX/messages/chat"
-    token = "YOUR_ULTRAMSG_TOKEN"
+def generate_summary() -> Dict[str, Any]:
+    today = datetime.utcnow().date()
+    start = datetime(today.year, today.month, today.day)
+    end = start + timedelta(days=1)
 
-    data = {
-        "to": "91xxxxxxxxxx",   # your WhatsApp number in international format
-        "body": report
+    revenue, discount, tax, count = (
+        db.session.query(
+            func.coalesce(func.sum(Sale.net_total), 0),
+            func.coalesce(func.sum(Sale.discount), 0),
+            func.coalesce(func.sum(Sale.tax), 0),
+            func.count(Sale.id),
+        )
+        .filter(Sale.date >= start, Sale.date < end)
+        .one()
+    )
+
+    best_item = (
+        db.session.query(Sale.item, func.sum(Sale.quantity).label("qty"))
+        .filter(Sale.date >= start, Sale.date < end)
+        .group_by(Sale.item)
+        .order_by(func.sum(Sale.quantity).desc())
+        .first()
+    )
+
+    low_stock: List[Item] = (
+        Item.query.filter(Item.current_stock <= func.coalesce(Item.reorder_level, 5))
+        .order_by(Item.current_stock.asc())
+        .limit(5)
+        .all()
+    )
+
+    unpaid_credits: List[Credit] = (
+        Credit.query.filter(Credit.status.in_(["unpaid", "adjusted"]))
+        .order_by(Credit.date.desc())
+        .all()
+    )
+
+    return {
+        "date": today.isoformat(),
+        "revenue": float(revenue or 0),
+        "discount": float(discount or 0),
+        "tax": float(tax or 0),
+        "transactions": int(count or 0),
+        "best_item": {"name": best_item[0], "quantity": int(best_item[1])} if best_item else None,
+        "low_stock": [{"name": item.name, "qty": item.current_stock} for item in low_stock],
+        "unpaid_credits": [
+            {
+                "customer": credit.customer_name,
+                "item": credit.item,
+                "quantity": credit.quantity,
+                "total": float(credit.total or 0),
+                "date": credit.date.strftime("%Y-%m-%d"),
+            }
+            for credit in unpaid_credits
+        ],
     }
 
-    requests.post(url, data=data, headers={"Authorization": f"Bearer {token}"})
+
+def build_email(summary: Dict[str, Any]) -> str:
+    lines = [
+        f"Daily Report - {summary['date']}",
+        "",
+        f"Total Sales: {summary['transactions']}",
+        f"Total Revenue: {_format_currency(summary['revenue'])}",
+        f"Total Tax: {_format_currency(summary['tax'])}",
+    ]
+
+    best = summary.get("best_item")
+    if best:
+        lines.append(f"Best-selling item: {best['name']} ({best['quantity']} sold)")
+    lines.append("")
+
+    lines.append("Low stock alerts:")
+    if summary["low_stock"]:
+        lines.extend([f"- {row['name']} -> only {row['qty']} left" for row in summary["low_stock"]])
+    else:
+        lines.append("- All items healthy.")
+
+    lines.append("")
+    lines.append("Outstanding credits:")
+    if summary["unpaid_credits"]:
+        for credit in summary["unpaid_credits"]:
+            lines.append(
+                f"- {credit['customer']} took {credit['quantity']} x {credit['item']} "
+                f"({_format_currency(credit['total'])}) on {credit['date']}"
+            )
+    else:
+        lines.append("- None 🎉")
+
+    return "\n".join(lines)
 
 
-# ----------------------------
-# Main
-# ----------------------------
-if __name__ == "__main__":
-    report = generate_report()
-    print(report)  # preview in terminal
-    send_email(report)
-    send_whatsapp(report)
+def lock_sales_for_today() -> None:
+    today = datetime.utcnow().strftime("%Y-%m-%d")
+    record = Setting.query.filter_by(key="sales_lock_date").first()
+    if not record:
+        record = Setting(key="sales_lock_date", value=today)
+        db.session.add(record)
+    else:
+        record.value = today
 
-def send_daily_report():
-    report = generate_report()
-    print(report)  # for debugging in terminal
-    send_email(report)
-    send_whatsapp(report)
+    reason = Setting.query.filter_by(key="sales_lock_reason").first()
+    if not reason:
+        reason = Setting(key="sales_lock_reason", value="Locked automatically after daily report.")
+        db.session.add(reason)
+    else:
+        reason.value = "Locked automatically after daily report."
 
-if __name__ == "__main__":
-    send_daily_report()
+    start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    end = start + timedelta(days=1)
+    Sale.query.filter(Sale.date >= start, Sale.date < end).update({"locked": True})
+
+    db.session.commit()
+
+
+def send_daily_report() -> None:
+    summary = generate_summary()
+    body = build_email(summary)
+    recipient = current_app.config.get("DAILY_REPORT_EMAIL") or current_app.config.get("DEFAULT_ADMIN_EMAIL")
+    if recipient:
+        send_mail(recipient, f"Daily Report – {summary['date']}", body)
+    lock_sales_for_today()

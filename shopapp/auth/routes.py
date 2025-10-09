@@ -1,4 +1,4 @@
-from flask import Blueprint, flash, redirect, render_template, request, session, url_for
+from flask import Blueprint, current_app, flash, redirect, render_template, request, session, url_for
 from sqlalchemy.exc import IntegrityError
 
 from ..extensions import db
@@ -17,6 +17,9 @@ def login():
         if user and user.check_password(password):
             session['user'] = username
             session['role'] = user.role
+            session['plan'] = getattr(user, 'plan', None) or current_app.config.get('ACTIVE_PLAN', 'pro')
+            if user.role == 'admin':
+                session['admin'] = True
             return redirect(url_for('sales.index'))
         flash('Login failed. Check credentials.')
     return render_template('auth/login.html')
