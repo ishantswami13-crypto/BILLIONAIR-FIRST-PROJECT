@@ -21,6 +21,14 @@ FEATURES = [
 
 
 @marketing_bp.route("/")
+def home():
+    if session.get("user"):
+        return redirect(url_for("sales.index"))
+    return redirect(url_for("auth.login"))
+
+
+@marketing_bp.route("/landing")
+@marketing_bp.route("/marketing")
 def landing():
     if session.get("user"):
         return redirect(url_for("sales.index"))

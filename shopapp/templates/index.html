@@ -1,0 +1,308 @@
+{% extends 'layout.html' %}
+{% block title %}Billionair OS — Dashboard{% endblock %}
+{% block crumb %}Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="bo-hero bo-card">
+  <div>
+    <div class="bo-eyebrow">TODAY AT A GLANCE</div>
+    <h1 class="bo-hero__title">Welcome back<span class="bo-hero__user">{% if session.get('user') %} {{ session['user'] }}{% endif %}</span></h1>
+    <p class="bo-hero__sub">Track momentum, cashflow split, low stock and outstanding udhar in one screen.</p>
+  </div>
+
+  <div class="row g-3 bo-stats">
+    <div class="col-6 col-lg-3">
+      <div class="bo-stat">
+        <div class="bo-stat__label">Revenue today</div>
+        <div class="bo-stat__value">Rs {{ '%.2f'|format(today_rev|default(0)) }}</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="bo-stat">
+        <div class="bo-stat__label">Transactions</div>
+        <div class="bo-stat__value">{{ today_count|default(0) }}</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="bo-stat">
+        <div class="bo-stat__label">Discounts</div>
+        <div class="bo-stat__value">Rs {{ '%.2f'|format(today_discount|default(0)) }}</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="bo-stat">
+        <div class="bo-stat__label">GST collected</div>
+        <div class="bo-stat__value">Rs {{ '%.2f'|format(today_tax|default(0)) }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if invoice_ready %}
+<div class="alert alert-success bo-card bo-card--soft">
+  Invoice for sale #{{ invoice_ready }} is ready.
+  <a class="ms-2 bo-link" href="{{ url_for('sales.invoice', sale_id=invoice_ready) }}">Download now</a>
+</div>
+{% endif %}
+
+<div class="row g-3 mb-4">
+  <div class="col-12 col-md-6 col-xl-3">
+    <a class="bo-tile bo-card" href="{{ url_for('reports.zreport_view') }}">
+      <div>
+        <h3 class="bo-tile__title">Performance reports</h3>
+        <p class="bo-tile__sub">Download daily Z-reports and breakdowns.</p>
+      </div>
+      <span class="bo-tile__arrow">→</span>
+    </a>
+  </div>
+  <div class="col-12 col-md-6 col-xl-3">
+    <a class="bo-tile bo-card" href="{{ url_for('inventory.items') }}">
+      <div>
+        <h3 class="bo-tile__title">Restock &amp; suppliers</h3>
+        <p class="bo-tile__sub">Manage inventory and low-stock alerts.</p>
+      </div>
+      <span class="bo-tile__arrow">→</span>
+    </a>
+  </div>
+  <div class="col-12 col-md-6 col-xl-3">
+    <a class="bo-tile bo-card" href="{{ url_for('expenses.expenses') }}">
+      <div>
+        <h3 class="bo-tile__title">Expenses</h3>
+        <p class="bo-tile__sub">Log spend to keep margins sharp.</p>
+      </div>
+      <span class="bo-tile__arrow">→</span>
+    </a>
+  </div>
+  <div class="col-12 col-md-6 col-xl-3">
+    <a class="bo-tile bo-card" href="{{ url_for('customers.customers') }}">
+      <div>
+        <h3 class="bo-tile__title">Customers &amp; udhar</h3>
+        <p class="bo-tile__sub">Monitor dues and settle credit.</p>
+      </div>
+      <span class="bo-tile__arrow">→</span>
+    </a>
+  </div>
+</div>
+
+<div class="bo-card mb-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h2 class="h5 mb-1">Performance insights</h2>
+      <p class="bo-soft mb-0">Profit vs expense trend and payment mix (last 7 days).</p>
+    </div>
+    <span class="badge bo-badge">Analytics</span>
+  </div>
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="bo-card bo-card--soft p-3">
+        <canvas id="profitChart" height="220"></canvas>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="bo-card bo-card--soft p-3">
+        <canvas id="paymentChart" height="220"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="bo-card h-100" id="pos">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h5 mb-0">Create a quick sale</h2>
+        <span class="badge bo-badge">POS</span>
+      </div>
+      <form class="row g-3" method="POST" action="{{ url_for('sales.sell') }}">
+        <div class="col-12">
+          <label class="form-label">Item</label>
+          <select class="form-select bo-input" name="item_id" required>
+            {% for item in items %}
+            <option value="{{ item.id }}">{{ item.name }} (Rs {{ '%.2f'|format(item.price) }}, stock {{ item.current_stock }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Quantity</label>
+          <input class="form-control bo-input" type="number" min="1" name="quantity" value="1" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Payment method</label>
+          <select class="form-select bo-input" name="payment_method">
+            <option value="cash">Cash</option>
+            <option value="upi">UPI</option>
+            <option value="card">Card</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Discount (Rs)</label>
+          <input class="form-control bo-input" type="number" step="0.01" name="discount" value="0">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Sale type</label>
+          <select class="form-select bo-input" name="sale_type">
+            <option value="paid">Paid</option>
+            <option value="udhar">Udhar (credit)</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Existing customer</label>
+          <select class="form-select bo-input" name="customer_id">
+            <option value="">Walk-in</option>
+            {% for customer in customers %}
+            <option value="{{ customer.id }}">{{ customer.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-12 text-end">
+          <button class="btn bo-btn" type="submit">Complete sale</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="bo-card mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h5 mb-0">Payment split</h2>
+        <span class="badge bo-badge-light">Today</span>
+      </div>
+      {% if payment_summary %}
+      <ul class="list-unstyled mb-0">
+        {% for row in payment_summary %}
+        <li class="d-flex justify-content-between py-2 bo-row">
+          <span>{{ row.method|capitalize }}</span>
+          <span>Rs {{ '%.2f'|format(row.amount) }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="bo-soft mb-0">No sales recorded yet today.</p>
+      {% endif %}
+    </div>
+
+    <div class="bo-card">
+      <h2 class="h5 mb-3">Low stock &amp; udhar</h2>
+      <div class="d-flex justify-content-between flex-wrap gap-2 mb-3">
+        <span class="badge bo-badge-warning">Low stock: {{ low_stock|length }}</span>
+        <span class="badge bo-badge-danger">Outstanding udhar: Rs {{ '%.2f'|format(outstanding_udhar|default(0)) }}</span>
+      </div>
+      {% if low_stock %}
+      <ul class="list-unstyled mb-0">
+        {% for item in low_stock %}
+        <li class="d-flex justify-content-between py-2 bo-row">
+          <div>
+            <strong>{{ item.name }}</strong>
+            {% if item.reorder_level %}
+            <span class="d-block bo-soft small">Reorder at {{ item.reorder_level }}</span>
+            {% endif %}
+          </div>
+          <span>{{ item.current_stock }} left</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="bo-soft mb-0">All inventory looks healthy. Keep the shelves stocked!</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="bo-card mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h2 class="h5 mb-1">Recent sales</h2>
+      <p class="bo-soft mb-0">Latest transactions with invoices.</p>
+    </div>
+    <a class="btn btn-sm bo-btn-outline" href="{{ url_for('reports.zreport_view') }}">Download report</a>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-dark table-hover align-middle mb-0 bo-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Date</th>
+          <th>Item</th>
+          <th>Qty</th>
+          <th>Total (Rs)</th>
+          <th>Customer</th>
+          <th>Invoice</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for sale in sales %}
+        <tr>
+          <td>{{ sale.id }}</td>
+          <td>{{ sale.date.strftime('%Y-%m-%d %H:%M') }}</td>
+          <td>{{ sale.item }}</td>
+          <td>{{ sale.quantity }}</td>
+          <td>{{ '%.2f'|format(sale.net_total) }}</td>
+          <td>{{ sale.customer.name if sale.customer else 'Walk-in' }}</td>
+          <td>
+            <a href="{{ url_for('sales.invoice', sale_id=sale.id) }}" class="btn btn-sm bo-btn-outline">Download</a>
+            <a href="{{ url_for('sales.send_invoice_route', sale_id=sale.id) }}" class="btn btn-sm bo-btn-outline ms-1">Email</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const labels = {{ chart_labels|tojson|default([], true) }};
+  const salesData = {{ chart_sales|tojson|default([], true) }};
+  const expenseData = {{ chart_expenses|tojson|default([], true) }};
+  const profitData = {{ chart_profit|tojson|default([], true) }};
+  const paymentChart = {{ payment_chart|tojson|default({"labels": [], "amounts": []}, true) }};
+
+  const ctx1 = document.getElementById('profitChart');
+  if (ctx1 && window.Chart) {
+    new Chart(ctx1, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Profit', data: profitData, borderColor: '#62b5ff', backgroundColor: 'rgba(98,181,255,.18)', tension: .35, fill: true },
+          { label: 'Revenue', data: salesData, borderColor: '#7cf29c', backgroundColor: 'rgba(124,242,156,.12)', tension: .35, fill: true },
+          { label: 'Expenses', data: expenseData, borderColor: '#ffb74d', backgroundColor: 'rgba(255,183,77,.12)', tension: .35, fill: true }
+        ]
+      },
+      options: {
+        plugins: { legend: { labels: { color: '#e9f0ff' } } },
+        scales: {
+          x: { ticks: { color: '#c9d3ea' }, grid: { color: 'rgba(255,255,255,.06)' } },
+          y: { ticks: { color: '#c9d3ea' }, grid: { color: 'rgba(255,255,255,.06)' } }
+        }
+      }
+    });
+  }
+
+  const ctx2 = document.getElementById('paymentChart');
+  if (ctx2 && window.Chart) {
+    new Chart(ctx2, {
+      type: 'doughnut',
+      data: {
+        labels: paymentChart.labels,
+        datasets: [{
+          data: paymentChart.amounts,
+          backgroundColor: ['#62b5ff', '#7cf29c', '#ffb74d', '#e57373', '#ba68c8'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { color: '#cfe3ff' }
+          }
+        }
+      }
+    });
+  }
+</script>
+{% endblock %}
