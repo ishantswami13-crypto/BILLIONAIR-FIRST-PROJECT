@@ -51,6 +51,9 @@
       <a href="{{ url_for('credits.outstanding')|default('#', true) }}" class="bo-nav__item {% if request.path.startswith('/credits') %}active{% endif %}">
         <i class="bo-ico">₹</i> Credits
       </a>
+      <a href="{{ url_for('assistant.chat_home')|default('#', true) }}" class="bo-nav__item {% if request.path.startswith('/assistant') %}active{% endif %}">
+        <i class="bo-ico">AI</i> Assistant
+      </a>
       <a href="{{ url_for('sales.index')|default('#', true) }}#pos" class="bo-nav__item {% if request.path.endswith('#pos') %}active{% endif %}">
         <i class="bo-ico">↗</i> POS
       </a>

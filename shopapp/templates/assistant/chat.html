@@ -1,0 +1,103 @@
+{% extends 'layout.html' %}
+{% block title %}AI Assistant{% endblock %}
+{% block crumb %}Assistant{% endblock %}
+
+{% block head %}
+<style>
+  .assistant-chat {
+    max-height: 420px;
+    overflow-y: auto;
+  }
+  .assistant-message {
+    border-radius: 14px;
+    padding: 0.85rem 1rem;
+  }
+  .assistant-message.user {
+    background: rgba(98, 181, 255, 0.18);
+    color: #e9f0ff;
+  }
+  .assistant-message.bot {
+    background: rgba(14, 22, 41, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bo-card mb-4">
+  <h1 class="h4 mb-2">AI ops assistant</h1>
+  <p class="bo-soft mb-0">Ask about revenue, expenses, inventory or outstanding credits. Insights are generated from the last 90 days.</p>
+</div>
+
+<div class="bo-card">
+  <div class="assistant-chat d-flex flex-column gap-3" id="chatLog">
+    {% for message in messages %}
+    <div class="assistant-message {{ 'user' if message.role == 'user' else 'bot' }}">
+      <small class="bo-soft text-uppercase d-block mb-1">{{ message.role }}</small>
+      <div>{{ message.content|replace('\n', '<br>')|safe }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="mt-3">
+    <form id="chatForm" class="d-flex gap-2">
+      <input type="hidden" name="session_id" value="{{ chat_session.id }}">
+      <input class="form-control bo-input" type="text" name="message" autocomplete="off" placeholder="Ask a question about your store…" required>
+      <button class="btn bo-btn" type="submit">Send</button>
+      <a class="btn btn-sm bo-btn-outline" href="{{ url_for('assistant.export_session', session_id=chat_session.id) }}">Export</a>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+  const chatLog = document.getElementById('chatLog');
+  const chatForm = document.getElementById('chatForm');
+
+  const renderMessage = (role, content) => {
+    const wrapper = document.createElement('div');
+    wrapper.className = `assistant-message ${role === 'user' ? 'user' : 'bot'}`;
+    const title = document.createElement('small');
+    title.className = 'bo-soft text-uppercase d-block mb-1';
+    title.textContent = role;
+    wrapper.appendChild(title);
+
+    const body = document.createElement('div');
+    body.innerHTML = content.replace(/\\n/g, '<br>');
+    wrapper.appendChild(body);
+
+    chatLog.appendChild(wrapper);
+    chatLog.scrollTop = chatLog.scrollHeight;
+  };
+
+  chatForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const formData = new FormData(chatForm);
+    const message = formData.get('message').trim();
+    if (!message) {
+      return;
+    }
+    renderMessage('user', message);
+    chatForm.querySelector('[name="message"]').value = '';
+
+    const payload = {
+      session_id: formData.get('session_id'),
+      message,
+    };
+
+    const response = await fetch('{{ url_for("assistant.api_message") }}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      renderMessage('assistant', 'I could not process that request right now. Please try again later.');
+      return;
+    }
+    const data = await response.json();
+    (data.messages || []).forEach(msg => renderMessage(msg.role, msg.content));
+  });
+</script>
+{% endblock %}

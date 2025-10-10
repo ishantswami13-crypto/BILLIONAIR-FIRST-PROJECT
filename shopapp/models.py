@@ -202,3 +202,23 @@ class Otp(db.Model):
     otp = db.Column(db.String(10))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     expires_at = db.Column(db.DateTime)
+
+
+class AssistantSession(db.Model):
+    __tablename__ = 'assistant_sessions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user = db.Column(db.String(80))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class AssistantMessage(db.Model):
+    __tablename__ = 'assistant_messages'
+
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(db.Integer, db.ForeignKey('assistant_sessions.id'), nullable=False)
+    role = db.Column(db.String(20))
+    content = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    session = db.relationship('AssistantSession', backref='messages', lazy=True)

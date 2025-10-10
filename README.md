@@ -75,6 +75,7 @@ flask --app manage.py run
 - Added analytics hooks (GA4 + Mixpanel), plan-aware feature flags, and a `/settings/branding` admin page for GST-ready invoices with logo/signature support.
 - Expense categories now support colour-coded tags, keyword auto-suggestions, and a dedicated analytics breakdown.
 - Inventory heuristics now surface reorder prompts, slow-mover alerts, and high-demand warnings on the analytics dashboard.
+- AI assistant dashboard for quick Q&A with conversation export.
 - Automated WhatsApp reminders for outstanding credit (udhar) with opt-out controls and manual trigger.
 - Nightly reports now lock the sales ledger until an admin overrides the lock from the settings page.
 
@@ -94,14 +95,19 @@ Both require valid SMTP credentials and Google API tokens (`credentials.json`, `
 - Use `DAILY_REPORT_EMAIL` to override who receives the nightly summary (defaults to the admin email).
 - Feature access is controlled via plan flags (`shopapp/plans.py`). Templates can call `feature_enabled('feature.key')`, and server code can import `feature_enabled` from `shopapp.utils.feature_flags`.
 
+## AI assistant
+
+- Visit `/assistant` to spin up a fresh chat session (each visit logs a new conversation).
+- Ask about revenue, expenses, stock levels, or outstanding credit. Responses use the last 90 days of analytics.
+- Export historical chats as JSON via the "Export" button.
 
 ## WhatsApp credit reminders
 
-- Configure WHATSAPP_TOKEN + either WHATSAPP_INSTANCE_ID or a custom WHATSAPP_API_URL.
-- Default country code falls back to +91; override via WHATSAPP_DEFAULT_COUNTRY_CODE.
-- Reminders run daily at 18:00 UTC; adjust cadence with WHATSAPP_REMINDER_COOLDOWN_HOURS.
-- Manage outstanding ledger and opt-outs at /credits.
-- Trigger manually via lask credits-send-reminders if needed.
+- Configure `WHATSAPP_TOKEN` + either `WHATSAPP_INSTANCE_ID` or a custom `WHATSAPP_API_URL`.
+- Default country code falls back to `+91`; override via `WHATSAPP_DEFAULT_COUNTRY_CODE`.
+- Reminders run daily at 18:00 UTC; adjust cadence with `WHATSAPP_REMINDER_COOLDOWN_HOURS`.
+- Manage outstanding ledger and opt-outs at `/credits`.
+- Trigger manually via `flask credits-send-reminders` if needed.
 
 ## Troubleshooting
 

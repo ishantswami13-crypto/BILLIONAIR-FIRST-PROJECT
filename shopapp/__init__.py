@@ -5,6 +5,7 @@ from .extensions import db, migrate, scheduler
 from .marketing import marketing_bp
 from .admin import admin_bp
 from .settings import settings_bp
+from .assistant import assistant_bp
 from .auth.routes import auth_bp
 from .sales.routes import sales_bp
 from .reports.routes import reports_bp
@@ -147,6 +148,7 @@ def create_app(config_object: type[Config] | None = None) -> Flask:
     app.register_blueprint(marketing_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(settings_bp)
+    app.register_blueprint(assistant_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(sales_bp, url_prefix='/app')
     app.register_blueprint(reports_bp)
