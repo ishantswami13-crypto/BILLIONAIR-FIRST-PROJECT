@@ -94,12 +94,19 @@ class Credit(db.Model):
     __tablename__ = 'credits'
 
     id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'))
     customer_name = db.Column(db.String(255))
     item = db.Column(db.String(255))
     quantity = db.Column(db.Integer)
     total = db.Column(db.Float)
     status = db.Column(db.String(20), default='unpaid')
     date = db.Column(db.DateTime, default=datetime.utcnow)
+    last_reminder_at = db.Column(db.DateTime)
+    reminder_count = db.Column(db.Integer, default=0)
+    reminder_opt_out = db.Column(db.Boolean, default=False, nullable=False)
+    reminder_phone = db.Column(db.String(50))
+
+    customer = db.relationship('Customer', lazy=True)
 
 
 class Supplier(db.Model):

@@ -48,6 +48,9 @@
       <a href="{{ url_for('customers.customers')|default('#', true) }}" class="bo-nav__item {% if request.path.startswith('/customers') %}active{% endif %}">
         <i class="bo-ico">◎</i> Customers
       </a>
+      <a href="{{ url_for('credits.outstanding')|default('#', true) }}" class="bo-nav__item {% if request.path.startswith('/credits') %}active{% endif %}">
+        <i class="bo-ico">₹</i> Credits
+      </a>
       <a href="{{ url_for('sales.index')|default('#', true) }}#pos" class="bo-nav__item {% if request.path.endswith('#pos') %}active{% endif %}">
         <i class="bo-ico">↗</i> POS
       </a>

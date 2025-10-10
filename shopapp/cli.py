@@ -2,6 +2,7 @@ from datetime import datetime
 
 import click
 
+from .credits.tasks import send_credit_reminders
 from .extensions import db
 from .models import Otp, ShopProfile, User
 
@@ -53,3 +54,8 @@ def register_cli(app):
                 click.echo(f'Remaining: ~{remaining:.0f} minute(s)')
             else:
                 click.echo('Status: expired')
+
+    @app.cli.command('credits-send-reminders')
+    def credits_send_reminders():
+        sent, failed = send_credit_reminders()
+        click.echo(f'Reminders sent: {sent}, failed: {failed}')

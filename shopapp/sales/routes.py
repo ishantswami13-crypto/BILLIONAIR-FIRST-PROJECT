@@ -188,11 +188,13 @@ def sell():
         if not credit_name:
             return 'Customer required for udhar', 400
         db.session.add(Credit(
+            customer_id=customer.id if customer else customer_id,
             customer_name=credit_name,
             item=item.name,
             quantity=quantity,
             total=net_total,
-            status='unpaid'
+            status='unpaid',
+            reminder_phone=(customer.phone if customer and customer.phone else None)
         ))
 
     audit_details = {

@@ -10,11 +10,13 @@ from .sales.routes import sales_bp
 from .reports.routes import reports_bp
 from .inventory.routes import inventory_bp
 from .expenses.routes import expenses_bp
+from .credits import credits_bp
 from .customers.routes import customers_bp
 from .cli import register_cli
 from .utils.mailer import init_mail_settings
 from .utils.feature_flags import feature_enabled, get_active_plan, reset_cache as reset_plan_cache
 import daily_report
+from .credits.tasks import send_credit_reminders
 import drive_backup
 from sqlalchemy import inspect, text
 from sqlalchemy.exc import SQLAlchemyError
@@ -56,6 +58,13 @@ SCHEMA_PATCHES = {
     },
     "expenses": {
         "category_id": "category_id INTEGER"
+    },
+    "credits": {
+        "customer_id": "customer_id INTEGER",
+        "last_reminder_at": "last_reminder_at DATETIME",
+        "reminder_count": "reminder_count INTEGER DEFAULT 0",
+        "reminder_opt_out": "reminder_opt_out BOOLEAN DEFAULT 0",
+        "reminder_phone": "reminder_phone VARCHAR(50)"
     },
 }
 
@@ -142,6 +151,7 @@ def create_app(config_object: type[Config] | None = None) -> Flask:
     app.register_blueprint(sales_bp, url_prefix='/app')
     app.register_blueprint(reports_bp)
     app.register_blueprint(inventory_bp)
+    app.register_blueprint(credits_bp)
     app.register_blueprint(expenses_bp)
     app.register_blueprint(customers_bp)
 
@@ -155,6 +165,7 @@ def create_app(config_object: type[Config] | None = None) -> Flask:
         _bootstrap_app(app)
         if not getattr(app, 'apscheduler', None):
             _schedule_job(daily_report.send_daily_report, trigger='cron', hour=22, minute=0)
+            _schedule_job(send_credit_reminders, trigger='cron', hour=18, minute=0)
             _schedule_job(drive_backup.backup_to_drive, trigger='cron', hour=23, minute=59)
             scheduler.start()
             app.apscheduler = scheduler
