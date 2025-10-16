@@ -1,11 +1,15 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   <title>{% block title %}ShopApp{% endblock %}</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Apple-inspired CSS (cache bust with version) -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}?v={{ app_version or '1.0.0' }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v={{ app_version or '1.0.0' }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}?v={{ app_version or '1.0.0' }}">
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   {% block head %}{% endblock %}
 </head>
@@ -14,28 +18,30 @@
     <!-- Sidebar -->
     <aside class="sidebar fadeUp" style="animation-delay:.05s">
       <div>
-        <div class="brand">ShopApp</div>
+        <div class="brand">{{ (shop[1] if shop else "ShopApp") }}</div>
         <nav class="nav">
           <a href="/" class="{% if request.path=='/' %}active{% endif %}">Dashboard</a>
-          <a href="/sales" class="{% if '/sales' in request.path %}active{% endif %}">Sales</a>
-          <a href="/credits" class="{% if '/credits' in request.path %}active{% endif %}">Credits</a>
-          <a href="/analytics" class="{% if '/analytics' in request.path %}active{% endif %}">Analytics</a>
-          <a href="/assistant" class="{% if '/assistant' in request.path %}active{% endif %}">Assistant</a>
-          <a href="/settings" class="{% if '/settings' in request.path %}active{% endif %}">Settings</a>
+          <a href="/sales" class="{% if request.path.startswith('/sales') %}active{% endif %}">Sales</a>
+          <a href="/credits" class="{% if request.path.startswith('/credits') %}active{% endif %}">Credits</a>
+          <a href="/analytics" class="{% if request.path.startswith('/analytics') %}active{% endif %}">Analytics</a>
+          <a href="/assistant" class="{% if request.path.startswith('/assistant') %}active{% endif %}">Assistant</a>
+          <a href="/settings" class="{% if request.path.startswith('/settings') %}active{% endif %}">Settings</a>
         </nav>
       </div>
-      <div class="badge">v{{ app_version or '1.0' }} · {{ active_plan or 'Free' }}</div>
+      <div class="badge">v{{ app_version or '1.0.0' }} · {{ active_plan or 'Free' }}</div>
     </aside>
 
     <!-- Main -->
     <main class="main">
-      <div class="topbar fadeUp" style="animation-delay:.1s">
+      <div class="topbar fadeUp" style="animation-delay:.10s">
         <div>
           <div class="hello">Hey {{ session.get('user','there') }} 👋</div>
           <div class="subtle">Effortless insights. Apple-grade clarity.</div>
         </div>
         <div>
-          {% if session.get('user') %}<a href="/logout" class="btn">Logout</a>{% endif %}
+          {% if session.get('user') %}
+            <a href="/logout" class="btn">Logout</a>
+          {% endif %}
         </div>
       </div>
 
@@ -43,12 +49,13 @@
     </main>
   </div>
 
-  <!-- Toast -->
+  <!-- Global toast + Add-Item modal if present -->
   <div id="toast" class="toast">Saved ✓</div>
+  {% include "components/modal_add_item.html" ignore missing %}
 
+  <script type="module" src="{{ url_for('static', filename='js/ui.js') }}?v={{ app_version or '1.0.0' }}"></script>
   {% block scripts %}{% endblock %}
   <script>
-    // tiny toast helper
     window.toast = (msg) => {
       const el = document.getElementById('toast');
       el.textContent = msg || 'Saved ✓';

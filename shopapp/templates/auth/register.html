@@ -1,50 +1,26 @@
-{% extends 'layout.html' %}
-{% block content %}
-<div class="card-glass p-4 mx-auto" style="max-width: 480px;">
-  <h1 class="h4 mb-3">Create account</h1>
-  {% if invite %}
-    <div class="alert alert-info">
-      <div class="fw-semibold">Invited as {{ invite.role.value if invite.role else invite.role }}</div>
-      <div class="small">You're joining the workspace with role: {{ invite.role.value|capitalize }}.</div>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Register · ShopApp</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <style>.center{min-height:100vh;display:grid;place-items:center;padding:28px}.panel{max-width:460px;width:100%}</style>
+</head>
+<body>
+  <div class="center">
+    <div class="card panel fadeUp">
+      <h1 style="font-size:var(--f-xl);font-weight:700;">Create account</h1>
+      <p style="color:var(--ink-60)">Start managing your shop.</p>
+      <form method="post" style="margin-top:12px;display:flex;flex-direction:column;gap:12px;">
+        <div><label>Username</label><input name="username" required></div>
+        <div><label>Password</label><input type="password" name="password" required></div>
+        <div><label>Email (for reports/OTP)</label><input type="email" name="email"></div>
+        <button class="btn primary" style="width:100%;">Register</button>
+      </form>
+      <p style="color:var(--ink-60);margin-top:10px;">Already have an account? <a href="/login" class="btn" style="padding:6px 10px;">Login</a></p>
     </div>
-  {% endif %}
-  <form method="POST">
-    {% if token %}
-      <input type="hidden" name="token" value="{{ token }}">
-    {% endif %}
-    {% if ref %}
-      <input type="hidden" name="ref" value="{{ ref }}">
-      <div class="alert alert-dark small">
-        Referral code applied. When you activate, both accounts earn bonus XP.
-      </div>
-    {% endif %}
-    <div class="mb-3">
-      <label class="form-label">Username</label>
-      <input class="form-control" type="text" name="username" required>
-    </div>
-    <div class="mb-3">
-      <label class="form-label">Password</label>
-      <input class="form-control" type="password" name="password" required>
-    </div>
-    {% if not invite %}
-      <div class="mb-3">
-        <label class="form-label">Email</label>
-        <input class="form-control" type="email" name="email" required>
-      </div>
-    {% else %}
-      <div class="mb-3">
-        <label class="form-label">Email</label>
-        <input class="form-control" type="email" name="email" value="{{ invite.email }}" readonly>
-      </div>
-    {% endif %}
-    <div class="mb-3">
-      <label class="form-label">Phone (optional)</label>
-      <input class="form-control" type="text" name="phone">
-    </div>
-    <button class="btn btn-primary w-100" type="submit">Register</button>
-  </form>
-  <p class="mt-3 text-center">
-    Already have an account? <a href="{{ url_for('auth.login') }}">Login</a>
-  </p>
-</div>
-{% endblock %}
+  </div>
+</body>
+</html>

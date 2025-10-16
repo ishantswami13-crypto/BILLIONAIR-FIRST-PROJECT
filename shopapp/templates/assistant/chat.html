@@ -3,7 +3,7 @@
 {% block content %}
 <section class="card fadeUp">
   <h1 style="font-size:var(--f-xl);font-weight:700;">Assistant</h1>
-  <p style="color:var(--ink-60)">Ask about revenue, inventory, or credits.</p>
+  <p style="color:var(--ink-60)">Ask about revenue, inventory, credits, or customers.</p>
   <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
     <button class="btn" onclick="quick('Revenue last 7 days')">Revenue last 7 days</button>
     <button class="btn" onclick="quick('Which items are low stock?')">Which items are low stock?</button>
@@ -15,7 +15,7 @@
 <section class="card fadeUp" style="animation-delay:.06s">
   <div id="chat" style="display:flex;flex-direction:column;gap:10px;max-height:56vh;overflow:auto;">
     {% for m in messages %}
-      <div style="align-self: {{ 'flex-end' if m.role=='user' else 'flex-start' }}; background: {{ 'var(--accent-weak)' if m.role=='assistant' else 'rgba(255,255,255,.06)' }}; border:1px solid var(--line); padding:10px 12px; border-radius:12px; max-width:70%;">
+      <div style="align-self: {{ 'flex-end' if m.role=='user' else 'flex-start' }}; background: {{ 'var(--accent-soft)' if m.role=='assistant' else 'rgba(255,255,255,.06)' }}; border:1px solid var(--line); padding:10px 12px; border-radius:12px; max-width:70%;">
         <div style="color:{{ 'var(--accent)' if m.role=='assistant' else 'var(--ink-80)' }};white-space:pre-wrap;">{{ m.text }}</div>
       </div>
     {% endfor %}
@@ -29,8 +29,6 @@
 {% endblock %}
 {% block scripts %}
 <script>
-function quick(t){
-  const inp=document.querySelector('input[name="q"]'); inp.value=t; inp.form.submit();
-}
+  function quick(t){ const inp=document.querySelector('input[name="q"]'); inp.value=t; inp.form.submit(); }
 </script>
 {% endblock %}

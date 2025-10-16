@@ -1,7 +1,6 @@
 {% extends "layout.html" %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
-
 <section class="card fadeUp" style="animation-delay:.12s">
   <h1 style="font-size:var(--f-2xl);font-weight:700;letter-spacing:-.02em;">Today Overview</h1>
   <p style="color:var(--ink-60);margin-top:6px;">Your store at a glance.</p>
@@ -30,7 +29,7 @@
   <div class="card fadeUp" style="animation-delay:.24s">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
       <h3 style="font-size:var(--f-lg);font-weight:600;">7-Day Performance</h3>
-      <a class="btn" href="/analytics">Open Analytics</a>
+      <a href="/analytics" class="btn">Open Analytics</a>
     </div>
     <canvas id="chart7" height="140"></canvas>
   </div>
@@ -53,35 +52,32 @@
       </select>
       <label>Quantity</label>
       <input type="number" name="quantity" min="1" required>
-      <button class="btn primary" style="width:100%;margin-top:10px;">Sell</button>
+      <button class="btn primary" style="width:100%;margin-top:10px;" onclick="launchConfetti()">Sell</button>
     </form>
+
+    <hr style="border:none;border-top:1px solid var(--line);margin:14px 0;">
+    <button class="btn" style="width:100%;" onclick="openSheet('addItemSheet')">+ Add Item</button>
   </div>
 </section>
-
 {% endblock %}
+
 {% block scripts %}
 {{ super() }}
 <script>
-const d={{ (chart_data or []) | tojson }};
-const ctx=document.getElementById('chart7');
-if(ctx && d.length){
-  new Chart(ctx,{
-    type:'line',
-    data:{
-      labels:d.map(r=>r.t),
-      datasets:[
-        {label:'Revenue',data:d.map(r=>r.rev),borderColor:'#82FFC3',backgroundColor:'rgba(130,255,195,.16)',tension:.35,fill:true},
-        {label:'Expenses',data:d.map(r=>r.exp),borderColor:'rgba(255,211,110,1)',backgroundColor:'rgba(255,211,110,.12)',tension:.35,fill:true}
-      ]
-    },
-    options:{
-      plugins:{legend:{labels:{color:'#fff'}}},
-      scales:{
-        x:{ticks:{color:'rgba(255,255,255,.7)'},grid:{color:'rgba(255,255,255,.08)'}},
-        y:{ticks:{color:'rgba(255,255,255,.7)'},grid:{color:'rgba(255,255,255,.08)'}}
-      }
-    }
-  });
-}
+  const d = {{ chart_data or [] | tojson }};
+  const ctx = document.getElementById('chart7');
+  if (ctx && d.length){
+    new Chart(ctx,{
+      type:'line',
+      data:{ labels:d.map(r=>r.t),
+        datasets:[
+          {label:'Revenue', data:d.map(r=>r.rev), borderColor:'#82FFC3', backgroundColor:'rgba(130,255,195,.16)', tension:.35, fill:true},
+          {label:'Expenses', data:d.map(r=>r.exp), borderColor:'rgba(255,211,110,1)', backgroundColor:'rgba(255,211,110,.12)', tension:.35, fill:true}
+        ]},
+      options:{ plugins:{legend:{labels:{color:'#fff'}}},
+        scales:{ x:{ticks:{color:'rgba(255,255,255,.7)'}, grid:{color:'rgba(255,255,255,.08)'}},
+                 y:{ticks:{color:'rgba(255,255,255,.7)'}, grid:{color:'rgba(255,255,255,.08)'}}}
+    });
+  }
 </script>
 {% endblock %}

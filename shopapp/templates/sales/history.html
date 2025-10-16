@@ -2,29 +2,36 @@
 {% block title %}Sales{% endblock %}
 {% block content %}
 <section class="card fadeUp">
-  <div style="display:flex;justify-content:space-between;align-items:center;">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
     <div>
       <h1 style="font-size:var(--f-xl);font-weight:700;">Sales</h1>
       <p style="color:var(--ink-60)">Filter by date or customer. Export anytime.</p>
     </div>
-    <div class="segment">
-      <form method="get" action="/sales" style="display:flex;gap:8px;">
-        <input type="date" name="from" value="{{ request.args.get('from','') }}">
-        <input type="date" name="to" value="{{ request.args.get('to','') }}">
-        <select name="customer_id">
-          <option value="">All customers</option>
-          {% for c in customers %}<option value="{{ c[0] }}" {% if request.args.get('customer_id')==c[0]|string %}selected{% endif %}>{{ c[1] }}</option>{% endfor %}
-        </select>
-        <button class="btn">Apply</button>
-        <a class="btn primary" href="/sales/export?from={{ request.args.get('from','') }}&to={{ request.args.get('to','') }}&customer_id={{ request.args.get('customer_id','') }}">Export CSV</a>
-      </form>
-    </div>
+    <form method="get" action="/sales" style="display:flex;gap:8px;align-items:center;">
+      <input type="date" name="from" value="{{ request.args.get('from','') }}">
+      <input type="date" name="to" value="{{ request.args.get('to','') }}">
+      <select name="customer_id">
+        <option value="">All customers</option>
+        {% for c in customers %}
+          <option value="{{ c[0] }}" {% if request.args.get('customer_id')==c[0]|string %}selected{% endif %}>{{ c[1] }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn">Apply</button>
+      <a class="btn primary" href="/sales/export?from={{ request.args.get('from','') }}&to={{ request.args.get('to','') }}&customer_id={{ request.args.get('customer_id','') }}">Export CSV</a>
+    </form>
   </div>
+
   <table class="table" style="margin-top:14px;">
     <thead><tr><th>Date</th><th>Item</th><th>Qty</th><th>Total</th><th>Customer</th></tr></thead>
     <tbody>
       {% for s in sales %}
-      <tr><td>{{ s.date }}</td><td>{{ s.item }}</td><td>{{ s.quantity }}</td><td>₹{{ '%.2f'|format(s.total) }}</td><td>{{ s.customer or 'Walk-in' }}</td></tr>
+      <tr>
+        <td>{{ s.date }}</td>
+        <td>{{ s.item }}</td>
+        <td>{{ s.quantity }}</td>
+        <td>₹{{ '%.2f'|format(s.total) }}</td>
+        <td>{{ s.customer or 'Walk-in' }}</td>
+      </tr>
       {% else %}
       <tr><td colspan="5" style="color:var(--ink-60)">No sales found.</td></tr>
       {% endfor %}
