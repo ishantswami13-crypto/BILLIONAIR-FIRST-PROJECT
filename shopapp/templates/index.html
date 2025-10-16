@@ -1,124 +1,84 @@
 {% extends "layout.html" %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
-<section class="card">
-  <h1 style="font-size:var(--f-2xl);font-weight:700;">Today Overview</h1>
-  <p style="color:var(--ink-muted);margin-top:6px;">A snapshot of revenue, sales, credits, and momentum.</p>
+
+<section class="card fadeUp" style="animation-delay:.12s">
+  <h1 style="font-size:var(--f-2xl);font-weight:700;letter-spacing:-.02em;">Today Overview</h1>
+  <p style="color:var(--ink-60);margin-top:6px;">Your store at a glance.</p>
 </section>
 
-<div class="grid grid-fit" style="margin-top:18px;">
-  <div class="card kpi-card">
-    <div class="kpi-label">Revenue</div>
-    <div class="kpi-value">&#8377;{{ '%.2f'|format(today_rev or 0) }}</div>
+<section class="grid-4">
+  <div class="card fadeUp" style="animation-delay:.16s">
+    <div style="color:var(--ink-60);font-size:var(--f-sm);text-transform:uppercase;letter-spacing:.04em;">Revenue</div>
+    <div style="font-size:var(--f-2xl);font-weight:700;margin-top:4px;">₹{{ today_rev or 0 }}</div>
   </div>
-  <div class="card kpi-card">
-    <div class="kpi-label">Sales</div>
-    <div class="kpi-value">{{ today_count or 0 }}</div>
+  <div class="card fadeUp" style="animation-delay:.18s">
+    <div style="color:var(--ink-60);font-size:var(--f-sm);text-transform:uppercase;letter-spacing:.04em;">Sales</div>
+    <div style="font-size:var(--f-2xl);font-weight:700;margin-top:4px;">{{ today_count or 0 }}</div>
   </div>
-  <div class="card kpi-card">
-    <div class="kpi-label">Unpaid Credits</div>
-    <div class="kpi-value">&#8377;{{ '%.2f'|format(unpaid_credits or 0) }}</div>
+  <div class="card fadeUp" style="animation-delay:.20s">
+    <div style="color:var(--ink-60);font-size:var(--f-sm);text-transform:uppercase;letter-spacing:.04em;">Unpaid Credits</div>
+    <div style="font-size:var(--f-2xl);font-weight:700;margin-top:4px;">₹{{ unpaid_credits or 0 }}</div>
   </div>
-  <div class="card kpi-card">
-    <div class="kpi-label">Low Stock Items</div>
-    <div class="kpi-value">{{ low_stock_count or 0 }}</div>
+  <div class="card fadeUp" style="animation-delay:.22s">
+    <div style="color:var(--ink-60);font-size:var(--f-sm);text-transform:uppercase;letter-spacing:.04em;">Low Stock</div>
+    <div style="font-size:var(--f-2xl);font-weight:700;margin-top:4px;">{{ low_stock_count or 0 }}</div>
   </div>
-</div>
+</section>
 
-<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr));margin-top:20px;gap:20px;">
-  <div class="card">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <h3 style="font-size:var(--f-lg);font-weight:600;">7-Day Trend</h3>
-      <a href="{{ url_for('reports.analytics_view') }}" class="btn ghost">Analytics</a>
+<section class="grid-2-1">
+  <div class="card fadeUp" style="animation-delay:.24s">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <h3 style="font-size:var(--f-lg);font-weight:600;">7-Day Performance</h3>
+      <a class="btn" href="/analytics">Open Analytics</a>
     </div>
-    <canvas id="trendChart" height="150"></canvas>
+    <canvas id="chart7" height="140"></canvas>
   </div>
 
-  <div class="card">
-    <h3 style="font-size:var(--f-lg);font-weight:600;">Quick Sale</h3>
-    <form method="POST" action="{{ url_for('sales.sell') }}" class="input-row two" style="margin-top:12px;">
-      <div>
-        <label>Item</label>
-        <select name="item_id" required>
-          {% for item in items %}
-            <option value="{{ item.id }}">{{ item.name }} (&#8377;{{ '%.2f'|format(item.price or 0) }}, stock: {{ item.current_stock }})</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div>
-        <label>Customer</label>
-        <select name="customer_id">
-          <option value="">Walk-in</option>
-          {% for customer in customers %}
-            <option value="{{ customer.id }}">{{ customer.name }}{% if customer.phone %} ({{ customer.phone }}){% endif %}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div>
-        <label>Quantity</label>
-        <input type="number" name="quantity" min="1" required>
-      </div>
-      <div>
-        <label>Payment</label>
-        <select name="payment_method">
-          <option value="cash">Cash</option>
-          <option value="upi">UPI</option>
-          <option value="card">Card</option>
-          <option value="udhar">Credit</option>
-        </select>
-      </div>
-      <div style="grid-column:span 2;">
-        <button class="btn primary w-100" type="submit">Log Sale</button>
-      </div>
+  <div class="card fadeUp" style="animation-delay:.28s">
+    <h3 style="font-size:var(--f-lg);font-weight:600;margin-bottom:8px;">Quick Sale</h3>
+    <form method="POST" action="/sell">
+      <label>Item</label>
+      <select name="item_id" required>
+        {% for i in items %}
+          <option value="{{ i[0] }}">{{ i[1] }} (₹{{ i[2] }}, {{ i[3] }} left)</option>
+        {% endfor %}
+      </select>
+      <label>Customer</label>
+      <select name="customer_id">
+        <option value="">Walk-in</option>
+        {% for c in customers %}
+          <option value="{{ c[0] }}">{{ c[1] }} ({{ c[2] }})</option>
+        {% endfor %}
+      </select>
+      <label>Quantity</label>
+      <input type="number" name="quantity" min="1" required>
+      <button class="btn primary" style="width:100%;margin-top:10px;">Sell</button>
     </form>
   </div>
-</div>
-{% endblock %}
+</section>
 
+{% endblock %}
 {% block scripts %}
 {{ super() }}
 <script>
-const dataset = {{ tiny_chart or [] | tojson }};
-if (dataset.length && window.Chart) {
-  const ctx = document.getElementById('trendChart');
-  new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: dataset.map(row => row.t),
-      datasets: [
-        {
-          label: 'Revenue',
-          data: dataset.map(row => row.rev),
-          borderColor: '#82FFC3',
-          backgroundColor: 'rgba(130,255,195,.15)',
-          fill: true,
-          tension: .35
-        },
-        {
-          label: 'Expenses',
-          data: dataset.map(row => row.exp),
-          borderColor: '#FFD36E',
-          backgroundColor: 'rgba(255,211,110,.1)',
-          fill: true,
-          tension: .35
-        }
+const d={{ (chart_data or []) | tojson }};
+const ctx=document.getElementById('chart7');
+if(ctx && d.length){
+  new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:d.map(r=>r.t),
+      datasets:[
+        {label:'Revenue',data:d.map(r=>r.rev),borderColor:'#82FFC3',backgroundColor:'rgba(130,255,195,.16)',tension:.35,fill:true},
+        {label:'Expenses',data:d.map(r=>r.exp),borderColor:'rgba(255,211,110,1)',backgroundColor:'rgba(255,211,110,.12)',tension:.35,fill:true}
       ]
     },
-    options: {
-      plugins: {
-        legend: {
-          labels: { color: '#ffffff' }
-        }
-      },
-      scales: {
-        x: {
-          ticks: { color: 'rgba(255,255,255,.6)' },
-          grid: { color: 'rgba(255,255,255,.08)' }
-        },
-        y: {
-          ticks: { color: 'rgba(255,255,255,.6)' },
-          grid: { color: 'rgba(255,255,255,.08)' }
-        }
+    options:{
+      plugins:{legend:{labels:{color:'#fff'}}},
+      scales:{
+        x:{ticks:{color:'rgba(255,255,255,.7)'},grid:{color:'rgba(255,255,255,.08)'}},
+        y:{ticks:{color:'rgba(255,255,255,.7)'},grid:{color:'rgba(255,255,255,.08)'}}
       }
     }
   });

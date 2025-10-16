@@ -2,69 +2,59 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>{% block title %}ShopOS{% endblock %}</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{% block title %}ShopApp{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   {% block head %}{% endblock %}
 </head>
-{% set current_endpoint = request.endpoint or '' %}
-{% set plan_slug = '' %}
-{% if active_plan is defined %}
-  {% if active_plan is callable %}
-    {% set plan_slug = active_plan() or '' %}
-  {% else %}
-    {% set plan_slug = active_plan or '' %}
-  {% endif %}
-{% endif %}
-<body class="{{ body_class or '' }}">
+<body>
   <div class="shell">
-    <aside class="sidebar">
+    <!-- Sidebar -->
+    <aside class="sidebar fadeUp" style="animation-delay:.05s">
       <div>
-        <div class="brand">{{ (shop_profile.name if shop_profile and shop_profile.name else 'ShopOS') }}</div>
+        <div class="brand">ShopApp</div>
         <nav class="nav">
-          <span class="label">Command Center</span>
-          <a href="{{ url_for('sales.index') }}" class="{% if current_endpoint == 'sales.index' %}active{% endif %}">Dashboard</a>
-          <a href="{{ url_for('sales.history') }}" class="{% if current_endpoint.startswith('sales.') and current_endpoint != 'sales.index' %}active{% endif %}">Sales</a>
-          <a href="{{ url_for('credits.outstanding') }}" class="{% if current_endpoint.startswith('credits.') %}active{% endif %}">Credits</a>
-          <a href="{{ url_for('reports.analytics_view') }}" class="{% if current_endpoint.startswith('reports.analytics') %}active{% endif %}">Analytics</a>
-          <a href="{{ url_for('assistant.chat_home') }}" class="{% if current_endpoint.startswith('assistant.') %}active{% endif %}">Assistant</a>
-          <span class="label">Configuration</span>
-          <a href="{{ url_for('settings.branding') }}" class="{% if current_endpoint.startswith('settings.') %}active{% endif %}">Settings</a>
+          <a href="/" class="{% if request.path=='/' %}active{% endif %}">Dashboard</a>
+          <a href="/sales" class="{% if '/sales' in request.path %}active{% endif %}">Sales</a>
+          <a href="/credits" class="{% if '/credits' in request.path %}active{% endif %}">Credits</a>
+          <a href="/analytics" class="{% if '/analytics' in request.path %}active{% endif %}">Analytics</a>
+          <a href="/assistant" class="{% if '/assistant' in request.path %}active{% endif %}">Assistant</a>
+          <a href="/settings" class="{% if '/settings' in request.path %}active{% endif %}">Settings</a>
         </nav>
       </div>
-      <div class="meta">
-        v{{ app_version or '1.0' }} · {{ plan_slug or 'Free' }}
-      </div>
+      <div class="badge">v{{ app_version or '1.0' }} · {{ active_plan or 'Free' }}</div>
     </aside>
+
+    <!-- Main -->
     <main class="main">
-      <div class="topbar">
+      <div class="topbar fadeUp" style="animation-delay:.1s">
         <div>
-          <div class="hello">Hey {{ session.get('user', 'there') }} 👋</div>
-          <div class="subtle">Your Apple-class business OS.</div>
+          <div class="hello">Hey {{ session.get('user','there') }} 👋</div>
+          <div class="subtle">Effortless insights. Apple-grade clarity.</div>
         </div>
-        <div class="d-flex gap-2">
-          {% if session.get('user') %}
-            <a href="{{ url_for('auth.logout') }}" class="btn ghost">Logout</a>
-          {% else %}
-            <a href="{{ url_for('auth.login') }}" class="btn ghost">Login</a>
-          {% endif %}
+        <div>
+          {% if session.get('user') %}<a href="/logout" class="btn">Logout</a>{% endif %}
         </div>
       </div>
-
-      {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-          <div class="glass-panel">
-            {% for category, message in messages %}
-              <div class="badge-soft text-{{ 'success' if category=='success' else ('warning' if category in ('warning','info') else 'danger') }} mb-1">{{ message }}</div>
-            {% endfor %}
-          </div>
-        {% endif %}
-      {% endwith %}
 
       {% block content %}{% endblock %}
     </main>
   </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast">Saved ✓</div>
+
   {% block scripts %}{% endblock %}
+  <script>
+    // tiny toast helper
+    window.toast = (msg) => {
+      const el = document.getElementById('toast');
+      el.textContent = msg || 'Saved ✓';
+      el.classList.add('show');
+      setTimeout(()=> el.classList.remove('show'), 2200);
+    };
+  </script>
 </body>
 </html>

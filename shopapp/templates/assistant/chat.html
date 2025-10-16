@@ -1,169 +1,36 @@
 {% extends "layout.html" %}
 {% block title %}Assistant{% endblock %}
-
-{% block head %}
-<style>
-  .assistant-shell {
-    display: grid;
-    grid-template-columns: minmax(0,1fr);
-    gap: 20px;
-  }
-  .chat-window {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-  .chat-log {
-    max-height: 420px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    padding-right: 4px;
-  }
-  .chat-bubble {
-    border-radius: var(--radius-xl);
-    padding: 16px 18px;
-    border: 1px solid rgba(255,255,255,.08);
-    background: rgba(255,255,255,.05);
-    backdrop-filter: blur(18px);
-    box-shadow: var(--shadow-soft);
-  }
-  .chat-bubble.user {
-    align-self: flex-end;
-    background: rgba(130,255,195,.16);
-    border-color: rgba(130,255,195,.35);
-    color: #0B0C0F;
-  }
-  .chat-bubble.assistant {
-    align-self: flex-start;
-  }
-  .prompt-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  .prompt-grid button {
-    border: none;
-    border-radius: 999px;
-    padding: 8px 16px;
-    background: rgba(255,255,255,.08);
-    color: var(--ink);
-    cursor: pointer;
-    transition: background .2s var(--ease), transform .2s var(--ease);
-  }
-  .prompt-grid button:hover {
-    background: rgba(255,255,255,.14);
-    transform: translateY(-1px);
-  }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="assistant-shell">
-  <section class="card">
-    <h1 style="font-size:var(--f-xl);font-weight:700;">AI Business Assistant</h1>
-    <p class="text-muted">Ask natural questions about sales, expenses, credits, or inventory. Responses use the last 90 days of data.</p>
-    <div class="prompt-grid" style="margin-top:16px;">
-      <button type="button" data-suggest="Summarise today's revenue vs expenses">Today's trend</button>
-      <button type="button" data-suggest="Which items are low on stock?">Low stock</button>
-      <button type="button" data-suggest="How much unpaid credit do we have this week?">Credit status</button>
-      <button type="button" data-suggest="Show me expense breakdown for this month">Expense breakdown</button>
-    </div>
-  </section>
+<section class="card fadeUp">
+  <h1 style="font-size:var(--f-xl);font-weight:700;">Assistant</h1>
+  <p style="color:var(--ink-60)">Ask about revenue, inventory, or credits.</p>
+  <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <button class="btn" onclick="quick('Revenue last 7 days')">Revenue last 7 days</button>
+    <button class="btn" onclick="quick('Which items are low stock?')">Which items are low stock?</button>
+    <button class="btn" onclick="quick('Total unpaid credits this month')">Total unpaid credits this month</button>
+    <button class="btn" onclick="quick('Top 5 customers by spend')">Top 5 customers by spend</button>
+  </div>
+</section>
 
-  <section class="card chat-window">
-    <div class="chat-log" id="chatLog">
-      {% for message in messages %}
-        <div class="chat-bubble {{ message.role }}">
-          <div class="small text-muted text-uppercase mb-1">{{ message.role }}</div>
-          <div>{{ message.content|replace('\n', '<br>')|safe }}</div>
-        </div>
-      {% endfor %}
-    </div>
-    <form id="chatForm" class="input-row two" style="margin-top:8px;">
-      <input type="hidden" name="session_id" value="{{ chat_session.id }}">
-      <div style="grid-column:span 2;">
-        <label for="assistantMessage">Message</label>
-        <input id="assistantMessage" type="text" name="message" autocomplete="off" placeholder="Ask anything about your store" required>
+<section class="card fadeUp" style="animation-delay:.06s">
+  <div id="chat" style="display:flex;flex-direction:column;gap:10px;max-height:56vh;overflow:auto;">
+    {% for m in messages %}
+      <div style="align-self: {{ 'flex-end' if m.role=='user' else 'flex-start' }}; background: {{ 'var(--accent-weak)' if m.role=='assistant' else 'rgba(255,255,255,.06)' }}; border:1px solid var(--line); padding:10px 12px; border-radius:12px; max-width:70%;">
+        <div style="color:{{ 'var(--accent)' if m.role=='assistant' else 'var(--ink-80)' }};white-space:pre-wrap;">{{ m.text }}</div>
       </div>
-      <div>
-        <button class="btn primary w-100" type="submit">Send</button>
-      </div>
-      <div>
-        <a class="btn ghost w-100" href="{{ url_for('assistant.export_session', session_id=chat_session.id) }}">Export</a>
-      </div>
-    </form>
-  </section>
-</div>
+    {% endfor %}
+  </div>
+  <form method="post" style="margin-top:10px;display:flex;gap:8px;">
+    <input type="text" name="q" placeholder="Ask anything…" required>
+    <button class="btn primary">Send</button>
+  </form>
+</section>
+
 {% endblock %}
-
 {% block scripts %}
-{{ super() }}
 <script>
-(function () {
-  const chatLog = document.getElementById('chatLog');
-  const chatForm = document.getElementById('chatForm');
-  const suggestionButtons = document.querySelectorAll('[data-suggest]');
-
-  if (!chatForm || !chatLog) { return; }
-
-  const renderMessage = (role, content) => {
-    const wrapper = document.createElement('div');
-    wrapper.className = `chat-bubble ${role === 'user' ? 'user' : 'assistant'}`;
-
-    const heading = document.createElement('div');
-    heading.className = 'small text-muted text-uppercase mb-1';
-    heading.textContent = role;
-    wrapper.appendChild(heading);
-
-    const body = document.createElement('div');
-    body.innerHTML = content.replace(/\n/g, '<br>');
-    wrapper.appendChild(body);
-
-    chatLog.appendChild(wrapper);
-    chatLog.scrollTop = chatLog.scrollHeight;
-  };
-
-  chatForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const formData = new FormData(chatForm);
-    const messageInput = chatForm.querySelector('[name="message"]');
-    const message = messageInput.value.trim();
-    if (!message) { return; }
-
-    renderMessage('user', message);
-    messageInput.value = '';
-
-    const payload = {
-      session_id: formData.get('session_id'),
-      message,
-    };
-
-    try {
-      const response = await fetch('{{ url_for("assistant.api_message") }}', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (!response.ok) {
-        throw new Error('Request failed');
-      }
-      const data = await response.json();
-      (data.messages || []).forEach((msg) => renderMessage(msg.role, msg.content));
-    } catch (error) {
-      renderMessage('assistant', 'I could not process that request right now. Please try again shortly.');
-    }
-  });
-
-  suggestionButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-      const suggestion = button.getAttribute('data-suggest');
-      const input = chatForm.querySelector('[name="message"]');
-      input.value = suggestion;
-      input.focus();
-    });
-  });
-})();
+function quick(t){
+  const inp=document.querySelector('input[name="q"]'); inp.value=t; inp.form.submit();
+}
 </script>
 {% endblock %}

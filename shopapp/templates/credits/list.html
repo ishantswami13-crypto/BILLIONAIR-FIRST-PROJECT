@@ -1,75 +1,35 @@
 {% extends "layout.html" %}
 {% block title %}Credits{% endblock %}
 {% block content %}
-<section class="card">
-  <div class="d-flex justify-content-between align-items-center flex-column" style="gap:16px;">
-    <div class="d-flex flex-column gap-1">
+<section class="card fadeUp">
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <div>
       <h1 style="font-size:var(--f-xl);font-weight:700;">Credit Ledger</h1>
-      <p class="text-muted">Live view of outstanding udhar with reminder health and quick actions.</p>
+      <p style="color:var(--ink-60)">Track dues, send WhatsApp reminders, mark paid.</p>
     </div>
-    <div class="badge status-warn">Open {{ credits|length }}</div>
+    <div>
+      <form method="post" action="/credits/toggle-auto">
+        <button class="btn">{{ 'Disable Auto Reminders' if auto_enabled else 'Enable Auto Reminders' }}</button>
+      </form>
+    </div>
   </div>
+  <table class="table" style="margin-top:14px;">
+    <thead><tr><th>Date</th><th>Customer</th><th>Item</th><th>Qty</th><th>Total</th><th>Status</th><th>Reminder</th><th></th></tr></thead>
+    <tbody>
+      {% for c in credits %}
+      <tr>
+        <td>{{ c.date }}</td><td>{{ c.customer_name }}</td><td>{{ c.item }}</td><td>{{ c.quantity }}</td><td>₹{{ '%.2f'|format(c.total) }}</td>
+        <td><span class="badge {{ 'ok' if c.status=='paid' else 'warn' }}">{{ c.status|capitalize }}</span></td>
+        <td style="color:var(--ink-60)">{{ c.last_reminder_at or '—' }}</td>
+        <td style="text-align:right">
+          <a class="btn" href="/credits/send/{{ c.id }}">Send now</a>
+          {% if c.status!='paid' %}<a class="btn primary" href="/credits/pay/{{ c.id }}">Mark paid</a>{% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="8" style="color:var(--ink-60)">No credit entries.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </section>
-
-<div class="card" style="margin-top:20px;">
-  {% if credits %}
-    <div class="table-responsive">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Customer</th>
-            <th>Item</th>
-            <th class="text-end">Amount</th>
-            <th>Phone</th>
-            <th>Reminders</th>
-            <th>Status</th>
-            <th class="text-end">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for credit in credits %}
-            <tr>
-              <td>{{ credit.date.strftime('%Y-%m-%d') if credit.date else '-' }}</td>
-              <td>{{ credit.customer_name }}</td>
-              <td>{{ credit.item }}</td>
-              <td class="text-end">&#8377;{{ '%.2f'|format(credit.total or 0) }}</td>
-              <td>{{ credit.reminder_phone or (credit.customer.phone if credit.customer else '-') }}</td>
-              <td>
-                {% if credit.last_reminder_at %}
-                  <div class="small text-muted">Last: {{ credit.last_reminder_at.strftime('%Y-%m-%d %H:%M') }}</div>
-                  <span class="badge-soft">Total {{ credit.reminder_count or 0 }}</span>
-                {% else %}
-                  <span class="text-muted small">No reminders yet</span>
-                {% endif %}
-              </td>
-              <td>
-                {% if credit.reminder_opt_out %}
-                  <span class="badge-soft text-warning">Opted out</span>
-                {% else %}
-                  <span class="badge-soft text-success">Active</span>
-                {% endif %}
-              </td>
-              <td class="text-end">
-                <form method="POST" action="{{ url_for('credits.send_single_reminder', credit_id=credit.id) }}" style="display:inline;">
-                  <button class="btn-sm" type="submit" {% if credit.reminder_opt_out %}disabled{% endif %}>Send</button>
-                </form>
-                <form method="POST" action="{{ url_for('credits.toggle_opt_out', credit_id=credit.id) }}" style="display:inline;">
-                  <button class="btn-sm" type="submit">
-                    {% if credit.reminder_opt_out %}Enable{% else %}Disable{% endif %}
-                  </button>
-                </form>
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  {% else %}
-    <div class="text-center py-5 text-muted">
-      <p class="mb-3">Ledger is clear. No outstanding credits.</p>
-      <a class="btn primary" href="{{ url_for('sales.index') }}">Record a sale</a>
-    </div>
-  {% endif %}
-</div>
 {% endblock %}

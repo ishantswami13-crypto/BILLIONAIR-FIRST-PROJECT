@@ -1,29 +1,33 @@
 :root {
-  /* surface system */
-  --bg: #0B0C0F;
-  --bg-elev: rgba(255,255,255,.07);
-  --border: rgba(255,255,255,.08);
-  --ink: #ffffff;
-  --ink-soft: rgba(255,255,255,.7);
-  --ink-muted: rgba(255,255,255,.45);
+  /* Surfaces (dark neutral) */
+  --bg: #0B0C0F;                       /* matte graphite */
+  --layer: rgba(255,255,255,.06);      /* frosted glass */
+  --layer-2: rgba(255,255,255,.08);
+  --line: rgba(255,255,255,.10);       /* hairline */
 
-  /* accent palette */
+  /* Ink */
+  --ink: #FFFFFF;                      /* primary text */
+  --ink-80: rgba(255,255,255,.80);
+  --ink-60: rgba(255,255,255,.60);
+  --ink-40: rgba(255,255,255,.40);
+
+  /* Accents (mint + sky) */
   --accent: #82FFC3;
-  --accent-soft: rgba(130,255,195,.15);
-  --accent-grad: linear-gradient(120deg,#82FFC3,#A9E3FF);
+  --accent-weak: rgba(130,255,195,.15);
+  --accent-grad: linear-gradient(135deg, #82FFC3 0%, #9EE9FF 100%);
 
-  /* status colors */
+  /* Status */
   --ok: #00C48C;
   --warn: #FFD36E;
   --err: #FF6B81;
 
-  /* depth */
-  --radius: 16px;
-  --radius-xl: 28px;
-  --shadow-soft: 0 6px 30px rgba(0,0,0,.35);
-  --shadow-accent: 0 0 25px rgba(130,255,195,.4);
+  /* Radii + shadow */
+  --r: 16px;
+  --r-xl: 28px;
+  --shadow-soft: 0 10px 40px rgba(0,0,0,.35);
+  --shadow-glow: 0 0 28px rgba(130,255,195,.35);
 
-  /* type scale */
+  /* Type scale (SF Pro feel via system stack) */
   --f-xs: 12px;
   --f-sm: 14px;
   --f-md: 16px;
@@ -32,6 +36,8 @@
   --f-2xl: 40px;
   --f-3xl: 60px;
 
-  /* motion */
+  /* Motion */
   --ease: cubic-bezier(.22,.61,.36,1);
+  --t-quick: .18s var(--ease);
+  --t-slow: .35s var(--ease);
 }
