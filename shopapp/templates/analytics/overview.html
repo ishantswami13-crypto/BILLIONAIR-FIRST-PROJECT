@@ -1,0 +1,419 @@
+{% extends "layout.html" %}
+{% block title %}Analytics{% endblock %}
+
+{% block head %}
+<style>
+  .toggle-group {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(255,255,255,.06);
+    border-radius: 999px;
+    padding: 4px;
+    gap: 4px;
+  }
+  .toggle-group button {
+    border: none;
+    background: transparent;
+    color: var(--ink-soft);
+    font-size: var(--f-sm);
+    padding: 6px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all .2s var(--ease);
+  }
+  .toggle-group button.active {
+    background: rgba(130,255,195,.18);
+    color: var(--accent);
+  }
+  .heatmap-grid {
+    display: grid;
+    grid-template-columns: 80px repeat(24, minmax(0,1fr));
+    gap: 6px;
+  }
+  .heatmap-cell {
+    min-height: 28px;
+    border-radius: 12px;
+    background: rgba(255,255,255,.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--f-xs);
+    color: var(--ink-soft);
+    transition: transform .2s var(--ease);
+  }
+  .heatmap-cell[data-intensity="0"] { opacity: .2; }
+  .heatmap-cell[data-intensity="1"] { background: rgba(130,255,195,.12); color: var(--accent); }
+  .heatmap-cell[data-intensity="2"] { background: rgba(130,255,195,.22); color: var(--accent); }
+  .heatmap-cell[data-intensity="3"] { background: rgba(130,255,195,.32); color: #0B0C0F; }
+  .heatmap-cell:hover { transform: translateY(-2px); }
+  .legend {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 12px;
+  }
+  .legend span {
+    display: inline-block;
+    width: 32px;
+    height: 12px;
+    border-radius: 999px;
+    background: rgba(130,255,195,.18);
+  }
+  .legend span:nth-child(2) { background: rgba(130,255,195,.28); }
+  .legend span:nth-child(3) { background: rgba(130,255,195,.4); }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="card">
+  <div class="d-flex justify-content-between align-items-center flex-column" style="gap:16px;">
+    <div class="d-flex flex-column gap-1">
+      <h1 style="font-size:var(--f-xl);font-weight:700;">Analytics Control Room</h1>
+      <p class="text-muted">Revenue, expenses, profit and engagement presented with Apple-level clarity.</p>
+    </div>
+    <div class="d-flex gap-2 align-items-center">
+      <label for="windowSelect" class="text-muted small">Window</label>
+      <select id="windowSelect" class="form-select" style="max-width:140px;">
+        {% for option in [30, 60, 90, 180, 365] %}
+          <option value="{{ option }}" {% if days == option %}selected{% endif %}>{{ option }} days</option>
+        {% endfor %}
+      </select>
+      <a class="btn ghost" href="{{ url_for('reports.analytics_export', days=days) }}">Export CSV</a>
+      <button class="btn ghost" type="button" id="printAnalytics">Print</button>
+    </div>
+  </div>
+</section>
+
+<div class="grid grid-fit" style="margin-top:20px;">
+  <div class="card kpi-card">
+    <span class="kpi-label">Total Revenue</span>
+    <span class="kpi-value" data-summary="total_revenue">&#8377;{{ '%.2f'|format(analytics.summary.total_revenue) }}</span>
+  </div>
+  <div class="card kpi-card">
+    <span class="kpi-label">Total Expenses</span>
+    <span class="kpi-value" data-summary="total_expenses">&#8377;{{ '%.2f'|format(analytics.summary.total_expenses) }}</span>
+  </div>
+  <div class="card kpi-card">
+    <span class="kpi-label">Total Profit</span>
+    <span class="kpi-value" data-summary="total_profit">&#8377;{{ '%.2f'|format(analytics.summary.total_profit) }}</span>
+  </div>
+  <div class="card kpi-card">
+    <span class="kpi-label">Avg Daily Profit</span>
+    <span class="kpi-value" data-summary="average_daily_profit">&#8377;{{ '%.2f'|format(analytics.summary.average_daily_profit) }}</span>
+  </div>
+</div>
+
+<div class="card" style="margin-top:20px;">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h3 style="font-size:var(--f-lg);font-weight:600;">Revenue vs Expenses</h3>
+    <div class="toggle-group" id="chartToggle">
+      <button type="button" data-view="daily" class="active">Daily</button>
+      <button type="button" data-view="weekly">Weekly</button>
+      <button type="button" data-view="monthly">Monthly</button>
+    </div>
+  </div>
+  <canvas id="analyticsChart" height="220"></canvas>
+</div>
+
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;margin-top:20px;">
+  <div class="card">
+    <h3 style="font-size:var(--f-lg);font-weight:600;" class="mb-2">Expense Categories</h3>
+    <div class="table-responsive">
+      <table class="table" id="categoryTable">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th class="text-end">Spend</th>
+            <th class="text-end">Share</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in analytics.categories %}
+            <tr>
+              <td>{{ row.name }}</td>
+              <td class="text-end">&#8377;{{ '%.2f'|format(row.amount) }}</td>
+              <td class="text-end">{{ row.share }}%</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <h3 style="font-size:var(--f-lg);font-weight:600;" class="mb-2">Customer Value</h3>
+    <div class="table-responsive">
+      <table class="table" id="ltvTable">
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th>Orders</th>
+            <th class="text-end">Lifetime Spend</th>
+            <th>Last Purchase</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in analytics.ltv %}
+            <tr>
+              <td>{{ row.customer }}</td>
+              <td>{{ row.orders }}</td>
+              <td class="text-end">&#8377;{{ '%.2f'|format(row.total) }}</td>
+              <td>{{ row.last_purchase or '—' }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="grid" style="grid-template-columns:2fr 1fr;gap:20px;margin-top:20px;">
+  <div class="card">
+    <h3 style="font-size:var(--f-lg);font-weight:600;" class="mb-2">Hourly Heatmap</h3>
+    <div id="heatmap" class="heatmap-grid"></div>
+    <div class="legend">
+      <span></span><span></span><span></span>
+      <div class="text-muted small">Intensity of sales activity (higher = hotter)</div>
+    </div>
+  </div>
+  <div class="card">
+    <h3 style="font-size:var(--f-lg);font-weight:600;" class="mb-2">Recommendations</h3>
+    <div class="list" id="recommendations">
+      {% for rec in analytics.recommendations %}
+        <div class="list-item">
+          <div>
+            <div class="small text-muted text-uppercase">{{ rec.type }}</div>
+            <div style="font-weight:600;">{{ rec.title }}</div>
+            <div class="text-muted small">{{ rec.message }}</div>
+          </div>
+        </div>
+      {% else %}
+        <div class="text-muted small">No recommendations right now.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+(function () {
+  const root = document.getElementById('analyticsChart');
+  if (!root) { return; }
+
+  const container = root.closest('.card');
+  const select = document.getElementById('windowSelect');
+  const toggle = document.getElementById('chartToggle');
+  const chartCtx = root.getContext('2d');
+  const categoryTable = document.getElementById('categoryTable').querySelector('tbody');
+  const ltvTable = document.getElementById('ltvTable').querySelector('tbody');
+  const recommendationsList = document.getElementById('recommendations');
+  const heatmap = document.getElementById('heatmap');
+  const printBtn = document.getElementById('printAnalytics');
+
+  const endpoint = "{{ url_for('reports.analytics_data') }}";
+  const initialPayload = {{ analytics|tojson|safe }};
+  let currentView = 'daily';
+  let analytics = initialPayload;
+  let chartInstance = null;
+
+  function currency(value) {
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2 }).format(value || 0);
+  }
+
+  function updateSummary() {
+    document.querySelectorAll('[data-summary]').forEach((node) => {
+      const key = node.getAttribute('data-summary');
+      const value = analytics.summary ? analytics.summary[key] : 0;
+      node.textContent = currency(value);
+    });
+  }
+
+  function buildChart(view) {
+    const dataMap = analytics[view] || [];
+    const labels = dataMap.map((row) => row.label);
+    const revenue = dataMap.map((row) => row.revenue);
+    const expenses = dataMap.map((row) => row.expenses);
+
+    if (chartInstance) {
+      chartInstance.destroy();
+    }
+
+    chartInstance = new Chart(chartCtx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Revenue',
+            data: revenue,
+            borderColor: '#82FFC3',
+            backgroundColor: 'rgba(130,255,195,.18)',
+            fill: true,
+            tension: .4
+          },
+          {
+            label: 'Expenses',
+            data: expenses,
+            borderColor: '#FFD36E',
+            backgroundColor: 'rgba(255,211,110,.18)',
+            fill: true,
+            tension: .4
+          }
+        ]
+      },
+      options: {
+        plugins: {
+          legend: {
+            labels: { color: '#ffffff' }
+          }
+        },
+        scales: {
+          x: { ticks: { color: 'rgba(255,255,255,.7)' }, grid: { color: 'rgba(255,255,255,.08)' } },
+          y: { ticks: { color: 'rgba(255,255,255,.7)' }, grid: { color: 'rgba(255,255,255,.08)' } }
+        }
+      }
+    });
+  }
+
+  function renderCategories() {
+    if (!categoryTable) { return; }
+    if (!analytics.categories || !analytics.categories.length) {
+      categoryTable.innerHTML = '<tr><td colspan="3" class="text-muted small">No expense data</td></tr>';
+      return;
+    }
+    categoryTable.innerHTML = analytics.categories.map((row) => `
+      <tr>
+        <td>${row.name}</td>
+        <td class="text-end">${currency(row.amount)}</td>
+        <td class="text-end">${row.share}%</td>
+      </tr>
+    `).join('');
+  }
+
+  function renderLtv() {
+    if (!ltvTable) { return; }
+    if (!analytics.ltv || !analytics.ltv.length) {
+      ltvTable.innerHTML = '<tr><td colspan="4" class="text-muted small">No customer data yet</td></tr>';
+      return;
+    }
+    ltvTable.innerHTML = analytics.ltv.map((row) => `
+      <tr>
+        <td>${row.customer}</td>
+        <td>${row.orders}</td>
+        <td class="text-end">${currency(row.total)}</td>
+        <td>${row.last_purchase || '—'}</td>
+      </tr>
+    `).join('');
+  }
+
+  function renderRecommendations() {
+    if (!recommendationsList) { return; }
+    if (!analytics.recommendations || !analytics.recommendations.length) {
+      recommendationsList.innerHTML = '<div class="text-muted small">No recommendations right now.</div>';
+      return;
+    }
+    recommendationsList.innerHTML = analytics.recommendations.map((rec) => `
+      <div class="list-item">
+        <div>
+          <div class="small text-muted text-uppercase">${rec.type}</div>
+          <div style="font-weight:600;">${rec.title}</div>
+          <div class="text-muted small">${rec.message}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderHeatmap() {
+    if (!heatmap) { return; }
+    const hours = analytics.heatmap ? analytics.heatmap.hours : [];
+    const slots = analytics.heatmap ? analytics.heatmap.slots : {};
+    const intensityScale = (value) => {
+      if (value >= 0.75) { return 3; }
+      if (value >= 0.5) { return 2; }
+      if (value > 0) { return 1; }
+      return 0;
+    };
+
+    if (!hours || !hours.length) {
+      heatmap.innerHTML = '<div class="text-muted small">Heatmap will appear once we have hourly data.</div>';
+      return;
+    }
+
+    const labelsRow = [''].concat(Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2,'0')}:00`));
+    const rowsHtml = hours.map((row) => {
+      const dayLabel = row.label || '';
+      const cells = Array.from({ length: 24 }, (_, hour) => {
+        const key = `${row.date}:${hour}`;
+        const value = slots[key] || 0;
+        const intensity = intensityScale(value);
+        return `<div class="heatmap-cell" data-intensity="${intensity}" title="${dayLabel} · ${hour}:00 — ${currency(value)}">${value ? currency(value) : ''}</div>`;
+      }).join('');
+      return `<div class="heatmap-cell" style="justify-content:flex-start;padding-left:10px;" data-intensity="2">${dayLabel}</div>${cells}`;
+    }).join('');
+
+    heatmap.innerHTML = `
+      <div class="heatmap-cell" style="background:none;color:var(--ink-muted);justify-content:flex-start;padding-left:10px;">Day</div>
+      ${labelsRow.slice(1).map((label) => `<div class="heatmap-cell" style="background:none;color:var(--ink-muted);">${label}</div>`).join('')}
+      ${rowsHtml}
+    `;
+  }
+
+  function applyAnalytics() {
+    updateSummary();
+    renderCategories();
+    renderLtv();
+    renderRecommendations();
+    renderHeatmap();
+    buildChart(currentView);
+  }
+
+  async function loadAnalytics(days) {
+    if (!endpoint) { return; }
+    container.classList.add('loading');
+    try {
+      const response = await fetch(`${endpoint}?days=${encodeURIComponent(days)}`, {
+        headers: { 'Accept': 'application/json' }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to load analytics');
+      }
+      const payload = await response.json();
+      analytics = payload.analytics || analytics;
+      applyAnalytics();
+    } catch (error) {
+      console.error(error);
+      alert('Unable to refresh analytics right now. Please try again.');
+    } finally {
+      container.classList.remove('loading');
+    }
+  }
+
+  if (toggle) {
+    toggle.querySelectorAll('button').forEach((button) => {
+      button.addEventListener('click', () => {
+        const view = button.getAttribute('data-view');
+        if (view === currentView) { return; }
+        currentView = view;
+        toggle.querySelectorAll('button').forEach((btn) => btn.classList.toggle('active', btn === button));
+        buildChart(currentView);
+      });
+    });
+  }
+
+  if (select) {
+    select.addEventListener('change', () => {
+      const days = select.value;
+      loadAnalytics(days);
+    });
+  }
+
+  if (printBtn) {
+    printBtn.addEventListener('click', () => window.print());
+  }
+
+  analytics = initialPayload || {};
+  applyAnalytics();
+})();
+</script>
+{% endblock %}

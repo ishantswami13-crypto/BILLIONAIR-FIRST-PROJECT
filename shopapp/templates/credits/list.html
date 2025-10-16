@@ -1,24 +1,20 @@
 {% extends "layout.html" %}
 {% block title %}Credits{% endblock %}
 {% block content %}
-
-<div class="card mb-3">
-  <div class="d-flex justify-content-between align-items-center">
-    <div>
-      <h2 class="mb-1">Outstanding Credits</h2>
-      <div class="text-muted">Track unpaid udhar, send reminders, keep the ledger clean.</div>
+<section class="card">
+  <div class="d-flex justify-content-between align-items-center flex-column" style="gap:16px;">
+    <div class="d-flex flex-column gap-1">
+      <h1 style="font-size:var(--f-xl);font-weight:700;">Credit Ledger</h1>
+      <p class="text-muted">Live view of outstanding udhar with reminder health and quick actions.</p>
     </div>
-    <span class="badge-soft">{{ credits|length }} open</span>
+    <div class="badge status-warn">Open {{ credits|length }}</div>
   </div>
-  <div class="mt-3 small text-muted">
-    Automated reminders: <strong>ON</strong> via daily cron. Toggle per customer below when someone opts out.
-  </div>
-</div>
+</section>
 
-<div class="card">
+<div class="card" style="margin-top:20px;">
   {% if credits %}
     <div class="table-responsive">
-      <table class="table-clean mb-0">
+      <table class="table">
         <thead>
           <tr>
             <th>Date</th>
@@ -37,7 +33,7 @@
               <td>{{ credit.date.strftime('%Y-%m-%d') if credit.date else '-' }}</td>
               <td>{{ credit.customer_name }}</td>
               <td>{{ credit.item }}</td>
-              <td class="text-end">₹{{ '%.2f'|format(credit.total or 0) }}</td>
+              <td class="text-end">&#8377;{{ '%.2f'|format(credit.total or 0) }}</td>
               <td>{{ credit.reminder_phone or (credit.customer.phone if credit.customer else '-') }}</td>
               <td>
                 {% if credit.last_reminder_at %}
@@ -55,11 +51,11 @@
                 {% endif %}
               </td>
               <td class="text-end">
-                <form method="POST" action="{{ url_for('credits.send_single_reminder', credit_id=credit.id) }}" class="d-inline">
-                  <button class="btn-ghost btn-sm" type="submit" {% if credit.reminder_opt_out %}disabled{% endif %}>Send</button>
+                <form method="POST" action="{{ url_for('credits.send_single_reminder', credit_id=credit.id) }}" style="display:inline;">
+                  <button class="btn-sm" type="submit" {% if credit.reminder_opt_out %}disabled{% endif %}>Send</button>
                 </form>
-                <form method="POST" action="{{ url_for('credits.toggle_opt_out', credit_id=credit.id) }}" class="d-inline">
-                  <button class="btn-ghost btn-sm" type="submit">
+                <form method="POST" action="{{ url_for('credits.toggle_opt_out', credit_id=credit.id) }}" style="display:inline;">
+                  <button class="btn-sm" type="submit">
                     {% if credit.reminder_opt_out %}Enable{% else %}Disable{% endif %}
                   </button>
                 </form>
@@ -71,10 +67,9 @@
     </div>
   {% else %}
     <div class="text-center py-5 text-muted">
-      <p class="mb-3">No outstanding credits. Great job!</p>
-      <a class="btn-primary" href="{{ url_for('sales.index') }}">Add new sale</a>
+      <p class="mb-3">Ledger is clear. No outstanding credits.</p>
+      <a class="btn primary" href="{{ url_for('sales.index') }}">Record a sale</a>
     </div>
   {% endif %}
 </div>
-
 {% endblock %}

@@ -1,99 +1,127 @@
 {% extends "layout.html" %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
+<section class="card">
+  <h1 style="font-size:var(--f-2xl);font-weight:700;">Today Overview</h1>
+  <p style="color:var(--ink-muted);margin-top:6px;">A snapshot of revenue, sales, credits, and momentum.</p>
+</section>
 
-<div class="card mb-3">
-  <div class="d-flex justify-content-between align-items-center">
-    <div>
-      <h2 class="mb-1">Dashboard</h2>
-      <div class="text-muted">Today at a glance</div>
-    </div>
-    <div class="d-flex gap-2">
-      <a href="{{ url_for('reports.analytics_view') }}" class="btn-ghost">Analytics</a>
-      <a href="{{ url_for('reports.zreport_view') }}" class="btn-ghost">Report</a>
-    </div>
+<div class="grid grid-fit" style="margin-top:18px;">
+  <div class="card kpi-card">
+    <div class="kpi-label">Revenue</div>
+    <div class="kpi-value">&#8377;{{ '%.2f'|format(today_rev or 0) }}</div>
+  </div>
+  <div class="card kpi-card">
+    <div class="kpi-label">Sales</div>
+    <div class="kpi-value">{{ today_count or 0 }}</div>
+  </div>
+  <div class="card kpi-card">
+    <div class="kpi-label">Unpaid Credits</div>
+    <div class="kpi-value">&#8377;{{ '%.2f'|format(unpaid_credits or 0) }}</div>
+  </div>
+  <div class="card kpi-card">
+    <div class="kpi-label">Low Stock Items</div>
+    <div class="kpi-value">{{ low_stock_count or 0 }}</div>
   </div>
 </div>
 
-<div class="kpi-grid mb-3">
-  <div class="kpi">
-    <div class="label">Today Sales</div>
-    <div class="value">{{ today_count or 0 }}</div>
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr));margin-top:20px;gap:20px;">
+  <div class="card">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h3 style="font-size:var(--f-lg);font-weight:600;">7-Day Trend</h3>
+      <a href="{{ url_for('reports.analytics_view') }}" class="btn ghost">Analytics</a>
+    </div>
+    <canvas id="trendChart" height="150"></canvas>
   </div>
-  <div class="kpi">
-    <div class="label">Today Revenue</div>
-    <div class="value">₹{{ today_rev or 0 }}</div>
-  </div>
-  <div class="kpi">
-    <div class="label">Unpaid Credits</div>
-    <div class="value">₹{{ unpaid_credits or 0 }}</div>
-  </div>
-  <div class="kpi">
-    <div class="label">Low Stock</div>
-    <div class="value">{{ low_stock_count or 0 }}</div>
+
+  <div class="card">
+    <h3 style="font-size:var(--f-lg);font-weight:600;">Quick Sale</h3>
+    <form method="POST" action="{{ url_for('sales.sell') }}" class="input-row two" style="margin-top:12px;">
+      <div>
+        <label>Item</label>
+        <select name="item_id" required>
+          {% for item in items %}
+            <option value="{{ item.id }}">{{ item.name }} (&#8377;{{ '%.2f'|format(item.price or 0) }}, stock: {{ item.current_stock }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label>Customer</label>
+        <select name="customer_id">
+          <option value="">Walk-in</option>
+          {% for customer in customers %}
+            <option value="{{ customer.id }}">{{ customer.name }}{% if customer.phone %} ({{ customer.phone }}){% endif %}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label>Quantity</label>
+        <input type="number" name="quantity" min="1" required>
+      </div>
+      <div>
+        <label>Payment</label>
+        <select name="payment_method">
+          <option value="cash">Cash</option>
+          <option value="upi">UPI</option>
+          <option value="card">Card</option>
+          <option value="udhar">Credit</option>
+        </select>
+      </div>
+      <div style="grid-column:span 2;">
+        <button class="btn primary w-100" type="submit">Log Sale</button>
+      </div>
+    </form>
   </div>
 </div>
-
-<div class="card mb-3">
-  <div class="d-flex justify-content-between align-items-center mb-2">
-    <h5 class="mb-0">Today Trend</h5>
-    <span class="text-muted small">Revenue vs Expenses</span>
-  </div>
-  <canvas id="miniLine" height="110"></canvas>
-</div>
-
-<div class="card">
-  <h5 class="mb-2">Quick Sale</h5>
-  <form method="POST" action="{{ url_for('sales.sell') }}" class="row g-2">
-    <div class="col-md-4">
-      <select name="item_id" class="form-select" required>
-        {% for item in items %}
-          <option value="{{ item.id }}">{{ item.name }} (₹{{ item.price }}, stock: {{ item.current_stock }})</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="col-md-3">
-      <select name="customer_id" class="form-select">
-        <option value="">Walk-in</option>
-        {% for customer in customers %}
-          <option value="{{ customer.id }}">{{ customer.name }}{% if customer.phone %} ({{ customer.phone }}){% endif %}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="col-md-2">
-      <input type="number" name="quantity" min="1" class="form-control" placeholder="Qty" required>
-    </div>
-    <div class="col-md-3">
-      <button class="btn-primary w-100">Sell</button>
-    </div>
-  </form>
-</div>
-
 {% endblock %}
 
 {% block scripts %}
 {{ super() }}
 <script>
-  const chartData = {{ tiny_chart or [] | tojson }};
-  const ctx = document.getElementById('miniLine');
-  if (ctx && window.Chart && chartData.length){
-    new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: chartData.map(r => r.t),
-        datasets: [
-          { label: 'Revenue', data: chartData.map(r => r.rev), borderColor: 'var(--ch-rev)', backgroundColor: 'rgba(0,212,179,.15)', tension: .35, fill: true },
-          { label: 'Expenses', data: chartData.map(r => r.exp), borderColor: 'var(--ch-exp)', backgroundColor: 'rgba(255,183,77,.12)', tension: .35, fill: true }
-        ]
+const dataset = {{ tiny_chart or [] | tojson }};
+if (dataset.length && window.Chart) {
+  const ctx = document.getElementById('trendChart');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: dataset.map(row => row.t),
+      datasets: [
+        {
+          label: 'Revenue',
+          data: dataset.map(row => row.rev),
+          borderColor: '#82FFC3',
+          backgroundColor: 'rgba(130,255,195,.15)',
+          fill: true,
+          tension: .35
+        },
+        {
+          label: 'Expenses',
+          data: dataset.map(row => row.exp),
+          borderColor: '#FFD36E',
+          backgroundColor: 'rgba(255,211,110,.1)',
+          fill: true,
+          tension: .35
+        }
+      ]
+    },
+    options: {
+      plugins: {
+        legend: {
+          labels: { color: '#ffffff' }
+        }
       },
-      options: {
-        plugins: { legend: { labels: { color: '#e9f0ff' } } },
-        scales: {
-          x: { ticks: { color: '#c9d3ea' }, grid: { color: 'rgba(255,255,255,.06)' } },
-          y: { ticks: { color: '#c9d3ea' }, grid: { color: 'rgba(255,255,255,.06)' } }
+      scales: {
+        x: {
+          ticks: { color: 'rgba(255,255,255,.6)' },
+          grid: { color: 'rgba(255,255,255,.08)' }
+        },
+        y: {
+          ticks: { color: 'rgba(255,255,255,.6)' },
+          grid: { color: 'rgba(255,255,255,.08)' }
         }
       }
-    });
-  }
+    }
+  });
+}
 </script>
 {% endblock %}

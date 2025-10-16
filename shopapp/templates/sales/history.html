@@ -1,43 +1,46 @@
 {% extends "layout.html" %}
-{% block title %}Sales{% endblock %}
+{% block title %}Sales History{% endblock %}
 {% block content %}
-
-<div class="card mb-3">
-  <div class="d-flex justify-content-between align-items-center">
-    <div>
-      <h2 class="mb-1">Sales</h2>
-      <div class="text-muted">Filter by date range, review the last 50 entries, export what you need.</div>
+<section class="card">
+  <div class="d-flex justify-content-between align-items-center flex-column" style="gap:16px;">
+    <div class="d-flex flex-column gap-1">
+      <h1 style="font-size:var(--f-xl);font-weight:700;">Sales Ledger</h1>
+      <p class="text-muted">Filter date ranges, inspect transactions, and export your Apple-grade ledger.</p>
     </div>
     <div class="d-flex gap-2">
-      <a class="btn-ghost" href="{{ url_for('sales.export_csv', start=start, end=end) }}">Export CSV</a>
+      <a class="btn ghost" href="{{ url_for('sales.export_csv', start=start, end=end) }}">Download CSV</a>
+      <a class="btn ghost" href="{{ url_for('sales.history') }}">Reset</a>
     </div>
   </div>
-  <form method="get" class="row g-2 mt-3 align-items-end">
-    <div class="col-md-3">
-      <label class="form-label small text-uppercase text-muted">Start</label>
-      <input type="date" name="start" class="form-control" value="{{ start or '' }}">
+</section>
+
+<div class="card" style="margin-top:20px;">
+  <form method="get" class="input-row three">
+    <div>
+      <label for="start">Start date</label>
+      <input id="start" type="date" name="start" value="{{ start or '' }}">
     </div>
-    <div class="col-md-3">
-      <label class="form-label small text-uppercase text-muted">End</label>
-      <input type="date" name="end" class="form-control" value="{{ end or '' }}">
+    <div>
+      <label for="end">End date</label>
+      <input id="end" type="date" name="end" value="{{ end or '' }}">
     </div>
-    <div class="col-md-3 col-lg-2">
-      <button class="btn-primary w-100">Apply</button>
-    </div>
-    <div class="col-md-3 col-lg-2">
-      <a class="btn-ghost w-100 text-center" href="{{ url_for('sales.history') }}">Reset</a>
+    <div style="display:flex;align-items:flex-end;gap:12px;">
+      <button class="btn primary" type="submit">Apply</button>
+      <a class="btn ghost" href="{{ url_for('sales.history') }}">Clear</a>
     </div>
   </form>
 </div>
 
-<div class="card">
+<div class="card" style="margin-top:20px;">
   {% if sales %}
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h5 class="mb-0">Recent Sales</h5>
-      <span class="text-muted small">{{ sales|length }} shown · ₹{{ '%.2f'|format(total_amount or 0) }} total</span>
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div>
+        <h3 class="mb-1" style="font-size:var(--f-lg);font-weight:600;">Recent Sales</h3>
+        <div class="text-muted small">{{ sales|length }} entries · &#8377;{{ '%.2f'|format(total_amount or 0) }} total</div>
+      </div>
     </div>
     <div class="table-responsive">
-      <table class="table-clean mb-0">
+      <table class="table">
         <thead>
           <tr>
             <th>Date</th>
@@ -56,7 +59,7 @@
               <td class="text-end">{{ sale.quantity }}</td>
               <td>{{ sale.customer.name if sale.customer else 'Walk-in' }}</td>
               <td>{{ sale.payment_method or 'cash' }}</td>
-              <td class="text-end">₹{{ '%.2f'|format(sale.net_total or 0) }}</td>
+              <td class="text-end">&#8377;{{ '%.2f'|format(sale.net_total or 0) }}</td>
             </tr>
           {% endfor %}
         </tbody>
@@ -64,10 +67,9 @@
     </div>
   {% else %}
     <div class="text-center py-5 text-muted">
-      <p class="mb-3">No sales in this range.</p>
-      <a class="btn-primary" href="{{ url_for('sales.index') }}">Record a sale</a>
+      <p class="mb-3">No sales match this window.</p>
+      <a class="btn primary" href="{{ url_for('sales.index') }}">Record a sale</a>
     </div>
   {% endif %}
 </div>
-
 {% endblock %}

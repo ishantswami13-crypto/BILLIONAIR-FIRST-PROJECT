@@ -158,7 +158,7 @@ def _resolve_days() -> int:
 def analytics_view():
     days = _resolve_days()
     analytics = load_analytics(days=days)
-    return render_template('reports/analytics.html', analytics=analytics, days=days)
+    return render_template('analytics/overview.html', analytics=analytics, days=days)
 
 
 @reports_bp.route('/analytics/export.csv')

@@ -1,92 +1,105 @@
 {% extends "layout.html" %}
-{% block title %}Settings · Branding{% endblock %}
-{% block content %}
+{% block title %}Branding Settings{% endblock %}
 
-<div class="card mb-3">
-  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-    <div>
-      <h2 class="mb-1">Branding & Theme</h2>
-      <div class="text-muted">Your storefront identity, colours, and the dashboard palette.</div>
+{% block content %}
+<section class="card">
+  <div class="d-flex justify-content-between align-items-center flex-column" style="gap:16px;">
+    <div class="d-flex flex-column gap-1">
+      <h1 style="font-size:var(--f-xl);font-weight:700;">Branding & Theme</h1>
+      <p class="text-muted">Curate how your Apple-class business OS looks across dashboards, invoices, and reports.</p>
     </div>
     <div class="d-flex gap-2">
-      <a class="btn-ghost btn-sm{% if request.path.endswith('/branding') %} active{% endif %}" href="{{ url_for('settings.branding') }}">Branding</a>
-      <a class="btn-ghost btn-sm" href="{{ url_for('settings.access_dashboard') }}">Access</a>
-      <a class="btn-ghost btn-sm" href="{{ url_for('settings.connect_hub') }}">Connect</a>
+      <a class="btn ghost" href="{{ url_for('settings.branding') }}">Branding</a>
+      <a class="btn ghost" href="{{ url_for('settings.access_dashboard') }}">Access</a>
+      <a class="btn ghost" href="{{ url_for('settings.connect_hub') }}">Connect</a>
     </div>
   </div>
-</div>
+</section>
 
-<div class="card mb-3">
-  <form method="POST" enctype="multipart/form-data" class="row g-3">
-    <div class="col-md-6">
-      <label class="form-label">Business name</label>
-      <input class="form-control" type="text" name="name" value="{{ profile.name or '' }}" required>
+<form method="POST" enctype="multipart/form-data" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;margin-top:20px;">
+  <section class="card">
+    <h3 style="font-size:var(--f-lg);font-weight:600;" class="mb-2">Identity</h3>
+    <div class="input-row two">
+      <div>
+        <label for="brandName">Business name</label>
+        <input id="brandName" type="text" name="name" value="{{ profile.name or '' }}" required>
+      </div>
+      <div>
+        <label for="invoicePrefix">Invoice prefix</label>
+        <input id="invoicePrefix" type="text" name="invoice_prefix" value="{{ profile.invoice_prefix or 'INV' }}">
+      </div>
     </div>
-    <div class="col-md-6">
-      <label class="form-label">Invoice prefix</label>
-      <input class="form-control" type="text" name="invoice_prefix" value="{{ profile.invoice_prefix or 'INV' }}">
+    <div class="input-row" style="margin-top:14px;">
+      <div>
+        <label for="brandAddress">Address</label>
+        <textarea id="brandAddress" name="address" rows="3">{{ profile.address or '' }}</textarea>
+      </div>
     </div>
-    <div class="col-12">
-      <label class="form-label">Address</label>
-      <textarea class="form-control" name="address" rows="3">{{ profile.address or '' }}</textarea>
+    <div class="input-row three" style="margin-top:14px;">
+      <div>
+        <label for="brandPhone">Phone</label>
+        <input id="brandPhone" type="text" name="phone" value="{{ profile.phone or '' }}">
+      </div>
+      <div>
+        <label for="brandGST">GST Number</label>
+        <input id="brandGST" type="text" name="gst" value="{{ profile.gst or '' }}">
+      </div>
+      <div>
+        <label for="themeSelect">UI Theme</label>
+        <select id="themeSelect" name="ui_theme">
+          <option value="mint" {% if current_theme == 'mint' %}selected{% endif %}>Mint</option>
+          <option value="purple" {% if current_theme == 'purple' %}selected{% endif %}>Purple</option>
+        </select>
+      </div>
     </div>
-    <div class="col-md-4">
-      <label class="form-label">Phone</label>
-      <input class="form-control" type="text" name="phone" value="{{ profile.phone or '' }}">
+    <div class="input-row two" style="margin-top:14px;">
+      <div>
+        <label for="primaryColor">Primary colour</label>
+        <input id="primaryColor" type="color" name="primary_color" value="{{ profile.primary_color or '#0A2540' }}">
+      </div>
+      <div>
+        <label for="secondaryColor">Secondary colour</label>
+        <input id="secondaryColor" type="color" name="secondary_color" value="{{ profile.secondary_color or '#62b5ff' }}">
+      </div>
     </div>
-    <div class="col-md-4">
-      <label class="form-label">GST Number</label>
-      <input class="form-control" type="text" name="gst" value="{{ profile.gst or '' }}">
-    </div>
-    <div class="col-md-4">
-      <label class="form-label">UI Theme</label>
-      <select class="form-select" name="ui_theme">
-        <option value="mint" {% if current_theme == 'mint' %}selected{% endif %}>Mint (calm retail)</option>
-        <option value="purple" {% if current_theme == 'purple' %}selected{% endif %}>Purple (bolder analytics)</option>
-      </select>
-    </div>
-    <div class="col-md-4">
-      <label class="form-label">Primary colour</label>
-      <input class="form-control form-control-color" type="color" name="primary_color" value="{{ profile.primary_color or '#0A2540' }}">
-    </div>
-    <div class="col-md-4">
-      <label class="form-label">Secondary colour</label>
-      <input class="form-control form-control-color" type="color" name="secondary_color" value="{{ profile.secondary_color or '#62b5ff' }}">
-    </div>
+  </section>
 
-    <div class="col-md-4">
-      <label class="form-label">Logo (PNG/SVG)</label>
-      <input class="form-control" type="file" name="logo" accept=".png,.jpg,.jpeg,.svg">
-      {% if profile.logo_path %}
-        <small class="d-block mt-1 text-muted">Current: {{ profile.logo_path }}</small>
-      {% endif %}
+  <section class="card">
+    <h3 style="font-size:var(--f-lg);font-weight:600;" class="mb-2">Assets</h3>
+    <div class="input-row">
+      <div>
+        <label for="logoUpload">Logo (PNG/SVG)</label>
+        <input id="logoUpload" type="file" name="logo" accept=".png,.jpg,.jpeg,.svg">
+        {% if profile.logo_path %}
+          <div class="text-muted small mt-2">Current: {{ profile.logo_path }}</div>
+        {% endif %}
+      </div>
+      <div>
+        <label for="signatureUpload">Authorised signature</label>
+        <input id="signatureUpload" type="file" name="signature" accept=".png,.jpg,.jpeg">
+        {% if profile.signature_path %}
+          <div class="text-muted small mt-2">Current: {{ profile.signature_path }}</div>
+        {% endif %}
+      </div>
+      <div>
+        <label for="watermarkUpload">Watermark</label>
+        <input id="watermarkUpload" type="file" name="watermark" accept=".png,.jpg,.jpeg">
+        {% if profile.watermark_path %}
+          <div class="text-muted small mt-2">Current: {{ profile.watermark_path }}</div>
+        {% endif %}
+      </div>
     </div>
-    <div class="col-md-4">
-      <label class="form-label">Authorised signature</label>
-      <input class="form-control" type="file" name="signature" accept=".png,.jpg,.jpeg">
-      {% if profile.signature_path %}
-        <small class="d-block mt-1 text-muted">Current: {{ profile.signature_path }}</small>
-      {% endif %}
+    <div class="d-flex justify-content-end" style="margin-top:20px;">
+      <button class="btn primary" type="submit">Save Branding</button>
     </div>
-    <div class="col-md-4">
-      <label class="form-label">Watermark</label>
-      <input class="form-control" type="file" name="watermark" accept=".png,.jpg,.jpeg">
-      {% if profile.watermark_path %}
-        <small class="d-block mt-1 text-muted">Current: {{ profile.watermark_path }}</small>
-      {% endif %}
-    </div>
+  </section>
+</form>
 
-    <div class="col-12 text-end">
-      <button class="btn-primary" type="submit">Save branding</button>
-    </div>
-  </form>
-</div>
-
-<div class="card">
+<section class="card" style="margin-top:20px;">
   <div class="d-flex justify-content-between align-items-center mb-2">
     <div>
-      <h5 class="mb-1">End-of-day lock</h5>
-      <div class="text-muted small">After the nightly report runs, sales and expenses lock for auditing.</div>
+      <h3 class="mb-1" style="font-size:var(--f-lg);font-weight:600;">End-of-day lock</h3>
+      <div class="text-muted small">After nightly reports, sales and expenses freeze for auditing. Unlocking is logged.</div>
     </div>
     {% if sales_lock %}
       <span class="badge-soft text-warning">Locked for {{ sales_lock.value }}</span>
@@ -94,18 +107,17 @@
       <span class="badge-soft text-success">Unlocked</span>
     {% endif %}
   </div>
-  <form method="POST" action="{{ url_for('settings.unlock_day') }}" class="row g-2">
-    <div class="col-12">
-      <label class="form-label small text-uppercase" for="unlockReason">Override reason</label>
-      <textarea id="unlockReason" class="form-control" name="reason" rows="2" placeholder="Explain why books need to reopen. Logged for audit." required></textarea>
+  <form method="POST" action="{{ url_for('settings.unlock_day') }}" class="input-row">
+    <div>
+      <label for="unlockReason">Override reason</label>
+      <textarea id="unlockReason" name="reason" rows="2" placeholder="Explain why books need to reopen. Logged for audit." required></textarea>
     </div>
-    <div class="col-12 text-end">
-      <button class="btn-ghost btn-sm" type="submit">Override & unlock</button>
+    <div class="d-flex justify-content-end">
+      <button class="btn ghost" type="submit">Override &amp; unlock</button>
     </div>
   </form>
   {% if lock_reason %}
     <p class="text-muted small mt-2 mb-0">Last action: {{ lock_reason.value }}</p>
   {% endif %}
-</div>
-
+</section>
 {% endblock %}

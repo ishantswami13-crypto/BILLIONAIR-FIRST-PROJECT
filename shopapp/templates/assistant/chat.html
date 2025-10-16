@@ -4,85 +4,118 @@
 {% block head %}
 <style>
   .assistant-shell {
+    display: grid;
+    grid-template-columns: minmax(0,1fr);
+    gap: 20px;
+  }
+  .chat-window {
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 16px;
   }
-  .assistant-chat {
+  .chat-log {
     max-height: 420px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 14px;
+    padding-right: 4px;
   }
-  .assistant-message {
-    border-radius: 16px;
-    padding: 0.9rem 1rem;
-    background: var(--glass);
-    border: 1px solid var(--line);
+  .chat-bubble {
+    border-radius: var(--radius-xl);
+    padding: 16px 18px;
+    border: 1px solid rgba(255,255,255,.08);
+    background: rgba(255,255,255,.05);
+    backdrop-filter: blur(18px);
+    box-shadow: var(--shadow-soft);
   }
-  .assistant-message.user {
-    background: rgba(0, 212, 179, 0.18);
-    border-color: rgba(0, 212, 179, 0.35);
+  .chat-bubble.user {
+    align-self: flex-end;
+    background: rgba(130,255,195,.16);
+    border-color: rgba(130,255,195,.35);
+    color: #0B0C0F;
   }
-  .assistant-suggestions button {
+  .chat-bubble.assistant {
+    align-self: flex-start;
+  }
+  .prompt-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .prompt-grid button {
+    border: none;
     border-radius: 999px;
-    padding: 0.35rem 0.8rem;
+    padding: 8px 16px;
+    background: rgba(255,255,255,.08);
+    color: var(--ink);
+    cursor: pointer;
+    transition: background .2s var(--ease), transform .2s var(--ease);
+  }
+  .prompt-grid button:hover {
+    background: rgba(255,255,255,.14);
+    transform: translateY(-1px);
   }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="assistant-shell">
-  <div class="card">
-    <h2 class="mb-1">AI Ops Assistant</h2>
-    <div class="text-muted">Ask about sales, expenses, credits or inventory. Responses use the last 90 days of data.</div>
-    <div class="assistant-suggestions d-flex flex-wrap gap-2 mt-3">
-      <button type="button" class="btn-ghost btn-sm" data-suggest="Show me today's revenue vs expenses">Today’s trend</button>
-      <button type="button" class="btn-ghost btn-sm" data-suggest="Which items are low on stock?">Low stock</button>
-      <button type="button" class="btn-ghost btn-sm" data-suggest="How much unpaid credit do we have this week?">Credit status</button>
+  <section class="card">
+    <h1 style="font-size:var(--f-xl);font-weight:700;">AI Business Assistant</h1>
+    <p class="text-muted">Ask natural questions about sales, expenses, credits, or inventory. Responses use the last 90 days of data.</p>
+    <div class="prompt-grid" style="margin-top:16px;">
+      <button type="button" data-suggest="Summarise today's revenue vs expenses">Today's trend</button>
+      <button type="button" data-suggest="Which items are low on stock?">Low stock</button>
+      <button type="button" data-suggest="How much unpaid credit do we have this week?">Credit status</button>
+      <button type="button" data-suggest="Show me expense breakdown for this month">Expense breakdown</button>
     </div>
-  </div>
+  </section>
 
-  <div class="card">
-    <div class="assistant-chat" id="chatLog">
+  <section class="card chat-window">
+    <div class="chat-log" id="chatLog">
       {% for message in messages %}
-        <div class="assistant-message {{ 'user' if message.role == 'user' else 'bot' }}">
-          <small class="text-muted text-uppercase d-block mb-1">{{ message.role }}</small>
+        <div class="chat-bubble {{ message.role }}">
+          <div class="small text-muted text-uppercase mb-1">{{ message.role }}</div>
           <div>{{ message.content|replace('\n', '<br>')|safe }}</div>
         </div>
       {% endfor %}
     </div>
-
-    <form id="chatForm" class="row g-2 align-items-end mt-3">
+    <form id="chatForm" class="input-row two" style="margin-top:8px;">
       <input type="hidden" name="session_id" value="{{ chat_session.id }}">
-      <div class="col-md-9">
-        <label class="form-label small text-uppercase">Message</label>
-        <input class="form-control" type="text" name="message" autocomplete="off" placeholder="Ask a question about your store" required>
+      <div style="grid-column:span 2;">
+        <label for="assistantMessage">Message</label>
+        <input id="assistantMessage" type="text" name="message" autocomplete="off" placeholder="Ask anything about your store" required>
       </div>
-      <div class="col-md-3 d-flex gap-2">
-        <button class="btn-primary w-100" type="submit">Send</button>
-        <a class="btn-ghost" href="{{ url_for('assistant.export_session', session_id=chat_session.id) }}">Export</a>
+      <div>
+        <button class="btn primary w-100" type="submit">Send</button>
+      </div>
+      <div>
+        <a class="btn ghost w-100" href="{{ url_for('assistant.export_session', session_id=chat_session.id) }}">Export</a>
       </div>
     </form>
-  </div>
+  </section>
 </div>
 {% endblock %}
 
 {% block scripts %}
 {{ super() }}
 <script>
+(function () {
   const chatLog = document.getElementById('chatLog');
   const chatForm = document.getElementById('chatForm');
   const suggestionButtons = document.querySelectorAll('[data-suggest]');
 
+  if (!chatForm || !chatLog) { return; }
+
   const renderMessage = (role, content) => {
     const wrapper = document.createElement('div');
-    wrapper.className = `assistant-message ${role === 'user' ? 'user' : 'bot'}`;
-    const title = document.createElement('small');
-    title.className = 'text-muted text-uppercase d-block mb-1';
-    title.textContent = role;
-    wrapper.appendChild(title);
+    wrapper.className = `chat-bubble ${role === 'user' ? 'user' : 'assistant'}`;
+
+    const heading = document.createElement('div');
+    heading.className = 'small text-muted text-uppercase mb-1';
+    heading.textContent = role;
+    wrapper.appendChild(heading);
 
     const body = document.createElement('div');
     body.innerHTML = content.replace(/\n/g, '<br>');
@@ -97,9 +130,8 @@
     const formData = new FormData(chatForm);
     const messageInput = chatForm.querySelector('[name="message"]');
     const message = messageInput.value.trim();
-    if (!message) {
-      return;
-    }
+    if (!message) { return; }
+
     renderMessage('user', message);
     messageInput.value = '';
 
@@ -118,9 +150,9 @@
         throw new Error('Request failed');
       }
       const data = await response.json();
-      (data.messages || []).forEach(msg => renderMessage(msg.role, msg.content));
+      (data.messages || []).forEach((msg) => renderMessage(msg.role, msg.content));
     } catch (error) {
-      renderMessage('assistant', 'I could not process that request right now. Please try again in a moment.');
+      renderMessage('assistant', 'I could not process that request right now. Please try again shortly.');
     }
   });
 
@@ -132,5 +164,6 @@
       input.focus();
     });
   });
+})();
 </script>
 {% endblock %}
