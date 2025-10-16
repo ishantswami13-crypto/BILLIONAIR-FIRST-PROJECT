@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block title %}Invite Friends · ShopApp Cloud{% endblock %}
+{% block crumb %}Invite Friends{% endblock %}
+{% block content %}
+<div class="card" style="max-width:680px;margin:0 auto;">
+  <h3 style="margin-top:0;">Your Invite Link</h3>
+  <p style="word-break:break-all;">{{ link }}</p>
+  <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+    <a class="button primary" href="https://wa.me/?text={{ link | urlencode }}" target="_blank" rel="noopener">Share on WhatsApp</a>
+    <a class="button" href="{{ link }}" target="_blank" rel="noopener">Preview landing</a>
+  </div>
+</div>
+{% endblock %}

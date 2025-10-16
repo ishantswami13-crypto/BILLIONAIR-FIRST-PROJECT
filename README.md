@@ -73,11 +73,14 @@ flask --app manage.py run
 - Automatic loading of `.env.local` overrides for painless local development.
 - On startup the app creates missing tables and seeds a default shop profile + admin user.
 - Added analytics hooks (GA4 + Mixpanel), plan-aware feature flags, and a `/settings/branding` admin page for GST-ready invoices with logo/signature support.
+- Role-based access with owner/cashier/accountant invites, device session management, and multi-device support.
 - Expense categories now support colour-coded tags, keyword auto-suggestions, and a dedicated analytics breakdown.
 - Inventory heuristics now surface reorder prompts, slow-mover alerts, and high-demand warnings on the analytics dashboard.
+- Payment provider webhooks now land in a reconciliation console with retry controls and manual matching to invoices.
 - AI assistant dashboard for quick Q&A with conversation export.
 - Automated WhatsApp reminders for outstanding credit (udhar) with opt-out controls and manual trigger.
 - Nightly reports now lock the sales ledger until an admin overrides the lock from the settings page.
+- Connect Hub ships a QR signage generator for payment/review links plus printable PDF signage.
 
 ## Background jobs
 
@@ -108,6 +111,10 @@ Both require valid SMTP credentials and Google API tokens (`credentials.json`, `
 - Reminders run daily at 18:00 UTC; adjust cadence with `WHATSAPP_REMINDER_COOLDOWN_HOURS`.
 - Manage outstanding ledger and opt-outs at `/credits`.
 - Trigger manually via `flask credits-send-reminders` if needed.
+
+## Architecture notes
+
+- Smart Connect design details and offline/hybrid strategy live in `docs/offline-architecture.md`.
 
 ## Troubleshooting
 

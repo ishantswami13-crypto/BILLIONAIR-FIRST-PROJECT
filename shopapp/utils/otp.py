@@ -1,9 +1,11 @@
-import random
+﻿import random
 from datetime import datetime, timedelta
+
+from flask import current_app
 
 from ..extensions import db
 from ..models import Otp, User
-from .mailer import send_mail
+from .mail import send_otp_email
 
 OTP_EXP_MINUTES = 10
 
@@ -20,20 +22,20 @@ def request_otp(username: str, email: str) -> bool:
     db.session.add(entry)
     db.session.commit()
 
-    send_mail(
-        to=email,
-        subject='Your ShopApp verification code',
-        body=f'Hi {username}, your code is {code}. It expires in {OTP_EXP_MINUTES} minutes.'
-    )
-    return True
+    sent = send_otp_email(email, code)
+    if not sent:
+        current_app.logger.error('OTP send failed for username=%s email=%s', username, email)
+    return sent
 
 
 def verify_otp(username: str, email: str, code: str) -> bool:
     now = datetime.utcnow()
-    record = (Otp.query
-              .filter_by(username=username, email=email, otp=code)
-              .order_by(Otp.id.desc())
-              .first())
+    record = (
+        Otp.query
+        .filter_by(username=username, email=email, otp=code)
+        .order_by(Otp.id.desc())
+        .first()
+    )
     if record and record.expires_at and record.expires_at > now:
         user = User.query.filter_by(username=username, email=email).first()
         if user:

@@ -4,7 +4,7 @@ import click
 
 from .credits.tasks import send_credit_reminders
 from .extensions import db
-from .models import Otp, ShopProfile, User
+from .models import Otp, ShopProfile, User, UserRole
 
 
 def register_cli(app):
@@ -29,9 +29,11 @@ def register_cli(app):
 
         user = User.query.filter_by(username=username).first()
         if not user:
-            user = User(username=username, email=email)
+            user = User(username=username, email=email, role=UserRole.owner)
             user.set_password(password)
             db.session.add(user)
+        else:
+            user.role = UserRole.owner
 
         db.session.commit()
         click.echo('Admin seeded.')

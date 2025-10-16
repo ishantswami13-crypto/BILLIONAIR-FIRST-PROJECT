@@ -5,6 +5,7 @@ from sqlalchemy import func
 
 from ..extensions import db
 from ..models import Expense, ExpenseCategory
+from ..utils.audit import log_event
 from ..utils.decorators import login_required
 
 expenses_bp = Blueprint('expenses', __name__)
@@ -66,7 +67,78 @@ def expenses():
         return redirect(url_for('expenses.expenses'))
 
     rows = Expense.query.order_by(Expense.date.desc()).all()
-    return render_template('expenses/list.html', expenses=rows, categories=categories)
+    suggestions = {}
+    for expense in rows:
+        if expense.category_id:
+            continue
+        suggestion = _suggest_category(f"{expense.category or ''} {expense.notes or ''}", categories)
+        if suggestion:
+            suggestions[expense.id] = suggestion
+    return render_template('expenses/list.html', expenses=rows, categories=categories, suggestions=suggestions)
+
+
+@expenses_bp.route('/expenses/reassign', methods=['POST'])
+@login_required
+def bulk_reassign():
+    expense_ids = [int(x) for x in request.form.getlist('expense_ids') if x.isdigit()]
+    if not expense_ids:
+        flash('Select at least one expense to reassign.', 'warning')
+        return redirect(url_for('expenses.expenses'))
+
+    category_id_raw = request.form.get('bulk_category_id') or ''
+    custom_label = (request.form.get('bulk_category') or '').strip()
+
+    category = None
+    if category_id_raw:
+        category = ExpenseCategory.query.get(int(category_id_raw))
+
+    if not category and not custom_label:
+        flash('Choose a target category or supply a custom label.', 'warning')
+        return redirect(url_for('expenses.expenses'))
+
+    label = category.name if category else custom_label
+
+    updated = 0
+    for expense in Expense.query.filter(Expense.id.in_(expense_ids)).all():
+        expense.category_id = category.id if category else None
+        expense.category = label
+        updated += 1
+
+    if updated:
+        db.session.commit()
+        log_event(
+            'expenses_bulk_reassign',
+            resource_type='expense',
+            resource_id=None,
+            after={'count': updated, 'category': label},
+        )
+        flash(f'Updated {updated} expenses to {label}.', 'success')
+    else:
+        flash('No expenses updated.', 'info')
+    return redirect(url_for('expenses.expenses'))
+
+
+@expenses_bp.route('/expenses/<int:expense_id>/apply-suggestion', methods=['POST'])
+@login_required
+def apply_suggestion(expense_id: int):
+    expense = Expense.query.get_or_404(expense_id)
+    categories = _load_categories()
+    suggestion = _suggest_category(f"{expense.category or ''} {expense.notes or ''}", categories)
+    if not suggestion:
+        flash('No suggestion available for this expense.', 'warning')
+        return redirect(url_for('expenses.expenses'))
+
+    expense.category_id = suggestion.id
+    expense.category = suggestion.name
+    db.session.commit()
+    log_event(
+        'expense_apply_suggestion',
+        resource_type='expense',
+        resource_id=expense.id,
+        after={'category': suggestion.name},
+    )
+    flash(f'Applied suggested category: {suggestion.name}.', 'success')
+    return redirect(url_for('expenses.expenses'))
 
 
 @expenses_bp.route('/expenses/categories', methods=['GET', 'POST'])

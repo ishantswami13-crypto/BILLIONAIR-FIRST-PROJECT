@@ -1,0 +1,59 @@
+:root {
+  /* base */
+  --bg: #0F1226;           /* deep navy */
+  --ink: #E9F0FF;          /* high-contrast text */
+  --muted: #B9C6E3;        /* secondary text */
+  --line: rgba(255,255,255,0.14); /* borders */
+  --card: rgba(255,255,255,0.08); /* surfaces */
+  --glass: rgba(255,255,255,0.12);/* hover/soft bg */
+  --radius: 18px;
+  --shadow-e1: 0 8px 24px rgba(0,0,0,.25);
+  --shadow-e2: 0 16px 40px rgba(0,0,0,.28);
+
+  /* primary theme — Mint (default) */
+  --primary: #00D4B3;
+  --accent:  #7CF29C;
+  --warn:    #FFB74D;
+  --danger:  #FF6B6B;
+
+  /* chart colors */
+  --ch-rev:  #00D4B3;
+  --ch-exp:  #FFB74D;
+  --ch-prof: #7CF29C;
+
+  /* spacing scale (8pt with helpers) */
+  --s-0: 0px;
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-7: 28px;
+  --s-8: 32px;
+  --s-9: 40px;
+  --s-10: 48px;
+
+  /* type scale */
+  --f-xs: 12px;
+  --f-sm: 14px;
+  --f-md: 16px;
+  --f-lg: 18px;
+  --f-xl: 22px;
+  --f-2xl: 28px;
+  --f-3xl: 36px;
+
+  /* container widths */
+  --w-narrow: 900px;
+  --w-std: 1100px;
+  --w-wide: 1280px;
+}
+
+/* alt theme — Purple (optional toggle) */
+.theme-purple {
+  --primary: #6A5AF9;
+  --accent:  #00FFBC;
+  --ch-rev:  #6A5AF9;
+  --ch-exp:  #FFB74D;
+  --ch-prof: #00FFBC;
+}

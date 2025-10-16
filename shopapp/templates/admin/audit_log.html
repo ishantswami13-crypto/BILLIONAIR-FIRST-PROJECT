@@ -1,0 +1,93 @@
+{% extends "layout.html" %}
+{% block title %}Audit Log · ShopApp Cloud{% endblock %}
+{% block crumb %}Admin / Audit Log{% endblock %}
+
+{% block content %}
+<div class="bo-card mb-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+    <div>
+      <h1 class="h4 mb-1">Audit trail</h1>
+      <p class="bo-soft mb-0">Every privileged action, captured with before/after values, IP, and device context.</p>
+    </div>
+    <form method="get" class="d-flex gap-2" role="search">
+      <input class="form-control form-control-sm" type="search" name="q" placeholder="Search user, action, or resource" value="{{ q }}">
+      <button class="btn btn-sm bo-btn-outline" type="submit">Search</button>
+    </form>
+  </div>
+</div>
+
+<div class="bo-card">
+  <div class="table-responsive">
+    <table class="table table-dark table-hover align-middle mb-0 bo-table">
+      <thead>
+        <tr class="text-uppercase small">
+          <th>When</th>
+          <th>User</th>
+          <th>Action</th>
+          <th>Resource</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in entries %}
+        {% set row = entry.row %}
+        <tr>
+          <td class="small">
+            {{ row.ts.strftime('%d %b %Y %H:%M:%S') if row.ts else '—' }}<br>
+            <span class="text-muted">{{ row.ip_address or 'IP N/A' }}</span><br>
+            <span class="text-muted">{{ row.user_agent or 'Agent N/A' }}</span>
+          </td>
+          <td>{{ row.user or 'system' }}</td>
+          <td>
+            <strong>{{ row.action }}</strong><br>
+            <span class="text-muted">{{ row.details }}</span>
+          </td>
+          <td>
+            {{ row.resource_type or '—' }}
+            {% if row.resource_id %}
+              <span class="badge bo-badge-light ms-1">#{{ row.resource_id }}</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if entry.diff %}
+            <ul class="list-unstyled mb-0">
+              {% for key, change in entry.diff.items() %}
+              <li>
+                <strong class="me-2">{{ key }}</strong>
+                <span class="text-danger">{{ change.before if change.before is not none else '—' }}</span>
+                <span class="mx-1 text-muted">→</span>
+                <span class="text-success">{{ change.after if change.after is not none else '—' }}</span>
+              </li>
+              {% endfor %}
+            </ul>
+            {% else %}
+            <span class="bo-soft small">No field-level delta captured.</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5" class="text-center py-4 bo-soft">No audit entries yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if page.pages > 1 %}
+  <nav class="mt-3" aria-label="Audit pagination">
+    <ul class="pagination pagination-sm mb-0">
+      <li class="page-item {% if not page.has_prev %}disabled{% endif %}">
+        <a class="page-link" href="{{ url_for('admin.audit_log', page=page.prev_num, q=q) }}">Prev</a>
+      </li>
+      <li class="page-item disabled">
+        <span class="page-link text-muted">Page {{ page.page }} / {{ page.pages }}</span>
+      </li>
+      <li class="page-item {% if not page.has_next %}disabled{% endif %}">
+        <a class="page-link" href="{{ url_for('admin.audit_log', page=page.next_num, q=q) }}">Next</a>
+      </li>
+    </ul>
+  </nav>
+  {% endif %}
+</div>
+{% endblock %}

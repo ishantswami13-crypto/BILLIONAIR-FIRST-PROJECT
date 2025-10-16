@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import csv
 import io
 
-from flask import Blueprint, make_response, render_template, request, send_file
+from flask import Blueprint, make_response, render_template, request, send_file, jsonify
 from sqlalchemy import func
 
 from ..extensions import db
@@ -176,3 +176,14 @@ def analytics_export():
     response.headers['Content-Type'] = 'text/csv'
     response.headers['Content-Disposition'] = f'attachment; filename=analytics_{days}d.csv'
     return response
+
+
+@reports_bp.route('/analytics/data')
+@login_required
+def analytics_data():
+    days = _resolve_days()
+    analytics = load_analytics(days=days)
+    return jsonify({
+        'days': days,
+        'analytics': analytics,
+    })

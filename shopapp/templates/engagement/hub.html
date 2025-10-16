@@ -1,0 +1,66 @@
+{% extends "layout.html" %}
+{% block title %}Engagement Hub · ShopApp Cloud{% endblock %}
+{% block crumb %}Engagement Hub{% endblock %}
+{% block content %}
+<div class="d-grid gap-4" style="max-width:880px;margin:0 auto;">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;">
+      <div>
+        <h2 style="margin:0;font-size:1.4rem;">Welcome back, {{ user.username }}</h2>
+        <div class="badge" title="Each day adds +1. Miss a day, reset to 1. Brutal—but fair.">Streak: {{ last.streak_count or 0 }} days</div>
+      </div>
+      <a class="button primary" href="{{ url_for('sales.index') }}">Do your first action →</a>
+    </div>
+    <div style="margin-top:1rem;">
+      <div class="progress">
+        <div style="width: {{ (last.xp or 0) % 100 }}%;"></div>
+      </div>
+      <small style="color:var(--muted)">XP: {{ last.xp or 0 }} · Next reward at 100</small>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0;">Today’s Quests</h3>
+    <form method="post" action="{{ url_for('engagement.complete') }}" style="display:grid;gap:.75rem;">
+      {% for q in quests %}
+        <button class="button" name="code" value="{{ q.code }}" type="submit" style="justify-content:space-between;text-align:left;">
+          <span>
+            <strong>{{ q.title }}</strong>
+            {% if q.description %}
+            <span style="display:block;color:var(--muted);font-weight:400;">{{ q.description }}</span>
+            {% endif %}
+          </span>
+          <span class="badge">+{{ q.xp_reward }} XP</span>
+        </button>
+      {% else %}
+        <p style="color:var(--muted);margin:0;">Quests take a coffee break. Check back soon.</p>
+      {% endfor %}
+    </form>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0;">Completed Today</h3>
+    {% if completed %}
+      <ul style="margin:0;padding-left:1rem;display:grid;gap:.5rem;">
+        {% for c in completed %}
+          <li>{{ c.title }} <span style="color:var(--muted)">— {{ c.completed_at.strftime('%H:%M') if c.completed_at else '' }}</span></li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p style="color:var(--muted);margin:0;">No wins yet. Tap a quest. Tiny steps, massive compounding.</p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <p style="margin:.25rem 0 .75rem 0;">Rate today’s experience</p>
+    <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
+      {% for i in range(0, 11) %}
+        <form method="post" action="{{ url_for('marketing.nps') }}">
+          <input type="hidden" name="score" value="{{ i }}">
+          <button class="badge" type="submit">{{ i }}</button>
+        </form>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

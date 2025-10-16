@@ -1,15 +1,18 @@
-﻿from datetime import datetime, timedelta
+﻿import csv
+import io
+from datetime import datetime, timedelta
 
-from flask import (Blueprint, flash, redirect, render_template, request,
-                   send_file, session, url_for)
+from flask import (Blueprint, current_app, flash, make_response, redirect, render_template,
+                   request, send_file, session, url_for)
 from sqlalchemy import func
+from sqlalchemy.orm import joinedload
 
 from ..extensions import db
 from ..models import AuditLog, Credit, Customer, Expense, Item, Sale, Setting
 from ..utils.decorators import login_required
 from ..utils.audit import log_event
 from ..utils.invoices import next_invoice_number
-from ..utils.mailer import send_mail
+from ..utils.mail import send_mail
 from ..utils.pdfs import create_invoice_pdf
 
 sales_bp = Blueprint('sales', __name__)
@@ -22,59 +25,66 @@ def today_bounds() -> tuple[datetime, datetime]:
     return start, end
 
 
+def _parse_range(start_str: str | None, end_str: str | None) -> tuple[str | None, str | None, datetime | None, datetime | None]:
+    start_dt = None
+    end_dt = None
+
+    if start_str:
+        try:
+            start_dt = datetime.strptime(start_str, '%Y-%m-%d')
+        except ValueError:
+            start_str = None
+            start_dt = None
+
+    if end_str:
+        try:
+            end_dt = datetime.strptime(end_str, '%Y-%m-%d') + timedelta(days=1)
+        except ValueError:
+            end_str = None
+            end_dt = None
+
+    return start_str, end_str, start_dt, end_dt
+
+
 @sales_bp.route('/')
 @login_required
 def index():
     start, end = today_bounds()
 
-    items = Item.query.order_by(Item.name).all()
-    sales = Sale.query.order_by(Sale.date.desc()).limit(20).all()
-    customers = Customer.query.order_by(Customer.name).all()
+    items = Item.query.order_by(Item.name.asc()).all()
+    customers = Customer.query.order_by(Customer.name.asc()).all()
 
-    row = (db.session.query(
-        func.coalesce(func.sum(Sale.net_total), 0),
-        func.coalesce(func.sum(Sale.discount), 0),
-        func.coalesce(func.sum(Sale.tax), 0),
-        func.count(Sale.id)
-    ).filter(Sale.date.between(start, end)).first())
-
-    today_rev = float(row[0] or 0)
-    today_discount = float(row[1] or 0)
-    today_tax = float(row[2] or 0)
-    today_count = int(row[3] or 0)
-
-    payment_summary = (
-        db.session.query(Sale.payment_method,
-                         func.coalesce(func.sum(Sale.net_total), 0))
+    today_row = (
+        db.session.query(
+            func.count(Sale.id),
+            func.coalesce(func.sum(Sale.net_total), 0),
+        )
         .filter(Sale.date.between(start, end))
-        .group_by(Sale.payment_method)
-        .all()
-    )
-    payment_summary = [
-        {'method': method or 'cash', 'amount': float(amount or 0)}
-        for method, amount in payment_summary
-    ]
-
-    low_stock = (
-        Item.query
-        .filter(Item.current_stock <= func.coalesce(Item.reorder_level, 5))
-        .order_by(Item.current_stock.asc(), Item.name)
-        .limit(8)
-        .all()
+        .first()
     )
 
-    outstanding_udhar = (
+    today_count = int(today_row[0] or 0)
+    today_rev = float(today_row[1] or 0.0)
+
+    unpaid_credits = (
         db.session.query(func.coalesce(func.sum(Credit.total), 0))
-        .filter(Credit.status.in_(['unpaid', 'adjusted']))
+        .filter(Credit.status == 'unpaid')
+        .scalar() or 0.0
+    )
+
+    low_stock_count = (
+        db.session.query(func.count(Item.id))
+        .filter(Item.current_stock <= func.coalesce(Item.reorder_level, 5))
         .scalar() or 0
     )
 
-    start_window = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=6)
-    window_days = [start_window.date() + timedelta(days=i) for i in range(7)]
+    window_end = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    window_start = window_end - timedelta(days=6)
+    window_days = [window_start.date() + timedelta(days=i) for i in range(7)]
 
     sales_rows = (
         db.session.query(func.date(Sale.date), func.coalesce(func.sum(Sale.net_total), 0))
-        .filter(Sale.date >= start_window)
+        .filter(Sale.date >= window_start)
         .group_by(func.date(Sale.date))
         .all()
     )
@@ -85,43 +95,108 @@ def index():
         .all()
     )
 
-    sales_map = {row[0]: float(row[1] or 0) for row in sales_rows}
-    expenses_map = {row[0]: float(row[1] or 0) for row in expenses_rows}
+    def _key(value):
+        if value is None:
+            return None
+        if isinstance(value, str):
+            return value
+        return value.isoformat()
 
-    chart_labels = [day.strftime('%d %b') for day in window_days]
-    chart_sales = [round(sales_map.get(day, 0.0), 2) for day in window_days]
-    chart_expenses = [round(expenses_map.get(day, 0.0), 2) for day in window_days]
-    chart_profit = [round(s - e, 2) for s, e in zip(chart_sales, chart_expenses)]
+    sales_map = {_key(day): float(total or 0) for day, total in sales_rows}
+    expenses_map = {_key(day): float(total or 0) for day, total in expenses_rows}
 
-    payment_chart = {
-        'labels': [row['method'].title() for row in payment_summary],
-        'amounts': [row['amount'] for row in payment_summary]
-    }
+    today = datetime.utcnow().date()
+    mini = []
+    for offset in range(6, -1, -1):
+        day = today - timedelta(days=offset)
+        iso = day.isoformat()
+        mini.append(
+            {
+                "t": iso[5:],
+                "rev": round(sales_map.get(iso, 0.0), 2),
+                "exp": round(expenses_map.get(iso, 0.0), 2),
+            }
+        )
 
-    invoice_ready = session.pop('invoice_ready', None)
-    sales_lock = Setting.query.filter_by(key='sales_lock_date').first()
+    streak_text = "Keep going!"
+    if today_rev > 0:
+        streak_text = "You’re on a profit streak 🔥"
 
     return render_template(
         'index.html',
-        user=session.get('user'),
         items=items,
-        sales=sales,
         customers=customers,
-        today_rev=today_rev,
-        today_discount=today_discount,
-        today_tax=today_tax,
         today_count=today_count,
-        payment_summary=payment_summary,
-        low_stock=low_stock,
-        outstanding_udhar=outstanding_udhar,
-        invoice_ready=invoice_ready,
-        chart_labels=chart_labels,
-        chart_sales=chart_sales,
-        chart_expenses=chart_expenses,
-        chart_profit=chart_profit,
-        payment_chart=payment_chart,
-        sales_lock=sales_lock
+        today_rev=today_rev,
+        unpaid_credits=unpaid_credits,
+        low_stock_count=low_stock_count,
+        tiny_chart=mini,
+        streak_text=streak_text,
+        active_plan=current_app.config.get('ACTIVE_PLAN'),
+        app_version=current_app.config.get('APP_VERSION'),
+        encryption_notice=current_app.config.get('DATA_ENCRYPTION_NOTICE'),
     )
+
+
+@sales_bp.route('/sales')
+@login_required
+def history():
+    start_str, end_str, start_dt, end_dt = _parse_range(request.args.get('start'), request.args.get('end'))
+
+    query = Sale.query.options(joinedload(Sale.customer))
+    if start_dt:
+        query = query.filter(Sale.date >= start_dt)
+    if end_dt:
+        query = query.filter(Sale.date < end_dt)
+
+    sales = query.order_by(Sale.date.desc()).limit(50).all()
+    total_amount = sum(float(sale.net_total or 0) for sale in sales)
+
+    return render_template(
+        'sales/history.html',
+        sales=sales,
+        start=start_str,
+        end=end_str,
+        total_amount=total_amount,
+    )
+
+
+@sales_bp.route('/sales/export.csv')
+@login_required
+def export_csv():
+    start_str, end_str, start_dt, end_dt = _parse_range(request.args.get('start'), request.args.get('end'))
+
+    query = Sale.query.options(joinedload(Sale.customer)).order_by(Sale.date.asc())
+    if start_dt:
+        query = query.filter(Sale.date >= start_dt)
+    if end_dt:
+        query = query.filter(Sale.date < end_dt)
+
+    rows = query.all()
+
+    buffer = io.StringIO()
+    writer = csv.writer(buffer)
+    writer.writerow(['Sale ID', 'Date', 'Item', 'Quantity', 'Customer', 'Payment', 'Net Total'])
+    for sale in rows:
+        writer.writerow([
+            sale.id,
+            sale.date.strftime('%Y-%m-%d %H:%M') if sale.date else '',
+            sale.item,
+            sale.quantity,
+            sale.customer.name if sale.customer else '',
+            (sale.payment_method or 'cash').title(),
+            f"{float(sale.net_total or 0):.2f}",
+        ])
+
+    response = make_response(buffer.getvalue())
+    filename_parts = ['sales']
+    if start_str:
+        filename_parts.append(start_str)
+    if end_str:
+        filename_parts.append(end_str)
+    response.headers['Content-Type'] = 'text/csv'
+    response.headers['Content-Disposition'] = f"attachment; filename={'_'.join(filename_parts)}.csv"
+    return response
 
 
 @sales_bp.route('/sell', methods=['POST'])

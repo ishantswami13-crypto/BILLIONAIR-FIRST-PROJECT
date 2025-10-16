@@ -1,30 +1,49 @@
-{% extends 'layout.html' %}
-{% block title %}Settings â€¢ Branding{% endblock %}
-{% block crumb %}Settings / Branding{% endblock %}
-
+{% extends "layout.html" %}
+{% block title %}Settings · Branding{% endblock %}
 {% block content %}
-<div class="bo-card mb-4">
-  <h1 class="h4 mb-3">Branding & Invoices</h1>
+
+<div class="card mb-3">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+      <h2 class="mb-1">Branding & Theme</h2>
+      <div class="text-muted">Your storefront identity, colours, and the dashboard palette.</div>
+    </div>
+    <div class="d-flex gap-2">
+      <a class="btn-ghost btn-sm{% if request.path.endswith('/branding') %} active{% endif %}" href="{{ url_for('settings.branding') }}">Branding</a>
+      <a class="btn-ghost btn-sm" href="{{ url_for('settings.access_dashboard') }}">Access</a>
+      <a class="btn-ghost btn-sm" href="{{ url_for('settings.connect_hub') }}">Connect</a>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-3">
   <form method="POST" enctype="multipart/form-data" class="row g-3">
     <div class="col-md-6">
       <label class="form-label">Business name</label>
-      <input class="form-control bo-input" type="text" name="name" value="{{ profile.name or '' }}" required>
+      <input class="form-control" type="text" name="name" value="{{ profile.name or '' }}" required>
     </div>
     <div class="col-md-6">
       <label class="form-label">Invoice prefix</label>
-      <input class="form-control bo-input" type="text" name="invoice_prefix" value="{{ profile.invoice_prefix or 'INV' }}">
+      <input class="form-control" type="text" name="invoice_prefix" value="{{ profile.invoice_prefix or 'INV' }}">
     </div>
     <div class="col-12">
       <label class="form-label">Address</label>
-      <textarea class="form-control bo-input" name="address" rows="3">{{ profile.address or '' }}</textarea>
+      <textarea class="form-control" name="address" rows="3">{{ profile.address or '' }}</textarea>
     </div>
     <div class="col-md-4">
       <label class="form-label">Phone</label>
-      <input class="form-control bo-input" type="text" name="phone" value="{{ profile.phone or '' }}">
+      <input class="form-control" type="text" name="phone" value="{{ profile.phone or '' }}">
     </div>
     <div class="col-md-4">
       <label class="form-label">GST Number</label>
-      <input class="form-control bo-input" type="text" name="gst" value="{{ profile.gst or '' }}">
+      <input class="form-control" type="text" name="gst" value="{{ profile.gst or '' }}">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">UI Theme</label>
+      <select class="form-select" name="ui_theme">
+        <option value="mint" {% if current_theme == 'mint' %}selected{% endif %}>Mint (calm retail)</option>
+        <option value="purple" {% if current_theme == 'purple' %}selected{% endif %}>Purple (bolder analytics)</option>
+      </select>
     </div>
     <div class="col-md-4">
       <label class="form-label">Primary colour</label>
@@ -39,44 +58,54 @@
       <label class="form-label">Logo (PNG/SVG)</label>
       <input class="form-control" type="file" name="logo" accept=".png,.jpg,.jpeg,.svg">
       {% if profile.logo_path %}
-      <small class="d-block mt-1">Current: {{ profile.logo_path }}</small>
+        <small class="d-block mt-1 text-muted">Current: {{ profile.logo_path }}</small>
       {% endif %}
     </div>
     <div class="col-md-4">
       <label class="form-label">Authorised signature</label>
       <input class="form-control" type="file" name="signature" accept=".png,.jpg,.jpeg">
       {% if profile.signature_path %}
-      <small class="d-block mt-1">Current: {{ profile.signature_path }}</small>
+        <small class="d-block mt-1 text-muted">Current: {{ profile.signature_path }}</small>
       {% endif %}
     </div>
     <div class="col-md-4">
       <label class="form-label">Watermark</label>
       <input class="form-control" type="file" name="watermark" accept=".png,.jpg,.jpeg">
       {% if profile.watermark_path %}
-      <small class="d-block mt-1">Current: {{ profile.watermark_path }}</small>
+        <small class="d-block mt-1 text-muted">Current: {{ profile.watermark_path }}</small>
       {% endif %}
     </div>
 
     <div class="col-12 text-end">
-      <button class="btn bo-btn" type="submit">Save branding</button>
+      <button class="btn-primary" type="submit">Save branding</button>
     </div>
   </form>
 </div>
 
-<div class="bo-card">
+<div class="card">
   <div class="d-flex justify-content-between align-items-center mb-2">
     <div>
-      <h2 class="h5 mb-1">End-of-day lock</h2>
-      <p class="bo-soft mb-0">Once the nightly Z-report runs, sales and expenses are locked to keep books final.</p>
+      <h5 class="mb-1">End-of-day lock</h5>
+      <div class="text-muted small">After the nightly report runs, sales and expenses lock for auditing.</div>
     </div>
     {% if sales_lock %}
-    <span class="badge bo-badge-danger">Locked for {{ sales_lock.value }}</span>
+      <span class="badge-soft text-warning">Locked for {{ sales_lock.value }}</span>
     {% else %}
-    <span class="badge bo-badge">Unlocked</span>
+      <span class="badge-soft text-success">Unlocked</span>
     {% endif %}
   </div>
-  <form method="POST" action="{{ url_for('settings.unlock_day') }}">
-    <button class="btn btn-sm bo-btn-outline" type="submit">Override & unlock</button>
+  <form method="POST" action="{{ url_for('settings.unlock_day') }}" class="row g-2">
+    <div class="col-12">
+      <label class="form-label small text-uppercase" for="unlockReason">Override reason</label>
+      <textarea id="unlockReason" class="form-control" name="reason" rows="2" placeholder="Explain why books need to reopen. Logged for audit." required></textarea>
+    </div>
+    <div class="col-12 text-end">
+      <button class="btn-ghost btn-sm" type="submit">Override & unlock</button>
+    </div>
   </form>
+  {% if lock_reason %}
+    <p class="text-muted small mt-2 mb-0">Last action: {{ lock_reason.value }}</p>
+  {% endif %}
 </div>
+
 {% endblock %}

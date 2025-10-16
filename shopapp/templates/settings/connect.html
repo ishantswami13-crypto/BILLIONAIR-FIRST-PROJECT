@@ -1,0 +1,250 @@
+{% extends "layout.html" %}
+{% block title %}Connect Hub · Billionair OS{% endblock %}
+{% block crumb %}Smart Connect{% endblock %}
+{% block content %}
+<div class="d-flex gap-2 mb-4">
+  <a class="btn btn-sm {% if request.path.endswith('/branding') %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{{ url_for('settings.branding') }}">Branding</a>
+  <a class="btn btn-sm {% if request.path.endswith('/access') %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{{ url_for('settings.access_dashboard') }}">Access</a>
+  <a class="btn btn-sm {% if request.path.endswith('/connect') %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{{ url_for('settings.connect_hub') }}">Connect</a>
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-lg-6">
+    <div class="bo-card h-100">
+      <div class="bo-card__header">
+        <div>
+          <h2 class="bo-card__title mb-1">Webhook Endpoint</h2>
+          <p class="bo-soft small mb-0">Share this URL with Stripe, Razorpay, or UPI partners. Use the generated secret to sign requests via `X-Shopapp-Secret`.</p>
+        </div>
+      </div>
+      <div class="bo-code-block">
+        <code>{{ sample_endpoint }}</code>
+      </div>
+      <p class="small text-muted mt-2 mb-0">
+        Pending reconciliation items: <strong>{{ pending_count }}</strong>. Configure more events below.
+      </p>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="bo-card h-100">
+      <div class="bo-card__header">
+        <div>
+          <h2 class="bo-card__title mb-1">Add Provider</h2>
+          <p class="bo-soft small mb-0">Connect payment notifications for automated ledger matching.</p>
+        </div>
+      </div>
+      <form method="POST" action="{{ url_for('settings.create_webhook') }}" class="row g-3">
+        <div class="col-6">
+          <label class="form-label small text-uppercase">Provider</label>
+          <input class="form-control" name="provider" placeholder="razorpay" required>
+        </div>
+        <div class="col-6">
+          <label class="form-label small text-uppercase">Event</label>
+          <input class="form-control" name="event" placeholder="payment.completed" required>
+        </div>
+        <div class="col-12">
+          <label class="form-label small text-uppercase">Callback URL (optional)</label>
+          <input class="form-control" name="target_url" placeholder="https://api.provider.com/retry">
+        </div>
+        <div class="col-8">
+          <label class="form-label small text-uppercase">Secret (optional)</label>
+          <input class="form-control" name="secret" placeholder="Leave blank to auto-generate">
+        </div>
+        <div class="col-4">
+          <label class="form-label small text-uppercase">Retry window (minutes)</label>
+          <input class="form-control" name="retry_window" type="number" min="5" max="120" value="15">
+        </div>
+        <div class="col-12">
+          <button class="btn btn-primary w-100" type="submit">Save configuration</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="bo-card mb-4">
+  <div class="bo-card__header">
+    <div>
+      <h2 class="bo-card__title mb-1">Active Webhook Integrations</h2>
+      <p class="bo-soft small mb-0">Rotate secrets regularly and pause providers when needed.</p>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead>
+        <tr class="small text-uppercase text-muted">
+          <th>Provider</th>
+          <th>Event</th>
+          <th>Status</th>
+          <th>Secret</th>
+          <th>Retry window</th>
+          <th>Last success</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for webhook in webhooks %}
+        <tr>
+          <td class="fw-semibold text-uppercase">{{ webhook.provider }}</td>
+          <td>{{ webhook.event }}</td>
+          <td>
+            <span class="badge bg-{{ 'success' if webhook.status == 'active' else 'secondary' }}">{{ webhook.status|capitalize }}</span>
+          </td>
+          <td>
+            <code>{{ webhook.secret[:6] }}···</code>
+          </td>
+          <td>{{ webhook.retry_window }} min</td>
+          <td class="small">
+            {% if webhook.last_success_at %}
+              {{ webhook.last_success_at.strftime('%d %b %Y %H:%M') }}
+            {% else %}
+              —
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <div class="d-flex gap-2 justify-content-end">
+              <form method="POST" action="{{ url_for('settings.toggle_webhook', webhook_id=webhook.id) }}">
+                <button class="btn btn-sm btn-outline-secondary" type="submit">
+                  {{ 'Disable' if webhook.status == 'active' else 'Enable' }}
+                </button>
+              </form>
+              <form method="POST" action="{{ url_for('settings.rotate_webhook_secret', webhook_id=webhook.id) }}">
+                <button class="btn btn-sm btn-outline-primary" type="submit">Rotate secret</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+      {% else %}
+        <tr>
+          <td colspan="7" class="text-center text-muted py-4">No integrations yet. Add Stripe/Razorpay events above.</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="bo-card mb-4">
+  <div class="bo-card__header">
+    <div>
+      <h2 class="bo-card__title mb-1">QR Signage</h2>
+      <p class="bo-soft small mb-0">Generate QR codes for in-store payments and post-purchase reviews. Preview or download printable signage.</p>
+    </div>
+  </div>
+  <form method="POST" action="{{ url_for('settings.connect_qr') }}" class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label small text-uppercase">Payment link</label>
+      <input class="form-control" name="payment_url" placeholder="https://razorpay.me/shopapp" value="{{ qr_preview.payment_url if qr_preview else '' }}">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label small text-uppercase">Review / feedback link</label>
+      <input class="form-control" name="review_url" placeholder="https://g.page/r/shopapp/review" value="{{ qr_preview.review_url if qr_preview else '' }}">
+    </div>
+    <div class="col-12 d-flex gap-2">
+      <button class="btn btn-outline-primary" name="mode" value="preview" type="submit">Preview QR</button>
+      <button class="btn btn-primary" name="mode" value="pdf" type="submit">Download signage PDF</button>
+    </div>
+  </form>
+  {% if qr_preview %}
+    <hr class="my-4">
+    <div class="row g-4">
+      {% if qr_preview.payment_qr %}
+        <div class="col-md-6 text-center">
+          <h3 class="h6 text-uppercase">Payment QR</h3>
+          <img class="img-fluid" style="max-width: 220px;" src="data:image/png;base64,{{ qr_preview.payment_qr }}" alt="Payment QR">
+          <p class="small text-muted mt-2">{{ qr_preview.payment_url }}</p>
+        </div>
+      {% endif %}
+      {% if qr_preview.review_qr %}
+        <div class="col-md-6 text-center">
+          <h3 class="h6 text-uppercase">Review QR</h3>
+          <img class="img-fluid" style="max-width: 220px;" src="data:image/png;base64,{{ qr_preview.review_qr }}" alt="Review QR">
+          <p class="small text-muted mt-2">{{ qr_preview.review_url }}</p>
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+
+<div class="bo-card">
+  <div class="bo-card__header">
+    <div>
+      <h2 class="bo-card__title mb-1">Transaction Reconciliation</h2>
+      <p class="bo-soft small mb-0">View the last 50 webhook deliveries. Match them to invoices or mark for retry.</p>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead>
+        <tr class="small text-uppercase text-muted">
+          <th>Triggered</th>
+          <th>Provider</th>
+          <th>Event</th>
+          <th>Status</th>
+          <th>Reference</th>
+          <th>Amount</th>
+          <th>Linked sale</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for entry in events %}
+        <tr>
+          <td class="small">{{ entry.created_at.strftime('%d %b %Y %H:%M') }}</td>
+          <td class="text-uppercase">{{ entry.provider }}</td>
+          <td>{{ entry.event }}</td>
+          <td>
+            <span class="badge bg-{{ 'success' if entry.status == 'matched' else 'warning' if entry.status in ('pending', 'manual') else 'danger' if entry.status in ('failed', 'rejected') else 'secondary' }}">
+              {{ entry.status|capitalize }}
+            </span>
+            {% if entry.last_error %}
+              <div class="small text-danger">{{ entry.last_error }}</div>
+            {% endif %}
+          </td>
+          <td class="small">
+            {% if entry.summary.reference %}
+              {{ entry.summary.reference }}
+            {% else %}
+              —
+            {% endif %}
+            {% if entry.external_id %}
+              <div class="text-muted">#{{ entry.external_id }}</div>
+            {% endif %}
+          </td>
+          <td class="small">
+            {% if entry.summary.amount %}
+              {{ entry.summary.amount|round(2) }} {{ entry.summary.currency or 'INR' }}
+            {% else %}
+              —
+            {% endif %}
+          </td>
+          <td class="small">
+            {% if entry.matched_sale %}
+              <div>Sale #{{ entry.matched_sale.id }}</div>
+              <div class="text-muted">{{ entry.matched_sale.invoice_number or 'No invoice' }}</div>
+            {% else %}
+              —
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <div class="d-flex gap-2 justify-content-end">
+              <form method="POST" action="{{ url_for('settings.retry_webhook_event', event_id=entry.id) }}">
+                <button class="btn btn-sm btn-outline-secondary" type="submit">Retry</button>
+              </form>
+              <form method="POST" action="{{ url_for('settings.match_webhook_event', event_id=entry.id) }}" class="d-flex gap-2">
+                <input class="form-control form-control-sm" name="match_reference" placeholder="Invoice # or Sale ID" style="max-width: 190px;">
+                <button class="btn btn-sm btn-outline-primary" type="submit">Match</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+      {% else %}
+        <tr>
+          <td colspan="8" class="text-center text-muted py-4">No webhook deliveries yet.</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

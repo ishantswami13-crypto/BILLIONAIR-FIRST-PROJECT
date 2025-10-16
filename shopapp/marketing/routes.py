@@ -1,6 +1,10 @@
 from datetime import datetime
 
-from flask import Blueprint, current_app, jsonify, redirect, render_template, session, url_for
+from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, session, url_for
+
+from ..metrics import EVENTS
+from ..models import User
+from ..utils.track import track
 
 marketing_bp = Blueprint("marketing", __name__)
 
@@ -64,6 +68,26 @@ def landing():
         "year": datetime.utcnow().year,
     }
     return render_template("marketing/landing.html", **context)
+
+
+@marketing_bp.route("/nps", methods=["POST"])
+def nps():
+    if "user" not in session:
+        flash("Sign in to rate your day.", "warning")
+        return redirect(url_for("auth.login"))
+
+    raw_score = request.form.get("score")
+    try:
+        score = int(raw_score)
+    except (TypeError, ValueError):
+        flash("Select a score between 0 and 10.", "warning")
+        return redirect(request.referrer or url_for("engagement.hub"))
+
+    score = max(0, min(10, score))
+    user = User.query.filter_by(username=session.get("user")).first()
+    track(EVENTS["NPS_SUBMITTED"], {"score": score}, user_id=user.id if user else None)
+    flash("Thanks for the signal!", "success")
+    return redirect(request.referrer or url_for("engagement.hub"))
 
 
 @marketing_bp.route("/healthz")

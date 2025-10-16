@@ -2,131 +2,46 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+  <title>{% block title %}ShopApp{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{% block title %}Billionair OS{% endblock %}</title>
-
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/billionair.css') }}">
-  {% if GA_MEASUREMENT_ID %}
-  <script async src="https://www.googletagmanager.com/gtag/js?id={{ GA_MEASUREMENT_ID }}"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){ dataLayer.push(arguments); }
-    gtag('js', new Date());
-    gtag('config', '{{ GA_MEASUREMENT_ID }}');
-  </script>
-  {% endif %}
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
   {% block head %}{% endblock %}
 </head>
-<body class="bo-body">
-  <div class="bo-backdrop"></div>
-
-  <aside class="bo-sidebar">
-    <div class="bo-brand">
-      <div class="bo-glyph">B</div>
-      <div>
-        <div class="bo-title">Billionair OS</div>
-        <div class="bo-verified">Verified by Billionair Labs</div>
+{% set current_path = request.path %}
+<body class="{{ body_class or 'theme-mint' }}">
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">🛍️ {{ shop_profile.name if shop_profile else "ShopApp" }}</div>
+      <nav class="nav">
+        <a href="{{ url_for('sales.index') }}" class="{% if current_path in ('/app', '/app/') %}active{% endif %}">🏠 Dashboard</a>
+        <a href="{{ url_for('sales.history') }}" class="{% if current_path.startswith('/app/sales') %}active{% endif %}">🧾 Sales</a>
+        <a href="{{ url_for('credits.outstanding') }}" class="{% if current_path.startswith('/credits') %}active{% endif %}">📒 Credits</a>
+        <a href="{{ url_for('customers.customers') }}" class="{% if current_path.startswith('/customers') %}active{% endif %}">👥 Customers</a>
+        <a href="{{ url_for('expenses.expenses') }}" class="{% if current_path.startswith('/expenses') %}active{% endif %}">💸 Expenses</a>
+        <a href="{{ url_for('reports.analytics_view') }}" class="{% if current_path.startswith('/analytics') %}active{% endif %}">📈 Analytics</a>
+        <a href="{{ url_for('settings.branding') }}" class="{% if current_path.startswith('/settings') %}active{% endif %}">⚙️ Settings</a>
+        <a href="{{ url_for('assistant.chat_home') }}" class="{% if current_path.startswith('/assistant') %}active{% endif %}">🤖 Assistant</a>
+      </nav>
+      <hr>
+      <div class="small">
+        Plan: {{ active_plan or 'FREE' }} · Version: {{ app_version or 'v0.5' }}<br>
+        Security: {{ encryption_notice or 'AES-256 at rest' }}
       </div>
-    </div>
-
-    <nav class="bo-nav">
-      <a href="{{ url_for('sales.index')|default('#', true) }}" class="bo-nav__item {% if request.path.startswith('/app') %}active{% endif %}">
-        <i class="bo-ico">⌂</i> Dashboard
-      </a>
-      <a href="{{ url_for('reports.zreport_view')|default('#', true) }}" class="bo-nav__item {% if request.path.startswith('/zreport') %}active{% endif %}">
-        <i class="bo-ico"></i> Reports
-      </a>
-      <a href="{{ url_for('inventory.items')|default('#', true) }}" class="bo-nav__item {% if request.path.startswith('/items') %}active{% endif %}">
-        <i class="bo-ico">⟲</i> Inventory
-      </a>
-      <a href="{{ url_for('expenses.expenses')|default('#', true) }}" class="bo-nav__item {% if request.path.startswith('/expenses') %}active{% endif %}">
-        <i class="bo-ico">₪</i> Expenses
-      </a>
-      <a href="{{ url_for('customers.customers')|default('#', true) }}" class="bo-nav__item {% if request.path.startswith('/customers') %}active{% endif %}">
-        <i class="bo-ico">◎</i> Customers
-      </a>
-      <a href="{{ url_for('credits.outstanding')|default('#', true) }}" class="bo-nav__item {% if request.path.startswith('/credits') %}active{% endif %}">
-        <i class="bo-ico">₹</i> Credits
-      </a>
-      <a href="{{ url_for('assistant.chat_home')|default('#', true) }}" class="bo-nav__item {% if request.path.startswith('/assistant') %}active{% endif %}">
-        <i class="bo-ico">AI</i> Assistant
-      </a>
-      <a href="{{ url_for('sales.index')|default('#', true) }}#pos" class="bo-nav__item {% if request.path.endswith('#pos') %}active{% endif %}">
-        <i class="bo-ico">↗</i> POS
-      </a>
-      <a href="{{ url_for('settings.branding')|default('#', true) }}" class="bo-nav__item {% if request.path.startswith('/settings') %}active{% endif %}">
-        <i class="bo-ico">⚙</i> Settings
-      </a>
-    </nav>
-
-    <div class="bo-plan">
-      <div class="bo-card bo-metal">
-        <div class="bo-card__label">Access</div>
-        <div class="bo-card__title">Lux Core</div>
-        <div class="bo-card__meta">Build X.0 • Quantum-AES Shielded</div>
-      </div>
-    </div>
-  </aside>
-
-  <main class="bo-main">
-    <header class="bo-topbar">
-      <div class="bo-breadcrumb">
-        <span class="bo-app">Billionair OS</span>
-        <span class="bo-chevron">/</span>
-        <span class="bo-page">{% block crumb %}Dashboard{% endblock %}</span>
-      </div>
-      <div class="d-flex align-items-center gap-3">
-        <span class="badge bo-badge">Your data is shielded with Quantum-AES</span>
+    </aside>
+    <main class="main">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="badge-soft">🔥 {{ streak_text or 'Close more sales today!' }}</div>
         {% if session.get('user') %}
-          <span class="bo-user">{{ session['user'] }}</span>
-          <a class="btn btn-sm bo-btn-outline" href="{{ url_for('auth.logout')|default('#', true) }}">Logout</a>
-        {% else %}
-          <a class="btn btn-sm bo-btn-outline" href="{{ url_for('auth.login')|default('#', true) }}">Login</a>
+          <div class="small text-muted">Hi, {{ session['user'] }} · <a href="{{ url_for('auth.logout') }}">Logout</a></div>
         {% endif %}
       </div>
-    </header>
-
-    <section class="bo-content">
-      {% with messages = get_flashed_messages() %}
-        {% if messages %}
-        <div class="alert alert-info bo-card bo-card--soft mb-4">
-          {% for message in messages %}
-            <div>{{ message }}</div>
-          {% endfor %}
-        </div>
-        {% endif %}
-      {% endwith %}
       {% block content %}{% endblock %}
-    </section>
+    </main>
+  </div>
 
-    <footer class="bo-footer">
-      <span>© Billionair Labs</span>
-      <span class="text-muted">•</span>
-      <span>Latency-optimized • SOC-ready trails • Secure backups</span>
-    </footer>
-  </main>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  {% if MIXPANEL_TOKEN %}
-  <script>
-    (function(f,b){if(!b.__SV){var a,e,i,g;window.mixpanel=b;b._i=[];
-    b.init=function(a,e,d){function f(b,h){var a=h.split(".");2==a.length&&(b=b[a[0]],h=a[1]);
-    b[h]=function(){b.push([h].concat(Array.prototype.slice.call(arguments,0)))}}var c=b;
-    "undefined"!==typeof d?c=b[d]=[]:d="mixpanel";c.people=c.people||[];c.toString=function(b){
-    var a="mixpanel";"mixpanel"!==d&&(a+="."+d);b||(a+=" (stub)");return a};
-    c.people.toString=function(){return c.toString(1)+".people (stub)"};i=
-    "disable time_event track track_pageview track_links track_forms register register_once alias unregister identify name_tag set_config reset people.set people.set_once people.unset people.increment people.append people.union people.track_charge people.clear_charges people.delete_user".split(" ");
-    for(g=0;g<i.length;g++)f(c,i[g]);b._i.push([a,e,d])};b.__SV=1.2;a=f.createElement("script");
-    a.type="text/javascript";a.async=!0;a.src="https://cdn.mxpnl.com/libs/mixpanel-2-latest.min.js";
-    e=f.getElementsByTagName("script")[0];e.parentNode.insertBefore(a,e)}})(document,window.mixpanel||[]);
-    mixpanel.init("{{ MIXPANEL_TOKEN }}");
-    mixpanel.track('page_view', { path: location.pathname });
-    function track(event, props){ try{ if(window.mixpanel){ mixpanel.track(event, props || {}); } }catch(err){} }
-  </script>
-  {% endif %}
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

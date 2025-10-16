@@ -8,7 +8,7 @@ from sqlalchemy import func
 
 from shopapp.extensions import db
 from shopapp.models import Credit, Item, Sale, Setting
-from shopapp.utils.mailer import send_mail
+from shopapp.utils.mail import send_mail
 
 
 def _format_currency(value: float) -> str:

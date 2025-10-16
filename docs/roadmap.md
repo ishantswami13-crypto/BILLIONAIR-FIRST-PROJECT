@@ -33,11 +33,11 @@ This roadmap breaks the requested upgrades into manageable phases and documents 
 - AI chat assistant (revenue, expense, inventory queries) with conversation log, export, and permissions.
 - Automated WhatsApp reminders for outstanding credit customers, including opt-out, scheduling, and delivery status.
 
-## Phase 4 - Smart Connect Layer
-- Role-based multi-device access (owner, cashier, accountant) with granular permissions, invites, and session management.
-- Architecture notes for an offline-ready hybrid mode (service worker caching, background sync queue, conflict resolution policy).
-- Webhook endpoints for payment providers plus transaction reconciliation UI with retry logs and manual matching.
-- QR code generator for payment/review links, printable signage, and shareable PDFs.
+## Phase 4 - Smart Connect Layer *(shipped in v4.0)*
+- Role-based multi-device access (owner, cashier, accountant) with granular permissions, invites, and session management. See `/settings/access`.
+- Architecture notes for an offline-ready hybrid mode (service worker caching, background sync queue, conflict resolution policy). Captured in `docs/offline-architecture.md`.
+- Webhook endpoints for payment providers plus transaction reconciliation UI with retry logs and manual matching (`/settings/connect`).
+- QR code generator for payment/review links, printable signage, and shareable PDFs (Connect Hub signage tools).
 
 ## Phase 5 - Premium UI/UX & Business Model
 - Side navigation and glassmorphism redesign with shimmer loaders, responsive breakpoints, and keyboard/focus states.

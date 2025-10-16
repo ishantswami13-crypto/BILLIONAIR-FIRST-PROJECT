@@ -2,7 +2,22 @@
 {% block content %}
 <div class="card-glass p-4 mx-auto" style="max-width: 480px;">
   <h1 class="h4 mb-3">Create account</h1>
+  {% if invite %}
+    <div class="alert alert-info">
+      <div class="fw-semibold">Invited as {{ invite.role.value if invite.role else invite.role }}</div>
+      <div class="small">You're joining the workspace with role: {{ invite.role.value|capitalize }}.</div>
+    </div>
+  {% endif %}
   <form method="POST">
+    {% if token %}
+      <input type="hidden" name="token" value="{{ token }}">
+    {% endif %}
+    {% if ref %}
+      <input type="hidden" name="ref" value="{{ ref }}">
+      <div class="alert alert-dark small">
+        Referral code applied. When you activate, both accounts earn bonus XP.
+      </div>
+    {% endif %}
     <div class="mb-3">
       <label class="form-label">Username</label>
       <input class="form-control" type="text" name="username" required>
@@ -11,10 +26,17 @@
       <label class="form-label">Password</label>
       <input class="form-control" type="password" name="password" required>
     </div>
-    <div class="mb-3">
-      <label class="form-label">Email</label>
-      <input class="form-control" type="email" name="email" required>
-    </div>
+    {% if not invite %}
+      <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input class="form-control" type="email" name="email" required>
+      </div>
+    {% else %}
+      <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input class="form-control" type="email" name="email" value="{{ invite.email }}" readonly>
+      </div>
+    {% endif %}
     <div class="mb-3">
       <label class="form-label">Phone (optional)</label>
       <input class="form-control" type="text" name="phone">
