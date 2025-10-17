@@ -1,37 +1,60 @@
-{% extends "layout.html" %}{% block title %}Sales · ShopApp{% endblock %}
+{% extends "layout.html" %}
+{% block title %}Sales · ShopApp{% endblock %}
 {% block content %}
-<div class="confettiBar" aria-hidden="true"></div>
-<section class="card" style="margin-top:18px">
-  <div class="sectionTitle"><div class="spark"></div><h1><span class="gradientAnim">Sales.</span> Clean history & filters.</h1></div>
-  <div style="display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap;margin-top:8px;">
-    <p class="subtle">Filter by date or customer, export in one click.</p>
+
+<div class="aurora" aria-hidden="true"></div>
+
+<section class="card">
+  <h1><span class="gradientAnim">Sales.</span> History that glows.</h1>
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px;">
+    <p class="subtle">Filter by date or customer, view trends instantly.</p>
     <form method="get" style="display:flex;gap:8px;align-items:center;">
       <input class="input" type="date" name="from" value="{{ request.args.get('from','') }}">
       <input class="input" type="date" name="to" value="{{ request.args.get('to','') }}">
-      <select class="select" name="customer"><option value="">All customers</option>
-        {% for c in customers %}<option value="{{ c[0] }}" {% if request.args.get('customer')==c[0]|string %}selected{% endif %}>{{ c[1] }} ({{ c[2] }})</option>{% endfor %}
+      <select class="select" name="customer">
+        <option value="">All</option>
+        {% for c in customers %}
+        <option value="{{ c[0] }}" {% if request.args.get('customer')==c[0]|string %}selected{% endif %}>{{ c[1] }}</option>
+        {% endfor %}
       </select>
       <button class="btn secondary">Apply</button>
-      <a class="btn link" href="{{ url_for('reports.sales_export', **request.args) }}">Export CSV</a>
+      <a class="btn link" href="{{ url_for('reports.sales_export', **request.args) }}">Export</a>
     </form>
   </div>
 </section>
 
 <section class="grid-4">
-  <div class="card sumCard"><div class="chip">🧮</div><div><div class="label">Records</div><div class="value" data-count="{{ sales|length }}">0</div></div></div>
-  <div class="card sumCard"><div class="chip">💰</div><div><div class="label">Total revenue</div><div class="value" data-count="{{ total_revenue or 0 }}">₹0</div></div></div>
-  <div class="card sumCard"><div class="chip">📦</div><div><div class="label">Items sold</div><div class="value" data-count="{{ total_qty or 0 }}">0</div></div></div>
-  <div class="card sumCard"><div class="chip">⭐</div><div><div class="label">Avg order</div><div class="value" data-count="{{ avg_order or 0 }}">₹0</div></div></div>
+  <div class="card kpi"><div class="coin">📊</div><div><div class="kpiTitle">Records</div><div class="kpiValue" data-count="{{ sales|length }}">0</div></div></div>
+  <div class="card kpi"><div class="coin">💸</div><div><div class="kpiTitle">Revenue</div><div class="kpiValue" data-count="{{ total_revenue or 0 }}">₹0</div></div></div>
+  <div class="card kpi"><div class="coin">🧾</div><div><div class="kpiTitle">Items Sold</div><div class="kpiValue" data-count="{{ total_qty or 0 }}">0</div></div></div>
+  <div class="card kpi"><div class="coin">⭐</div><div><div class="kpiTitle">Avg Order</div><div class="kpiValue" data-count="{{ avg_order or 0 }}">₹0</div></div></div>
 </section>
 
-<section class="card doodle">
-  <div style="display:flex;justify-content:space-between;align-items:center;"><h3>Sales list</h3><span class="badge">{{ sales|length }} rows</span></div>
-  <div class="table-wrap" style="overflow:auto;margin-top:10px;">
-    <table class="table"><thead><tr><th>#</th><th>Date</th><th>Item</th><th>Qty</th><th>Total</th><th>Customer</th></tr></thead>
-      <tbody>{% for s in sales %}<tr><td>{{ s[0] }}</td><td>{{ s[1] }}</td><td>{{ s[2] }}</td><td>{{ s[3] }}</td><td>₹{{ '%.0f'|format(s[4]) }}</td><td>{{ s[5] or 'Walk-in' }}</td></tr>
-      {% else %}<tr><td colspan="6" class="subtle">No sales yet — use Quick sale to add your first 🚀</td></tr>{% endfor %}</tbody>
+<section class="card">
+  <h3>Sales List</h3>
+  <div class="table-wrap" style="overflow:auto;margin-top:12px;">
+    <table class="table">
+      <thead><tr><th>#</th><th>Date</th><th>Item</th><th>Qty</th><th>Total</th><th>Customer</th></tr></thead>
+      <tbody>
+        {% for s in sales %}
+        <tr>
+          <td>{{ s[0] }}</td><td>{{ s[1] }}</td><td>{{ s[2] }}</td>
+          <td>{{ s[3] }}</td><td>₹{{ '%.0f'|format(s[4]) }}</td><td>{{ s[5] or 'Walk-in' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="subtle">No sales yet — go make some magic 🪄</td></tr>
+        {% endfor %}
+      </tbody>
     </table>
   </div>
 </section>
+
 {% endblock %}
-{% block scripts %}<script>document.querySelectorAll('.value[data-count]').forEach(el=>ShopFX.countUp(el,{money:el.textContent.trim().startsWith('₹')}));</script>{% endblock %}
+{% block scripts %}
+<script>
+document.querySelectorAll('.kpiValue[data-count]').forEach(el=>{
+  const money = el.textContent.trim().startsWith('₹');
+  ShopFX.countUp(el,{money});
+});
+</script>
+{% endblock %}

@@ -1,3 +1,62 @@
-<!-- loads FX helpers and triggers query-based celebration -->
+<!-- Helpers -->
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>
-<script>window.ShopFX && window.ShopFX.celebrateFromQuery();</script>
+
+<!-- Splash markup -->
+{% include 'partials/splash.html' %}
+
+<script>
+(function(){
+  // Config
+  const KEY   = 'splashSeenV1';               // bump to V2 later to re-show once
+  const TTL_H = 24;                           // show again after 24h
+  const FORCE = new URL(location.href).searchParams.get('splash') === '1';
+
+  function shouldShow(){
+    if (FORCE) return true;
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (!raw) return true;
+      const {ts} = JSON.parse(raw);
+      const ageH = (Date.now() - ts) / (1000*60*60);
+      return ageH >= TTL_H;
+    } catch(e){ return true; }
+  }
+
+  function markSeen(){
+    try { localStorage.setItem(KEY, JSON.stringify({ts: Date.now()})); } catch(e){}
+  }
+
+  function showSplash(){
+    const el = document.getElementById('splash');
+    if (!el) return;
+    el.hidden = false;
+
+    const done = () => {
+      el.classList.add('splash-fade');
+      setTimeout(()=>{ el.hidden = true; }, 620);
+      markSeen();
+      // small celebration ping
+      if (window.ShopFX) ShopFX.ping(980,150);
+    };
+
+    // auto complete after progress ends
+    const duration = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 900 : 2200;
+    const t = setTimeout(done, duration + 80);
+
+    // allow manual skip
+    el.querySelector('.splash-skip')?.addEventListener('click', ()=>{
+      clearTimeout(t); done();
+    });
+  }
+
+  // Boot
+  document.addEventListener('DOMContentLoaded', ()=>{
+    if (shouldShow()) showSplash();
+    if (window.ShopFX) ShopFX.celebrateFromQuery(); // keep the celebrate hook
+  });
+})();
+</script>
+
+<noscript>
+  <style>#splash{display:none !important}</style>
+</noscript>

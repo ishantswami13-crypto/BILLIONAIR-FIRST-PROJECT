@@ -1,34 +1,61 @@
-{% extends "layout.html" %}{% block title %}Credits · ShopApp{% endblock %}
+{% extends "layout.html" %}
+{% block title %}Credits · ShopApp{% endblock %}
 {% block content %}
-<div class="confettiBar" aria-hidden="true"></div>
-<section class="card" style="margin-top:18px">
-  <div class="sectionTitle"><div class="spark"></div><h1><span class="gradientAnim">Credits.</span> Ledger & reminders.</h1></div>
-  <div style="display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap;margin-top:8px;">
-    <p class="subtle">Track udhar, mark paid, send polite WhatsApp reminders.</p>
-    <div style="display:flex;gap:8px;"><a class="btn link" href="{{ url_for('credits.new') }}">+ New credit</a><a class="btn secondary breathe" href="{{ url_for('credits.send_reminders') }}">Send all reminders</a></div>
+
+<div class="aurora" aria-hidden="true"></div>
+
+<section class="card">
+  <h1><span class="gradientAnim">Credits.</span> Smooth tracking.</h1>
+  <p class="subtle" style="margin-top:8px;">Mark payments, send reminders, and relax.</p>
+  <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;">
+    <a class="btn secondary" href="{{ url_for('credits.new') }}">+ New Credit</a>
+    <a class="btn link" href="{{ url_for('credits.send_reminders') }}">Send All Reminders</a>
   </div>
 </section>
 
 <section class="grid-4">
-  <div class="card sumCard"><div class="chip">📄</div><div><div class="label">Unpaid entries</div><div class="value" data-count="{{ unpaid_count or 0 }}">0</div></div></div>
-  <div class="card sumCard"><div class="chip">💰</div><div><div class="label">Unpaid total</div><div class="value" data-count="{{ total_unpaid or 0 }}">₹0</div></div></div>
-  <div class="card sumCard"><div class="chip">📬</div><div><div class="label">Reminders (30d)</div><div class="value" data-count="{{ reminders_30d or 0 }}">0</div></div></div>
-  <div class="card sumCard"><div class="chip">✅</div><div><div class="label">Paid this week</div><div class="value" data-count="{{ paid_week or 0 }}">₹0</div></div></div>
+  <div class="card kpi"><div class="coin">📄</div><div><div class="kpiTitle">Unpaid</div><div class="kpiValue" data-count="{{ unpaid_count or 0 }}">0</div></div></div>
+  <div class="card kpi"><div class="coin">💰</div><div><div class="kpiTitle">Unpaid total</div><div class="kpiValue" data-count="{{ total_unpaid or 0 }}">₹0</div></div></div>
+  <div class="card kpi"><div class="coin">📬</div><div><div class="kpiTitle">Reminders 30d</div><div class="kpiValue" data-count="{{ reminders_30d or 0 }}">0</div></div></div>
+  <div class="card kpi"><div class="coin">✅</div><div><div class="kpiTitle">Paid this week</div><div class="kpiValue" data-count="{{ paid_week or 0 }}">₹0</div></div></div>
 </section>
 
-<section class="card doodle">
-  <div style="display:flex;justify-content:space-between;align-items:center;"><h3>Ledger</h3><span class="badge">Total: ₹{{ '%.0f'|format(total_unpaid or 0) }}</span></div>
-  <div class="table-wrap" style="overflow:auto;margin-top:10px;">
-    <table class="table"><thead><tr><th>#</th><th>Date</th><th>Customer</th><th>Item</th><th>Qty</th><th>Total</th><th>Status</th><th>Last reminder</th><th>Actions</th></tr></thead>
-      <tbody>{% for c in credits %}<tr>
-        <td>{{ c.id }}</td><td>{{ c.date }}</td><td>{{ c.customer }}</td><td>{{ c.item }}</td><td>{{ c.quantity }}</td>
-        <td>₹{{ '%.0f'|format(c.total) }}</td>
-        <td>{% if c.status=='paid' %}<span class="badge" style="background:#e8fff3;border-color:#cfeede;color:#00a36c;">Paid</span>{% else %}<span class="badge" style="background:#fff7e6;border-color:#ffe0a6;color:#ff7a00;">Unpaid</span>{% endif %}</td>
-        <td>{{ c.last_reminder or '—' }}</td>
-        <td style="display:flex;gap:8px;">{% if c.status!='paid' %}<a class="btn secondary" href="{{ url_for('credits.pay', credit_id=c.id) }}" onclick="ShopFX.ping(820,140)">Mark paid</a><a class="btn link" href="{{ url_for('credits.send_one', credit_id=c.id) }}">Send now</a>{% else %}<span class="subtle">—</span>{% endif %}</td>
-      </tr>{% else %}<tr><td colspan="9" class="subtle">No credit entries yet.</td></tr>{% endfor %}</tbody>
+<section class="card">
+  <h3>Ledger</h3>
+  <div class="table-wrap" style="overflow:auto;margin-top:12px;">
+    <table class="table">
+      <thead><tr><th>#</th><th>Date</th><th>Customer</th><th>Item</th><th>Qty</th><th>Total</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for c in credits %}
+        <tr>
+          <td>{{ c.id }}</td><td>{{ c.date }}</td><td>{{ c.customer }}</td><td>{{ c.item }}</td><td>{{ c.quantity }}</td>
+          <td>₹{{ '%.0f'|format(c.total) }}</td>
+          <td>{% if c.status=='paid' %}
+            <span class="badge" style="color:#22c55e;border-color:#22c55e;">Paid</span>
+            {% else %}
+            <span class="badge" style="color:#ff6b9b;border-color:#ff6b9b;">Unpaid</span>
+          {% endif %}</td>
+          <td>
+            {% if c.status!='paid' %}
+              <a class="btn link" href="{{ url_for('credits.pay', credit_id=c.id) }}" onclick="ShopFX.ping(700,180)">Mark paid</a>
+              <a class="btn secondary" href="{{ url_for('credits.send_one', credit_id=c.id) }}">Send</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="subtle">No credits yet ✨</td></tr>
+        {% endfor %}
+      </tbody>
     </table>
   </div>
 </section>
+
 {% endblock %}
-{% block scripts %}<script>document.querySelectorAll('.value[data-count]').forEach(el=>ShopFX.countUp(el,{money:el.textContent.trim().startsWith('₹')}));</script>{% endblock %}
+{% block scripts %}
+<script>
+document.querySelectorAll('.kpiValue[data-count]').forEach(el=>{
+  const money = el.textContent.trim().startsWith('₹');
+  ShopFX.countUp(el,{money});
+});
+</script>
+{% endblock %}

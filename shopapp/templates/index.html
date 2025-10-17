@@ -1,54 +1,103 @@
-{% extends "layout.html" %}{% block title %}Dashboard · ShopApp{% endblock %}
+{% extends "layout.html" %}
+{% block title %}Dashboard · ShopApp{% endblock %}
+
 {% block content %}
-<div class="confettiBar" aria-hidden="true"></div>
-<section class="card" style="margin-top:18px">
-  <h1><span class="gradientAnim">Store.</span> Your day at a glance.</h1>
-  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px;">
-    <p class="subtle">Fast clarity for revenue, sales, credits & stock — without the noise.</p>
-    <span id="smartTip" class="tip">💡 Tip: Press Alt + / to open Assistant.</span>
-  </div>
-</section>
 
-<section class="grid-4">
-  <div class="card kpi"><div class="coin">💰</div><div><div class="kpiTitle">Revenue</div><div class="kpiValue" data-count="{{ today_rev or 0 }}">₹0</div></div></div>
-  <div class="card kpi"><div class="coin">🛒</div><div><div class="kpiTitle">Sales</div><div class="kpiValue" data-count="{{ today_count or 0 }}">0</div></div></div>
-  <div class="card kpi"><div class="coin">📄</div><div><div class="kpiTitle">Unpaid credits</div><div class="kpiValue" data-count="{{ unpaid_credits or 0 }}">₹0</div></div></div>
-  <div class="card kpi"><div class="coin">📦</div><div><div class="kpiTitle">Low stock</div><div class="kpiValue" data-count="{{ low_stock_count or 0 }}">0</div></div></div>
-</section>
+  <div class="aurora" aria-hidden="true"></div>
 
-<section class="grid-2-1">
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-      <h3>7-day performance</h3>
-      <a href="/analytics" class="btn link breathe">Open Analytics</a>
+  <section class="card" style="margin-top:10px">
+    <h1><span class="gradientAnim">Store.</span> Your day at a glance.</h1>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px;">
+      <p class="subtle">Effortless clarity — revenue, sales, credits & stock.</p>
+      <span id="smartTip" class="tip">💡 Tip: Press Alt + / to open Assistant.</span>
     </div>
-    <canvas id="chart7" height="150"></canvas>
-  </div>
-  <div class="card">
-    <h3>Quick sale</h3>
-    <form method="POST" action="/sell" style="display:grid;gap:10px;margin-top:6px;">
-      <div><label class="kpiTitle">Item</label><select class="select" name="item_id" required>{% for i in items %}<option value="{{ i[0] }}">{{ i[1] }} (₹{{ i[2] }}, {{ i[3] }} left)</option>{% endfor %}</select></div>
-      <div><label class="kpiTitle">Customer</label><select class="select" name="customer_id"><option value="">Walk-in</option>{% for c in customers %}<option value="{{ c[0] }}">{{ c[1] }} ({{ c[2] }})</option>{% endfor %}</select></div>
-      <div><label class="kpiTitle">Quantity</label><input class="input" type="number" name="quantity" min="1" required/></div>
-      <button class="btn primary full" onclick="ShopFX.ping(920,160)">Sell</button>
-    </form>
-  </div>
-</section>
+  </section>
+
+  <!-- KPIs -->
+  <section class="grid-4">
+    <div class="card kpi">
+      <div class="coin">💸</div>
+      <div><div class="kpiTitle">Revenue</div><div class="kpiValue" data-count="{{ today_rev or 0 }}">₹0</div></div>
+    </div>
+    <div class="card kpi">
+      <div class="coin">🛍️</div>
+      <div><div class="kpiTitle">Sales</div><div class="kpiValue" data-count="{{ today_count or 0 }}">0</div></div>
+    </div>
+    <div class="card kpi">
+      <div class="coin">📄</div>
+      <div><div class="kpiTitle">Unpaid credits</div><div class="kpiValue" data-count="{{ unpaid_credits or 0 }}">₹0</div></div>
+    </div>
+    <div class="card kpi">
+      <div class="coin">📦</div>
+      <div><div class="kpiTitle">Low stock</div><div class="kpiValue" data-count="{{ low_stock_count or 0 }}">0</div></div>
+    </div>
+  </section>
+
+  <!-- Chart + Quick sale -->
+  <section class="grid-2-1">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <h3>7-day performance</h3>
+        <a class="btn secondary" href="/analytics">Open Analytics</a>
+      </div>
+      <canvas id="chart7" height="160"></canvas>
+    </div>
+    <div class="card">
+      <h3>Quick sale</h3>
+      <form method="POST" action="/sell" style="display:grid;gap:10px;margin-top:8px">
+        <div>
+          <label class="kpiTitle">Item</label>
+          <select class="select" name="item_id" required>
+            {% for i in items %}<option value="{{ i[0] }}">{{ i[1] }} (₹{{ i[2] }}, {{ i[3] }} left)</option>{% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="kpiTitle">Customer</label>
+          <select class="select" name="customer_id">
+            <option value="">Walk-in</option>
+            {% for c in customers %}<option value="{{ c[0] }}">{{ c[1] }} ({{ c[2] }})</option>{% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="kpiTitle">Quantity</label>
+          <input class="input" type="number" name="quantity" min="1" required>
+        </div>
+        <button class="btn primary full" onclick="ShopFX.ping(950,160)">Sell</button>
+      </form>
+    </div>
+  </section>
 {% endblock %}
+
 {% block scripts %}
 {{ super() }}
 <script>
-  document.querySelectorAll('.kpiValue[data-count]').forEach(el=>ShopFX.countUp(el,{money:el.textContent.trim().startsWith('₹')}));
+  // count-ups
+  document.querySelectorAll('.kpiValue[data-count]').forEach(el=>{
+    const isMoney = el.textContent.trim().startsWith('₹');
+    ShopFX.countUp(el,{money:isMoney, duration:1100});
+  });
+
+  // rotating tips
   ShopFX.rotateTip(document.getElementById('smartTip'),[
     "💡 Tip: Use Quick sale to log in 3 taps.",
-    "📈 Add expenses to see real profit.",
-    "🔔 Set WhatsApp reminders for unpaid credits.",
-    "⌨️ Press Alt + / to open Assistant."
+    "📈 Add expenses to see **real** profit.",
+    "🔔 Enable WhatsApp reminders for credits.",
+    "⌨️ Press Alt + / to chat with Assistant."
   ]);
+
+  // chart
   const d={{ chart_data or [] | tojson }}, ctx=document.getElementById('chart7');
-  if(ctx&&d.length){new Chart(ctx,{type:'line',data:{labels:d.map(r=>r.t),datasets:[
-    {label:'Revenue',data:d.map(r=>r.rev),borderColor:'#7d00ff',backgroundColor:'rgba(125,0,255,.12)',tension:.35,fill:true},
-    {label:'Expenses',data:d.map(r=>r.exp),borderColor:'#ff007a',backgroundColor:'rgba(255,0,122,.10)',tension:.35,fill:true}]},
-    options:{plugins:{legend:{labels:{color:'#1d1d1f'}}},scales:{x:{grid:{color:'#eee'}},y:{grid:{color:'#eee'}}}}});}
+  if(ctx && d.length){
+    new Chart(ctx,{type:'line',data:{
+      labels:d.map(r=>r.t),
+      datasets:[
+        {label:'Revenue', data:d.map(r=>r.rev), borderColor:'#7c3aed', backgroundColor:'rgba(124,58,237,.20)', tension:.38, fill:true},
+        {label:'Expenses',data:d.map(r=>r.exp), borderColor:'#06b6d4', backgroundColor:'rgba(6,182,212,.18)', tension:.38, fill:true}
+      ]},
+      options:{plugins:{legend:{labels:{color:'#e6e9ff'}}},
+               scales:{x:{grid:{color:'rgba(255,255,255,.08)'}},
+                       y:{grid:{color:'rgba(255,255,255,.08)'}}}}
+    });
+  }
 </script>
 {% endblock %}

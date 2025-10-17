@@ -8,6 +8,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
+    <div class="blobs" aria-hidden="true"></div>
+
     <nav class="apple-nav">
       <a href="/" class="apple-logo">Shop<span>App</span></a>
       <ul class="nav-links">
@@ -19,8 +21,9 @@
         <li><a href="/customers">Customers</a></li>
       </ul>
       <div class="nav-right">
-        <a href="/settings/subscription" class="nav-btn">Plans</a>
-        {% if session.get('user') %}<a href="/logout" class="nav-btn secondary">Logout</a>{% else %}<a href="/login" class="nav-btn secondary">Login</a>{% endif %}
+        <a class="nav-btn" href="/settings/subscription">Plans</a>
+        {% if session.get('user') %}<a class="nav-btn secondary" href="/logout">Logout</a>{% else %}
+        <a class="nav-btn secondary" href="/login">Login</a>{% endif %}
       </div>
     </nav>
 
@@ -28,7 +31,6 @@
       {% block content %}{% endblock %}
     </main>
 
-    <!-- global FX -->
     {% include 'partials/appfx.html' %}
     {% block scripts %}{% endblock %}
   </body>

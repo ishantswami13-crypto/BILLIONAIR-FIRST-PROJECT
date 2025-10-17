@@ -1,22 +1,28 @@
-{% extends "layout.html" %}{% block title %}Customers · ShopApp{% endblock %}
+{% extends "layout.html" %}
+{% block title %}Customers · ShopApp{% endblock %}
 {% block content %}
-<div class="confettiBar" aria-hidden="true"></div>
-<section class="card" style="margin-top:18px">
-  <div class="sectionTitle"><div class="spark"></div><h1><span class="gradientAnim">Customers.</span> Simple CRM.</h1></div>
-  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:8px;">
-    <p class="subtle">Save name, phone, and see lifetime value (LTV).</p>
-    <a class="btn secondary" href="/customers/new">+ Add customer</a>
-  </div>
+<div class="aurora" aria-hidden="true"></div>
+<section class="card">
+  <h1><span class="gradientAnim">Customers.</span> Your people matter.</h1>
+  <p class="subtle">Manage names, phones, and total spend at a glance.</p>
+  <div style="margin-top:10px;"><a class="btn secondary" href="/customers/new">+ Add Customer</a></div>
 </section>
 
 <section class="card">
-  <div style="display:flex;justify-content:space-between;align-items:center;"><h3>All customers</h3><span class="badge">{{ customers|length }} total</span></div>
-  <div class="table-wrap" style="overflow:auto;margin-top:10px;">
-    <table class="table"><thead><tr><th>#</th><th>Name</th><th>Phone</th><th>Orders</th><th>Total</th><th>Last purchase</th></tr></thead>
-      <tbody>{% for c in customers %}<tr>
-        <!-- c: id,name,phone,orders,total,last -->
-        <td>{{ c[0] }}</td><td>{{ c[1] }}</td><td>{{ c[2] }}</td><td>{{ c[3] or 0 }}</td><td>₹{{ '%.0f'|format(c[4] or 0) }}</td><td>{{ c[5] or '—' }}</td>
-      </tr>{% else %}<tr><td colspan="6" class="subtle">No customers yet.</td></tr>{% endfor %}</tbody>
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <h3>All Customers</h3>
+    <span class="badge">{{ customers|length }} total</span>
+  </div>
+  <div class="table-wrap" style="overflow:auto;margin-top:12px;">
+    <table class="table">
+      <thead><tr><th>ID</th><th>Name</th><th>Phone</th><th>Orders</th><th>Total</th><th>Last</th></tr></thead>
+      <tbody>
+        {% for c in customers %}
+        <tr><td>{{ c[0] }}</td><td>{{ c[1] }}</td><td>{{ c[2] }}</td><td>{{ c[3] }}</td><td>₹{{ '%.0f'|format(c[4]) }}</td><td>{{ c[5] or '—' }}</td></tr>
+        {% else %}
+        <tr><td colspan="6" class="subtle">No customers yet 🌙</td></tr>
+        {% endfor %}
+      </tbody>
     </table>
   </div>
 </section>

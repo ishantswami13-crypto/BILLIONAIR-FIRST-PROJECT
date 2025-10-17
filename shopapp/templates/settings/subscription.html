@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+{% block title %}Plans · ShopApp{% endblock %}
+{% block content %}
+<div class="aurora" aria-hidden="true"></div>
+<section class="card">
+  <h1><span class="gradientAnim">Plans.</span> Pick your vibe.</h1>
+  <p class="subtle">Upgrade your workspace to unlock analytics, assistants & automation.</p>
+</section>
+
+<section class="grid-3" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;">
+  <div class="card" style="text-align:center;">
+    <h3>Free</h3>
+    <p class="subtle">Perfect for testing</p>
+    <h2 style="margin:12px 0;">₹0</h2>
+    <ul style="list-style:none;text-align:left;margin:0 auto 14px;width:fit-content;">
+      <li>✔️ 20 sales/month</li>
+      <li>✔️ Basic dashboard</li>
+    </ul>
+    <a class="btn link" href="#">Current</a>
+  </div>
+  <div class="card" style="text-align:center;">
+    <h3>Pro</h3>
+    <p class="subtle">For small shops</p>
+    <h2 style="margin:12px 0;">₹299/mo</h2>
+    <ul style="list-style:none;text-align:left;margin:0 auto 14px;width:fit-content;">
+      <li>🚀 Unlimited sales</li>
+      <li>📊 Analytics unlock</li>
+      <li>💬 Assistant access</li>
+    </ul>
+    <a class="btn secondary" href="#">Upgrade</a>
+  </div>
+  <div class="card" style="text-align:center;">
+    <h3>Enterprise</h3>
+    <p class="subtle">For large teams</p>
+    <h2 style="margin:12px 0;">₹999/mo</h2>
+    <ul style="list-style:none;text-align:left;margin:0 auto 14px;width:fit-content;">
+      <li>🏢 Multi-user dashboard</li>
+      <li>⚙️ API & integrations</li>
+      <li>✨ Dedicated support</li>
+    </ul>
+    <a class="btn primary" href="#">Contact Sales</a>
+  </div>
+</section>
+{% endblock %}
