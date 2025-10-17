@@ -1,86 +1,39 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>{% block title %}ShopApp{% endblock %}</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v={{ app_version or '7.0.0' }}">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  {% block head %}{% endblock %}
-</head>
-<body>
-  <div class="shell">
-    <!-- Sidebar -->
-    <aside class="sidebar fadeUp" style="animation-delay:.05s">
-      <div>
-        <span class="brand"> {{ (shop[1] if shop else 'ShopApp') }}</span>
-        <nav class="nav">
-          <a href="/" class="{% if request.path=='/' %}active{% endif %}">Dashboard</a>
-          <a href="/sales" class="{% if request.path.startswith('/sales') %}active{% endif %}">Sales</a>
-          <a href="/credits" class="{% if request.path.startswith('/credits') %}active{% endif %}">Credits</a>
-          <a href="/analytics" class="{% if request.path.startswith('/analytics') %}active{% endif %}">Analytics</a>
-          <a href="/assistant" class="{% if request.path.startswith('/assistant') %}active{% endif %}">Assistant</a>
-          <a href="/settings" class="{% if request.path.startswith('/settings') %}active{% endif %}">Settings</a>
-        </nav>
+  <head>
+    <meta charset="utf-8" />
+    <title>{% block title %}ShopApp{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/apple.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% block head %}{% endblock %}
+  </head>
+  <body>
+    <nav class="apple-nav">
+      <div class="nav-left">
+        <a href="/" class="apple-logo">Shop<span>App</span></a>
       </div>
-      <div class="badge">v{{ app_version or '7.0.0' }} · {{ active_plan or 'Free' }}</div>
-    </aside>
-
-    <!-- Main -->
-    <main class="main">
-      <div class="topbar fadeUp" style="animation-delay:.1s">
-        <div>
-          <div class="hello">Hey {{ session.get('user','there') }} 👋</div>
-          <div class="subtle">Effortless insights. Apple-grade clarity.</div>
-        </div>
-        <div>
-          {% if session.get('user') %}<a href="/logout" class="btn">Logout</a>{% endif %}
-        </div>
+      <ul class="nav-links">
+        <li><a href="/">Dashboard</a></li>
+        <li><a href="/sales">Sales</a></li>
+        <li><a href="/credits">Credits</a></li>
+        <li><a href="/analytics">Analytics</a></li>
+        <li><a href="/assistant">Assistant</a></li>
+      </ul>
+      <div class="nav-right">
+        <a href="/settings/subscription" class="nav-btn">Plans</a>
+        {% if session.get('user') %}
+          <a href="/logout" class="nav-btn secondary">Logout</a>
+        {% else %}
+          <a href="/login" class="nav-btn secondary">Login</a>
+        {% endif %}
       </div>
+    </nav>
 
+    <main class="apple-main">
       {% block content %}{% endblock %}
-      <footer class="app-footer fadeUp" style="animation-delay:.16s">
-        <span>Powered by ShopApp Cloud &copy; v{{ app_version or '7.0.0' }}</span>
-        <nav>
-          <a href="mailto:support@shopapp.cloud">Support</a>
-          <a href="{{ url_for('marketing.landing') }}#terms" target="_blank" rel="noopener">Terms</a>
-          <a href="{{ url_for('marketing.landing') }}#privacy" target="_blank" rel="noopener">Privacy</a>
-        </nav>
-      </footer>
     </main>
-  </div>
 
-  <!-- Toast -->
-  <div id="toast" class="toast" style="position:fixed;right:18px;bottom:18px;display:none;background:rgba(255,255,255,.07);border:1px solid var(--hairline);border-radius:12px;padding:10px 12px;backdrop-filter:blur(10px) saturate(180%);">Saved ✓</div>
-
-  {% include "components/modal_add_item.html" ignore missing %}
-  {% include "components/modal_add_customer.html" ignore missing %}
-  {% include "components/modal_add_expense.html" ignore missing %}
-
-  <!-- UI helpers -->
-  <script type="module" src="{{ url_for('static', filename='js/ui.js') }}?v={{ app_version or '7.0.0' }}"></script>
-
-  {% block scripts %}{% endblock %}
-
-  <!-- Parallax shine for cards (Apple-y) -->
-  <script>
-    const toastEl = document.getElementById('toast');
-    window.toast = (msg='Saved ✓') => {
-      toastEl.textContent = msg; toastEl.style.display='block';
-      setTimeout(()=> toastEl.style.display='none', 2200);
-    };
-    document.addEventListener('mousemove', (e)=>{
-      document.querySelectorAll('.card').forEach(el=>{
-        const r = el.getBoundingClientRect();
-        const x = (e.clientX - r.left)/r.width, y = (e.clientY - r.top)/r.height;
-        el.style.background = `radial-gradient(circle at ${x*100}% ${y*100}%, rgba(255,255,255,.10), rgba(255,255,255,.04))`;
-      });
-    });
-    document.addEventListener('mouseleave', ()=> {
-      document.querySelectorAll('.card').forEach(el=> el.style.background='var(--card-bg)');
-    });
-  </script>
-</body>
+    {% block scripts %}{% endblock %}
+  </body>
 </html>

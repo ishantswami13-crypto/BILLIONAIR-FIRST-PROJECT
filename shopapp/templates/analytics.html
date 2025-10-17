@@ -1,0 +1,75 @@
+{% extends "layout.html" %}
+{% block title %}Analytics &middot; ShopApp{% endblock %}
+
+{% block content %}
+  <section class="card">
+    <div style="display:flex;justify-content:space-between;align-items:end;gap:12px;flex-wrap:wrap;">
+      <div>
+        <h1><span class="gradient">Analytics.</span> Clear trends, smart decisions.</h1>
+        <p class="subtle" style="margin-top:6px">Revenue, expenses, and profit trajectory.</p>
+      </div>
+      <form method="get" style="display:flex;gap:8px;align-items:center;">
+        {% set w = days or 30 %}
+        <a class="btn {% if w==30 %}secondary{% else %}link{% endif %}" href="?days=30">30d</a>
+        <a class="btn {% if w==90 %}secondary{% else %}link{% endif %}" href="?days=90">90d</a>
+        <a class="btn {% if w==180 %}secondary{% else %}link{% endif %}" href="?days=180">180d</a>
+        <a class="btn link" href="{{ url_for('reports.analytics_export', days=w) }}">Export CSV</a>
+      </form>
+    </div>
+  </section>
+
+  <section class="card">
+    <h3 style="margin-bottom:8px;">Revenue vs Expenses</h3>
+    <canvas id="revExp" height="180"></canvas>
+  </section>
+
+  <section class="grid-2-1">
+    <div class="card">
+      <h3>Top customers</h3>
+      <table class="table" style="margin-top:8px;">
+        <thead><tr><th>Name</th><th>Orders</th><th>Total</th><th>Last purchase</th></tr></thead>
+        <tbody>
+          {% for row in analytics.ltv %}
+            <tr><td>{{ row.customer }}</td><td>{{ row.orders }}</td><td>&#8377;{{ '%.0f'|format(row.total or 0) }}</td><td>{{ row.last_purchase or '—' }}</td></tr>
+          {% else %}
+            <tr><td colspan="4" class="subtle">No data yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h3>Summary</h3>
+      <ul style="margin-top:8px;display:grid;gap:6px;">
+        <li>Revenue: <b>&#8377;{{ '%.0f'|format(analytics.summary.total_revenue or 0) }}</b></li>
+        <li>Expenses: <b>&#8377;{{ '%.0f'|format(analytics.summary.total_expenses or 0) }}</b></li>
+        <li>Profit: <b style="color: #00a36c;">&#8377;{{ '%.0f'|format(analytics.summary.total_profit or 0) }}</b></li>
+        <li>Avg daily profit: <b>&#8377;{{ '%.0f'|format(analytics.summary.average_daily_profit or 0) }}</b></li>
+      </ul>
+    </div>
+  </section>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+  const A = {{ analytics or {} | tojson }};
+  const ctx = document.getElementById('revExp');
+  if (ctx && A.daily){
+    new Chart(ctx,{
+      type:'line',
+      data:{
+        labels: A.daily.map(r=>r.label),
+        datasets:[
+          {label:'Revenue', data:A.daily.map(r=>r.revenue), borderColor:'#7d00ff', backgroundColor:'rgba(125,0,255,.10)', tension:.35, fill:true},
+          {label:'Expenses', data:A.daily.map(r=>r.expenses), borderColor:'#ff007a', backgroundColor:'rgba(255,0,122,.08)', tension:.35, fill:true},
+          {label:'Profit', data:A.daily.map(r=>r.profit), borderColor:'#00c2a8', backgroundColor:'rgba(0,194,168,.10)', tension:.35, fill:true},
+        ]
+      },
+      options:{
+        plugins:{legend:{labels:{color:'#1d1d1f'}}},
+        scales:{x:{grid:{color:'#eee'}}, y:{grid:{color:'#eee'}}}
+      }
+    });
+  }
+</script>
+{% endblock %}

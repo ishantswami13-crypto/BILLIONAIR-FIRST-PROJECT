@@ -131,6 +131,7 @@ def index():
         unpaid_credits=unpaid_credits,
         low_stock_count=low_stock_count,
         tiny_chart=mini,
+        chart_data=mini,
         streak_text=streak_text,
         active_plan=current_app.config.get('ACTIVE_PLAN'),
         app_version=current_app.config.get('APP_VERSION'),
