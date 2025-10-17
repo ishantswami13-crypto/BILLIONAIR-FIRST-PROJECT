@@ -5,12 +5,9 @@
   <title>{% block title %}ShopApp{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- Apple-inspired CSS (cache bust with version) -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}?v={{ app_version or '1.0.0' }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v={{ app_version or '1.0.0' }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}?v={{ app_version or '1.0.0' }}">
-
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v={{ app_version or '7.0.0' }}">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   {% block head %}{% endblock %}
 </head>
 <body>
@@ -18,7 +15,7 @@
     <!-- Sidebar -->
     <aside class="sidebar fadeUp" style="animation-delay:.05s">
       <div>
-        <div class="brand">{{ (shop[1] if shop else "ShopApp") }}</div>
+        <span class="brand"> {{ (shop[1] if shop else 'ShopApp') }}</span>
         <nav class="nav">
           <a href="/" class="{% if request.path=='/' %}active{% endif %}">Dashboard</a>
           <a href="/sales" class="{% if request.path.startswith('/sales') %}active{% endif %}">Sales</a>
@@ -28,20 +25,18 @@
           <a href="/settings" class="{% if request.path.startswith('/settings') %}active{% endif %}">Settings</a>
         </nav>
       </div>
-      <div class="badge">v{{ app_version or '1.0.0' }} · {{ active_plan or 'Free' }}</div>
+      <div class="badge">v{{ app_version or '7.0.0' }} · {{ active_plan or 'Free' }}</div>
     </aside>
 
     <!-- Main -->
     <main class="main">
-      <div class="topbar fadeUp" style="animation-delay:.10s">
+      <div class="topbar fadeUp" style="animation-delay:.1s">
         <div>
           <div class="hello">Hey {{ session.get('user','there') }} 👋</div>
           <div class="subtle">Effortless insights. Apple-grade clarity.</div>
         </div>
         <div>
-          {% if session.get('user') %}
-            <a href="/logout" class="btn">Logout</a>
-          {% endif %}
+          {% if session.get('user') %}<a href="/logout" class="btn">Logout</a>{% endif %}
         </div>
       </div>
 
@@ -49,21 +44,35 @@
     </main>
   </div>
 
-  <!-- Global toast + optional sheets -->
-  <div id="toast" class="toast">Saved ✓</div>
+  <!-- Toast -->
+  <div id="toast" class="toast" style="position:fixed;right:18px;bottom:18px;display:none;background:rgba(255,255,255,.07);border:1px solid var(--hairline);border-radius:12px;padding:10px 12px;backdrop-filter:blur(10px) saturate(180%);">Saved ✓</div>
+
   {% include "components/modal_add_item.html" ignore missing %}
   {% include "components/modal_add_customer.html" ignore missing %}
   {% include "components/modal_add_expense.html" ignore missing %}
 
-  <script type="module" src="{{ url_for('static', filename='js/ui.js') }}?v={{ app_version or '1.0.0' }}"></script>
+  <!-- UI helpers -->
+  <script type="module" src="{{ url_for('static', filename='js/ui.js') }}?v={{ app_version or '7.0.0' }}"></script>
+
   {% block scripts %}{% endblock %}
+
+  <!-- Parallax shine for cards (Apple-y) -->
   <script>
-    window.toast = (msg) => {
-      const el = document.getElementById('toast');
-      el.textContent = msg || 'Saved ✓';
-      el.classList.add('show');
-      setTimeout(()=> el.classList.remove('show'), 2200);
+    const toastEl = document.getElementById('toast');
+    window.toast = (msg='Saved ✓') => {
+      toastEl.textContent = msg; toastEl.style.display='block';
+      setTimeout(()=> toastEl.style.display='none', 2200);
     };
+    document.addEventListener('mousemove', (e)=>{
+      document.querySelectorAll('.card').forEach(el=>{
+        const r = el.getBoundingClientRect();
+        const x = (e.clientX - r.left)/r.width, y = (e.clientY - r.top)/r.height;
+        el.style.background = `radial-gradient(circle at ${x*100}% ${y*100}%, rgba(255,255,255,.10), rgba(255,255,255,.04))`;
+      });
+    });
+    document.addEventListener('mouseleave', ()=> {
+      document.querySelectorAll('.card').forEach(el=> el.style.background='var(--card-bg)');
+    });
   </script>
 </body>
 </html>
