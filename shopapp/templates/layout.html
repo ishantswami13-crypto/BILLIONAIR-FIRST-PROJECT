@@ -19,6 +19,34 @@
       <li><a href="/customers">Customers</a></li>
     </ul>
     <div class="navact">
+      <div class="language-switcher">
+        <label for="languageSelect">Language</label>
+        <select id="languageSelect" class="language-select">
+          <option value="en">English</option>
+          <option value="as">অসমীয়া - Assamese</option>
+          <option value="bn">বাংলা - Bengali</option>
+          <option value="gom">कोंकणी - Konkani</option>
+          <option value="gu">ગુજરાતી - Gujarati</option>
+          <option value="hi">हिन्दी - Hindi</option>
+          <option value="kn">ಕನ್ನಡ - Kannada</option>
+          <option value="mai">मैथिली - Maithili</option>
+          <option value="ml">മലയാളം - Malayalam</option>
+          <option value="mni-Mtei">ꯃꯤꯇꯩ ꯂꯣꯟ - Manipuri</option>
+          <option value="mr">मराठी - Marathi</option>
+          <option value="ne">नेपाली - Nepali</option>
+          <option value="or">ଓଡ଼ିଆ - Odia</option>
+          <option value="pa">ਪੰਜਾਬੀ - Punjabi</option>
+          <option value="sa">संस्कृतम् - Sanskrit</option>
+          <option value="sd">سنڌي - Sindhi</option>
+          <option value="ta">தமிழ் - Tamil</option>
+          <option value="te">తెలుగు - Telugu</option>
+          <option value="ur">اردو - Urdu</option>
+          <option value="brx" disabled>Bodo - coming soon</option>
+          <option value="doi" disabled>Dogri - coming soon</option>
+          <option value="ks" disabled>Kashmiri - coming soon</option>
+          <option value="sat" disabled>Santali - coming soon</option>
+        </select>
+      </div>
       {% if session.get('user') %}
         <a class="btn ghost" href="/logout">Logout</a>
       {% else %}
@@ -31,7 +59,87 @@
     {% block content %}{% endblock %}
   </main>
 
+  <div id="google_translate_container" class="visually-hidden" aria-hidden="true"></div>
+
   <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script>
+    (function(){
+      const select = document.getElementById('languageSelect');
+      if (!select) return;
+
+      const cookieMatch = document.cookie.match(/(?:^|;\s*)googtrans=\/[^/]+\/([^;]+)/);
+      const initial = cookieMatch ? cookieMatch[1] : 'en';
+      if ([...select.options].some(opt => opt.value === initial)) {
+        select.value = initial;
+      } else {
+        select.value = 'en';
+      }
+
+      const setCookie = (name, value, days=365) => {
+        const expires = new Date(Date.now() + days*864e5).toUTCString();
+        document.cookie = `${name}=${value}; expires=${expires}; path=/`;
+        const host = window.location.hostname;
+        if (host.includes('.')) {
+          const domain = host.replace(/^www\./, '');
+          document.cookie = `${name}=${value}; expires=${expires}; path=/; domain=.${domain}`;
+        }
+      };
+      const clearCookie = name => {
+        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+        const host = window.location.hostname;
+        if (host.includes('.')) {
+          const domain = host.replace(/^www\./, '');
+          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=.${domain}`;
+        }
+      };
+
+      select.addEventListener('change', event => {
+        const lang = event.target.value;
+        if (select.options[select.selectedIndex].disabled) return;
+        if (lang === 'en') {
+          clearCookie('googtrans');
+          window.location.reload();
+          return;
+        }
+        const cookieVal = `/en/${lang}`;
+        setCookie('googtrans', cookieVal);
+        if (typeof window.applyTranslation === 'function') {
+          window.applyTranslation(lang);
+        } else {
+          window.pendingLanguage = lang;
+        }
+      });
+    })();
+
+    function googleTranslateElementInit() {
+      window._gt = new google.translate.TranslateElement({
+        pageLanguage: 'en',
+        includedLanguages: 'en,as,bn,gom,gu,hi,kn,mai,ml,mni-Mtei,mr,ne,or,pa,sa,sd,ta,te,ur'
+      }, 'google_translate_container');
+
+      window.applyTranslation = function(lang){
+        const combo = document.querySelector('.goog-te-combo');
+        if (!combo) {
+          window.pendingLanguage = lang;
+          return;
+        }
+        if (combo.value !== lang) {
+          combo.value = lang;
+        }
+        combo.dispatchEvent(new Event('change'));
+      };
+
+      const cookieMatch = document.cookie.match(/(?:^|;\s*)googtrans=\/[^/]+\/([^;]+)/);
+      const currentLang = cookieMatch ? cookieMatch[1] : null;
+      if (currentLang && currentLang !== 'en') {
+        window.applyTranslation(currentLang);
+      } else if (window.pendingLanguage) {
+        window.applyTranslation(window.pendingLanguage);
+        window.pendingLanguage = null;
+      }
+    }
+  </script>
+  <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

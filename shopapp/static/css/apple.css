@@ -58,6 +58,48 @@ body {
   gap: 12px;
   align-items: center;
 }
+.language-switcher {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: rgba(255,255,255,0.6);
+  backdrop-filter: var(--blur);
+  font-size: 14px;
+}
+.language-switcher label {
+  color: var(--subtext);
+  font-weight: 500;
+}
+.language-select {
+  border: none;
+  background: transparent;
+  font-family: var(--font-main);
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  padding: 4px 6px;
+  appearance: none;
+}
+.language-select:focus {
+  outline: none;
+  color: var(--accent);
+}
+.navact .btn {
+  min-width: 92px;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
 
 /* ==== HERO ==== */
 .hero {
@@ -200,6 +242,27 @@ small { font-size: 14px; }
 }
 
 @media (max-width: 900px) {
+  .nav {
+    padding: 14px 4%;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+  }
+  .navlinks {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .navact {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .language-switcher {
+    width: 100%;
+    justify-content: center;
+  }
   .hero {
     padding: 80px 6% 40px;
   }
@@ -212,3 +275,9 @@ small { font-size: 14px; }
   }
 }
 
+.goog-te-banner-frame.skiptranslate, .goog-logo-link {
+  display: none !important;
+}
+body {
+  top: 0 !important;
+}
