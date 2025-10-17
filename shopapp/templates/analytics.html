@@ -1,37 +1,35 @@
 {% extends "layout.html" %}
 {% block title %}Analytics · ShopApp{% endblock %}
+
 {% block content %}
-
-<div class="aurora" aria-hidden="true"></div>
-
-<section class="card">
-  <h1><span class="gradientAnim">Analytics.</span> Clarity meets glow.</h1>
-  <p class="subtle" style="margin-top:6px;">Visualize revenue, expenses, and profit curves.</p>
+<section class="hero fade-in" style="padding:70px 10% 30px">
+  <h1>Analytics</h1>
+  <p>Revenue, expenses, and profit - simplified.</p>
 </section>
 
-<section class="grid-4">
-  <div class="card kpi"><div class="coin">💰</div><div><div class="kpiTitle">Revenue</div><div class="kpiValue" data-count="{{ analytics.summary.total_revenue or 0 }}">₹0</div></div></div>
-  <div class="card kpi"><div class="coin">🧾</div><div><div class="kpiTitle">Expenses</div><div class="kpiValue" data-count="{{ analytics.summary.total_expenses or 0 }}">₹0</div></div></div>
-  <div class="card kpi"><div class="coin">📈</div><div><div class="kpiTitle">Profit</div><div class="kpiValue" data-count="{{ analytics.summary.total_profit or 0 }}">₹0</div></div></div>
-  <div class="card kpi"><div class="coin">⚡</div><div><div class="kpiTitle">Daily avg</div><div class="kpiValue" data-count="{{ analytics.summary.average_daily_profit or 0 }}">₹0</div></div></div>
-</section>
+<div class="grid">
+  <div class="card fade-in"><small>Revenue</small><div style="font-size:34px;font-weight:800">₹{{ (analytics.summary.total_revenue or 0)|int }}</div></div>
+  <div class="card fade-in"><small>Expenses</small><div style="font-size:34px;font-weight:800">₹{{ (analytics.summary.total_expenses or 0)|int }}</div></div>
+  <div class="card fade-in"><small>Profit</small><div style="font-size:34px;font-weight:800">₹{{ (analytics.summary.total_profit or 0)|int }}</div></div>
+  <div class="card fade-in"><small>Avg daily profit</small><div style="font-size:34px;font-weight:800">₹{{ (analytics.summary.average_daily_profit or 0)|int }}</div></div>
 
-<section class="card">
-  <canvas id="revExp" height="180"></canvas>
-</section>
-
+  <div class="card fade-in" style="grid-column: span 2;">
+    <h2>Daily curve</h2>
+    <canvas id="revExp" height="180"></canvas>
+  </div>
+</div>
 {% endblock %}
+
 {% block scripts %}
 {{ super() }}
 <script>
-document.querySelectorAll('.kpiValue[data-count]').forEach(el=>ShopFX.countUp(el,{money:true}));
-const A={{ analytics or {} | tojson }}, ctx=document.getElementById('revExp');
-if(ctx&&A.daily){new Chart(ctx,{type:'line',data:{
+const A={{ analytics or {} | tojson }}, c=document.getElementById('revExp');
+if(c&&A.daily){new Chart(c,{type:'line',data:{
 labels:A.daily.map(r=>r.label),
 datasets:[
-{label:'Revenue',data:A.daily.map(r=>r.revenue),borderColor:'#7c3aed',backgroundColor:'rgba(124,58,237,.2)',tension:.38,fill:true},
-{label:'Expenses',data:A.daily.map(r=>r.expenses),borderColor:'#06b6d4',backgroundColor:'rgba(6,182,212,.18)',tension:.38,fill:true},
-{label:'Profit',data:A.daily.map(r=>r.profit),borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.18)',tension:.38,fill:true}]},
-options:{plugins:{legend:{labels:{color:'#fff'}}},scales:{x:{grid:{color:'rgba(255,255,255,.08)'}},y:{grid:{color:'rgba(255,255,255,.08)'}}}}});}
+{label:'Revenue',data:A.daily.map(r=>r.revenue),borderColor:'#0071e3',backgroundColor:'rgba(0,113,227,.12)',tension:.35,fill:true},
+{label:'Expenses',data:A.daily.map(r=>r.expenses),borderColor:'#8e8e93',backgroundColor:'rgba(142,142,147,.12)',tension:.35,fill:true},
+{label:'Profit',data:A.daily.map(r=>r.profit),borderColor:'#34c759',backgroundColor:'rgba(52,199,89,.12)',tension:.35,fill:true}
+]},options:{plugins:{legend:{labels:{color:'#333'}}},scales:{x:{grid:{color:'rgba(0,0,0,.06)'}},y:{grid:{color:'rgba(0,0,0,.06)'}}}}});}
 </script>
 {% endblock %}

@@ -1,29 +1,31 @@
 {% extends "layout.html" %}
 {% block title %}Customers · ShopApp{% endblock %}
+
 {% block content %}
-<div class="aurora" aria-hidden="true"></div>
-<section class="card">
-  <h1><span class="gradientAnim">Customers.</span> Your people matter.</h1>
-  <p class="subtle">Manage names, phones, and total spend at a glance.</p>
-  <div style="margin-top:10px;"><a class="btn secondary" href="/customers/new">+ Add Customer</a></div>
+<section class="hero fade-in" style="padding:70px 10% 30px">
+  <h1>Customers</h1>
+  <p>See loyalty at a glance. Add, edit, and contact quickly.</p>
 </section>
 
-<section class="card">
-  <div style="display:flex;justify-content:space-between;align-items:center;">
-    <h3>All Customers</h3>
-    <span class="badge">{{ customers|length }} total</span>
+<div class="grid">
+  <div class="card fade-in">
+    <h2>Actions</h2>
+    <a class="btn" href="/customers/new" style="margin-top:8px">+ Add Customer</a>
   </div>
-  <div class="table-wrap" style="overflow:auto;margin-top:12px;">
-    <table class="table">
-      <thead><tr><th>ID</th><th>Name</th><th>Phone</th><th>Orders</th><th>Total</th><th>Last</th></tr></thead>
-      <tbody>
+
+  <div class="card fade-in" style="grid-column: span 2;">
+    <div class="table-wrap" style="overflow:auto">
+      <table class="table">
+        <thead><tr><th>ID</th><th>Name</th><th>Phone</th><th>Orders</th><th>Total</th><th>Last</th></tr></thead>
+        <tbody>
         {% for c in customers %}
-        <tr><td>{{ c[0] }}</td><td>{{ c[1] }}</td><td>{{ c[2] }}</td><td>{{ c[3] }}</td><td>₹{{ '%.0f'|format(c[4]) }}</td><td>{{ c[5] or '—' }}</td></tr>
+          <tr><td>{{ c[0] }}</td><td>{{ c[1] }}</td><td>{{ c[2] }}</td><td>{{ c[3] }}</td><td>₹{{ '%.0f'|format(c[4]) }}</td><td>{{ c[5] or '--' }}</td></tr>
         {% else %}
-        <tr><td colspan="6" class="subtle">No customers yet 🌙</td></tr>
+          <tr><td colspan="6"><small>No customers yet.</small></td></tr>
         {% endfor %}
-      </tbody>
-    </table>
+        </tbody>
+      </table>
+    </div>
   </div>
-</section>
+</div>
 {% endblock %}

@@ -1,24 +1,29 @@
 {% extends "layout.html" %}
 {% block title %}Assistant · ShopApp{% endblock %}
+
 {% block content %}
-<div class="aurora" aria-hidden="true"></div>
-<section class="card">
-  <h1><span class="gradientAnim">Assistant.</span> Your AI teammate.</h1>
-  <p class="subtle">Type your question or say "help me summarize today's sales".</p>
-  <form method="post" style="margin-top:12px;display:grid;gap:10px;">
-    <textarea class="input" name="message" rows="3" placeholder="Ask me anything..."></textarea>
-    <button class="btn primary">Send</button>
-  </form>
+<section class="hero fade-in" style="padding:70px 10% 30px">
+  <h1>Assistant</h1>
+  <p>Ask in plain language. Example: "profit last 7 days" or "add expense 120 tea".</p>
 </section>
 
-{% if replies %}
-<section class="card">
-  <h3>Conversation</h3>
-  <div style="margin-top:12px;display:grid;gap:10px;">
-    {% for r in replies %}
-      <div style="background:rgba(255,255,255,.08);border-radius:14px;padding:12px;">{{ r }}</div>
-    {% endfor %}
+<div class="grid">
+  <div class="card fade-in" style="grid-column: span 2;">
+    <form method="post" style="display:grid;gap:12px">
+      <textarea class="input" name="message" rows="3" placeholder="Ask me anything..."></textarea>
+      <button class="btn">Send</button>
+    </form>
   </div>
-</section>
-{% endif %}
+
+  {% if replies %}
+  <div class="card fade-in" style="grid-column: span 2;">
+    <h2>Conversation</h2>
+    <div style="display:grid;gap:10px;margin-top:10px">
+      {% for r in replies %}
+        <div class="card" style="padding:16px">{{ r }}</div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
 {% endblock %}

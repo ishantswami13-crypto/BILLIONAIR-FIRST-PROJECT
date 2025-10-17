@@ -1,61 +1,58 @@
 {% extends "layout.html" %}
 {% block title %}Credits · ShopApp{% endblock %}
+
 {% block content %}
+<section class="hero fade-in" style="padding:70px 10% 30px">
+  <h1>Credits</h1>
+  <p>Track unpaid credits, send reminders, and mark payments.</p>
+</section>
 
-<div class="aurora" aria-hidden="true"></div>
-
-<section class="card">
-  <h1><span class="gradientAnim">Credits.</span> Smooth tracking.</h1>
-  <p class="subtle" style="margin-top:8px;">Mark payments, send reminders, and relax.</p>
-  <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;">
-    <a class="btn secondary" href="{{ url_for('credits.new') }}">+ New Credit</a>
-    <a class="btn link" href="{{ url_for('credits.send_reminders') }}">Send All Reminders</a>
+<div class="grid">
+  <div class="card fade-in">
+    <h2>Actions</h2>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px">
+      <a class="btn" href="{{ url_for('credits.new') }}">+ New Credit</a>
+      <a class="btn ghost" href="{{ url_for('credits.send_reminders') }}">Send all reminders</a>
+    </div>
   </div>
-</section>
 
-<section class="grid-4">
-  <div class="card kpi"><div class="coin">📄</div><div><div class="kpiTitle">Unpaid</div><div class="kpiValue" data-count="{{ unpaid_count or 0 }}">0</div></div></div>
-  <div class="card kpi"><div class="coin">💰</div><div><div class="kpiTitle">Unpaid total</div><div class="kpiValue" data-count="{{ total_unpaid or 0 }}">₹0</div></div></div>
-  <div class="card kpi"><div class="coin">📬</div><div><div class="kpiTitle">Reminders 30d</div><div class="kpiValue" data-count="{{ reminders_30d or 0 }}">0</div></div></div>
-  <div class="card kpi"><div class="coin">✅</div><div><div class="kpiTitle">Paid this week</div><div class="kpiValue" data-count="{{ paid_week or 0 }}">₹0</div></div></div>
-</section>
+  <div class="card fade-in">
+    <small>Unpaid count</small>
+    <div style="font-size:34px;font-weight:800">{{ unpaid_count or 0 }}</div>
+  </div>
+  <div class="card fade-in">
+    <small>Unpaid total</small>
+    <div style="font-size:34px;font-weight:800">₹{{ (total_unpaid or 0)|int }}</div>
+  </div>
+  <div class="card fade-in">
+    <small>Reminders (30d)</small>
+    <div style="font-size:34px;font-weight:800">{{ reminders_30d or 0 }}</div>
+  </div>
 
-<section class="card">
-  <h3>Ledger</h3>
-  <div class="table-wrap" style="overflow:auto;margin-top:12px;">
-    <table class="table">
-      <thead><tr><th>#</th><th>Date</th><th>Customer</th><th>Item</th><th>Qty</th><th>Total</th><th>Status</th><th>Actions</th></tr></thead>
-      <tbody>
+  <div class="card fade-in" style="grid-column: span 2;">
+    <h2>Ledger</h2>
+    <div class="table-wrap" style="overflow:auto;margin-top:10px">
+      <table class="table">
+        <thead><tr><th>#</th><th>Date</th><th>Customer</th><th>Item</th><th>Qty</th><th>Total</th><th>Status</th><th></th></tr></thead>
+        <tbody>
         {% for c in credits %}
-        <tr>
-          <td>{{ c.id }}</td><td>{{ c.date }}</td><td>{{ c.customer }}</td><td>{{ c.item }}</td><td>{{ c.quantity }}</td>
-          <td>₹{{ '%.0f'|format(c.total) }}</td>
-          <td>{% if c.status=='paid' %}
-            <span class="badge" style="color:#22c55e;border-color:#22c55e;">Paid</span>
-            {% else %}
-            <span class="badge" style="color:#ff6b9b;border-color:#ff6b9b;">Unpaid</span>
-          {% endif %}</td>
-          <td>
-            {% if c.status!='paid' %}
-              <a class="btn link" href="{{ url_for('credits.pay', credit_id=c.id) }}" onclick="ShopFX.ping(700,180)">Mark paid</a>
-              <a class="btn secondary" href="{{ url_for('credits.send_one', credit_id=c.id) }}">Send</a>
-            {% endif %}
-          </td>
-        </tr>
+          <tr>
+            <td>{{ c.id }}</td><td>{{ c.date }}</td><td>{{ c.customer }}</td><td>{{ c.item }}</td><td>{{ c.quantity }}</td>
+            <td>₹{{ '%.0f'|format(c.total) }}</td>
+            <td>{% if c.status=='paid' %}Paid{% else %}Unpaid{% endif %}</td>
+            <td style="white-space:nowrap">
+              {% if c.status!='paid' %}
+                <a class="btn ghost" href="{{ url_for('credits.pay', credit_id=c.id) }}">Mark paid</a>
+                <a class="btn" href="{{ url_for('credits.send_one', credit_id=c.id) }}">Send</a>
+              {% endif %}
+            </td>
+          </tr>
         {% else %}
-        <tr><td colspan="8" class="subtle">No credits yet ✨</td></tr>
+          <tr><td colspan="8"><small>No credits yet.</small></td></tr>
         {% endfor %}
-      </tbody>
-    </table>
+        </tbody>
+      </table>
+    </div>
   </div>
-</section>
-
-{% endblock %}
-{% block scripts %}
-<script>
-document.querySelectorAll('.kpiValue[data-count]').forEach(el=>{
-  const money = el.textContent.trim().startsWith('₹');
-  ShopFX.countUp(el,{money});
-});
-</script>
+</div>
 {% endblock %}

@@ -4,16 +4,12 @@
   <meta charset="utf-8"/>
   <title>{% block title %}ShopApp{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <!-- fonts (system-first; optional: uncomment if you want Inter webfont) -->
-  <!-- <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet"> -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/premium.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/apple.css') }}">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-
   <nav class="nav">
-    <a href="/" class="brand">Shop<b>App</b></a>
+    <a href="/" class="brand">ShopApp</a>
     <ul class="navlinks">
       <li><a href="/">Dashboard</a></li>
       <li><a href="/sales">Sales</a></li>
@@ -23,31 +19,19 @@
       <li><a href="/customers">Customers</a></li>
     </ul>
     <div class="navact">
-      <button id="themeToggle" class="btn ghost press" title="Toggle theme">🌓</button>
       {% if session.get('user') %}
-        <a class="btn primary press" href="/logout">Logout</a>
+        <a class="btn ghost" href="/logout">Logout</a>
       {% else %}
-        <a class="btn primary press" href="/login">Login</a>
+        <a class="btn" href="/login">Login</a>
       {% endif %}
     </div>
   </nav>
 
-  <main class="main">
-    <!-- spatial strip -->
-    <div class="parallax" aria-hidden="true"></div>
-
-    <!-- hero (emotional + whitespace) -->
-    <section class="hero">
-      <div class="kicker"><span class="dot"></span><span id="greet">Good day</span>, {{ session.get('user') or 'Owner' }}</div>
-      <h1>Run your store with <span style="background:linear-gradient(90deg,var(--accHot),var(--acc1),var(--acc2));-webkit-background-clip:text;-webkit-text-fill-color:transparent">clarity</span>.</h1>
-      <p class="subtle" id="tip">Tip: Use Quick Sale to log in 3 taps.</p>
-    </section>
-
+  <main>
     {% block content %}{% endblock %}
   </main>
 
-  <!-- global helpers -->
-  <script src="{{ url_for('static', filename='js/premium.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

@@ -2,102 +2,102 @@
 {% block title %}Dashboard · ShopApp{% endblock %}
 
 {% block content %}
+<section class="hero fade-in">
+  <h1>Run your store with clarity.</h1>
+  <p>Clean insights, quick actions, and a calm workspace you'll actually enjoy using.</p>
+</section>
 
-  <div class="aurora" aria-hidden="true"></div>
-
-  <section class="card" style="margin-top:10px">
-    <h1><span class="gradientAnim">Store.</span> Your day at a glance.</h1>
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px;">
-      <p class="subtle">Effortless clarity — revenue, sales, credits & stock.</p>
-      <span id="smartTip" class="tip">💡 Tip: Press Alt + / to open Assistant.</span>
-    </div>
-  </section>
-
+<div class="grid">
   <!-- KPIs -->
-  <section class="grid-4">
-    <div class="card kpi">
-      <div class="coin">💸</div>
-      <div><div class="kpiTitle">Revenue</div><div class="kpiValue" data-count="{{ today_rev or 0 }}">₹0</div></div>
-    </div>
-    <div class="card kpi">
-      <div class="coin">🛍️</div>
-      <div><div class="kpiTitle">Sales</div><div class="kpiValue" data-count="{{ today_count or 0 }}">0</div></div>
-    </div>
-    <div class="card kpi">
-      <div class="coin">📄</div>
-      <div><div class="kpiTitle">Unpaid credits</div><div class="kpiValue" data-count="{{ unpaid_credits or 0 }}">₹0</div></div>
-    </div>
-    <div class="card kpi">
-      <div class="coin">📦</div>
-      <div><div class="kpiTitle">Low stock</div><div class="kpiValue" data-count="{{ low_stock_count or 0 }}">0</div></div>
-    </div>
-  </section>
+  <div class="card fade-in">
+    <h2>Revenue today</h2>
+    <div style="font-size:42px;font-weight:800;letter-spacing:-.02em;">₹{{ (today_rev or 0)|int }}</div>
+    <small>Compared to yesterday, keep it steady.</small>
+  </div>
+  <div class="card fade-in">
+    <h2>Sales count</h2>
+    <div style="font-size:42px;font-weight:800;letter-spacing:-.02em;">{{ (today_count or 0)|int }}</div>
+    <small>Fast logging via Quick Sale.</small>
+  </div>
+  <div class="card fade-in">
+    <h2>Unpaid credits</h2>
+    <div style="font-size:42px;font-weight:800;letter-spacing:-.02em;">₹{{ (unpaid_credits or 0)|int }}</div>
+    <small>Send reminders from Credits.</small>
+  </div>
+  <div class="card fade-in">
+    <h2>Low stock</h2>
+    <div style="font-size:42px;font-weight:800;letter-spacing:-.02em;">{{ (low_stock_count or 0)|int }}</div>
+    <small>Reorder before it's gone.</small>
+  </div>
 
-  <!-- Chart + Quick sale -->
-  <section class="grid-2-1">
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <h3>7-day performance</h3>
-        <a class="btn secondary" href="/analytics">Open Analytics</a>
+  <!-- Chart -->
+  <div class="card fade-in" style="grid-column: span 2;">
+    <h2>Last 7 days</h2>
+    <canvas id="chart7" height="160"></canvas>
+  </div>
+
+  <!-- Quick sale -->
+  <div class="card fade-in">
+    <h2>Quick Sale</h2>
+    <form method="POST" action="/sell" style="display:grid;gap:12px;margin-top:8px">
+      <div>
+        <label>Item</label>
+        <select class="select" name="item_id" required>
+          {% for i in items %}<option value="{{ i[0] }}">{{ i[1] }} (₹{{ i[2] }}, {{ i[3] }} left)</option>{% endfor %}
+        </select>
       </div>
-      <canvas id="chart7" height="160"></canvas>
+      <div>
+        <label>Customer</label>
+        <select class="select" name="customer_id">
+          <option value="">Walk-in</option>
+          {% for c in customers %}<option value="{{ c[0] }}">{{ c[1] }} ({{ c[2] }})</option>{% endfor %}
+        </select>
+      </div>
+      <div>
+        <label>Quantity</label>
+        <input class="input" type="number" name="quantity" min="1" value="1" required>
+      </div>
+      <button class="btn">Add sale</button>
+    </form>
+  </div>
+
+  <!-- Recent sales -->
+  <div class="card fade-in" style="grid-column: span 2;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+      <h2>Recent sales</h2>
+      <a class="btn ghost" href="/sales">Open Sales</a>
     </div>
-    <div class="card">
-      <h3>Quick sale</h3>
-      <form method="POST" action="/sell" style="display:grid;gap:10px;margin-top:8px">
-        <div>
-          <label class="kpiTitle">Item</label>
-          <select class="select" name="item_id" required>
-            {% for i in items %}<option value="{{ i[0] }}">{{ i[1] }} (₹{{ i[2] }}, {{ i[3] }} left)</option>{% endfor %}
-          </select>
-        </div>
-        <div>
-          <label class="kpiTitle">Customer</label>
-          <select class="select" name="customer_id">
-            <option value="">Walk-in</option>
-            {% for c in customers %}<option value="{{ c[0] }}">{{ c[1] }} ({{ c[2] }})</option>{% endfor %}
-          </select>
-        </div>
-        <div>
-          <label class="kpiTitle">Quantity</label>
-          <input class="input" type="number" name="quantity" min="1" required>
-        </div>
-        <button class="btn primary full" onclick="ShopFX.ping(950,160)">Sell</button>
-      </form>
+    <div class="table-wrap" style="overflow:auto;margin-top:10px">
+      <table class="table">
+        <thead><tr><th>#</th><th>Date</th><th>Item</th><th>Qty</th><th>Total</th><th>Customer</th></tr></thead>
+        <tbody>
+        {% for s in sales %}
+          <tr><td>{{ s[0] }}</td><td>{{ s[1] }}</td><td>{{ s[2] }}</td><td>{{ s[3] }}</td><td>₹{{ '%.0f'|format(s[4]) }}</td><td>{{ s[5] or 'Walk-in' }}</td></tr>
+        {% else %}
+          <tr><td colspan="6"><small>No sales yet - try Quick Sale.</small></td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
     </div>
-  </section>
+  </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 {{ super() }}
 <script>
-  // count-ups
-  document.querySelectorAll('.kpiValue[data-count]').forEach(el=>{
-    const isMoney = el.textContent.trim().startsWith('₹');
-    ShopFX.countUp(el,{money:isMoney, duration:1100});
-  });
+const d={{ chart_data or [] | tojson }}, ctx=document.getElementById('chart7');
+if(ctx&&d.length){
+  new Chart(ctx,{type:'line',data:{labels:d.map(r=>r.t),datasets:[
+    {label:'Revenue',data:d.map(r=>r.rev),borderColor:'#0071e3',backgroundColor:'rgba(0,113,227,.15)',tension:.35,fill:true},
+    {label:'Expenses',data:d.map(r=>r.exp||0),borderColor:'#8e8e93',backgroundColor:'rgba(142,142,147,.15)',tension:.35,fill:true}
+  ]},options:{plugins:{legend:{labels:{color:'#333'}}},scales:{x:{grid:{color:'rgba(0,0,0,.06)'}},y:{grid:{color:'rgba(0,0,0,.06)'}}}}});
+}
 
-  // rotating tips
-  ShopFX.rotateTip(document.getElementById('smartTip'),[
-    "💡 Tip: Use Quick sale to log in 3 taps.",
-    "📈 Add expenses to see **real** profit.",
-    "🔔 Enable WhatsApp reminders for credits.",
-    "⌨️ Press Alt + / to chat with Assistant."
-  ]);
-
-  // chart
-  const d={{ chart_data or [] | tojson }}, ctx=document.getElementById('chart7');
-  if(ctx && d.length){
-    new Chart(ctx,{type:'line',data:{
-      labels:d.map(r=>r.t),
-      datasets:[
-        {label:'Revenue', data:d.map(r=>r.rev), borderColor:'#7c3aed', backgroundColor:'rgba(124,58,237,.20)', tension:.38, fill:true},
-        {label:'Expenses',data:d.map(r=>r.exp), borderColor:'#06b6d4', backgroundColor:'rgba(6,182,212,.18)', tension:.38, fill:true}
-      ]},
-      options:{plugins:{legend:{labels:{color:'#e6e9ff'}}},
-               scales:{x:{grid:{color:'rgba(255,255,255,.08)'}},
-                       y:{grid:{color:'rgba(255,255,255,.08)'}}}}
-    });
-  }
+// smooth on-scroll reveal (apple-like)
+const obs = new IntersectionObserver(es=>es.forEach(e=>{
+  if(e.isIntersecting){ e.target.classList.add('fade-in'); obs.unobserve(e.target); }
+}),{threshold:.12});
+document.querySelectorAll('.card, .hero').forEach(el=>obs.observe(el));
 </script>
 {% endblock %}

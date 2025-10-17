@@ -1,237 +1,214 @@
-:root{
-  --bg: #0f1220;           /* deep night */
-  --panel: rgba(255,255,255,.08);
-  --glass: rgba(255,255,255,.10);
-  --line: rgba(255,255,255,.18);
-  --text: #eef2ff;         /* icy white */
-  --muted: #a8b1d4;
-
-  --accent1: #7c3aed;      /* violet */
-  --accent2: #06b6d4;      /* cyan */
-  --accent3: #22c55e;      /* mint */
-  --hot:     #ff6b9b;      /* pink */
-
-  --radius-xl: 22px;
-  --radius: 16px;
-  --shadow-1: 0 10px 30px rgba(0,0,0,.35);
-  --shadow-2: inset 0 1px 0 rgba(255,255,255,.08), 0 8px 24px rgba(15,18,32,.45);
-  --blur: saturate(1.2) blur(14px);
-
-  --f-xs:12px; --f-sm:14px; --f-md:16px; --f-lg:20px; --f-xl:36px; --f-2xl:56px;
-  --speed: .35s cubic-bezier(.22,.61,.36,1);
+/* === Apple-inspired UI (2025 refinement) === */
+:root {
+  --bg: #ffffff;
+  --text: #111111;
+  --subtext: #555555;
+  --accent: #0071e3;
+  --radius: 20px;
+  --blur: saturate(1.8) blur(25px);
+  --shadow: 0 20px 60px rgba(0,0,0,0.08);
+  --transition: all .3s cubic-bezier(.25,.1,.25,1);
+  --font-main: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
 }
 
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%}
-body{
-  background: radial-gradient(1200px 600px at 20% -10%, #2a1b5a 0, transparent 60%),
-              radial-gradient(900px 600px at 80% -10%, #0a3249 0, transparent 60%),
-              var(--bg);
-  color:var(--text);
-  font-family: ui-sans-serif, -apple-system, Segoe UI, Roboto, Inter, system-ui, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing:antialiased;
+body {
+  margin: 0;
+  font-family: var(--font-main);
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  transition: var(--transition);
 }
 
-/* ==== NAV (glass bar) */
-.apple-nav{
-  position:sticky; top:0; z-index:100;
-  display:flex; align-items:center; justify-content:space-between;
-  padding:14px 4%;
-  background: linear-gradient(90deg, rgba(124,58,237,.18), rgba(6,182,212,.18)) border-box;
+/* ==== NAV ==== */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   backdrop-filter: var(--blur);
-  border-bottom:1px solid var(--line);
+  background: rgba(255,255,255,0.72);
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  padding: 16px 6%;
+  transition: var(--transition);
 }
-.apple-logo{font-weight:800; letter-spacing:.2px; text-decoration:none; color:var(--text); font-size:1.3rem}
-.apple-logo span{background:linear-gradient(90deg,var(--hot),var(--accent2));
-  -webkit-background-clip:text; -webkit-text-fill-color:transparent}
-.nav-links{display:flex; list-style:none; gap:26px}
-.nav-links a{color:var(--muted); text-decoration:none; transition:var(--speed); font-weight:600}
-.nav-links a:hover{color:#fff; text-shadow:0 0 18px rgba(124,58,237,.6)}
-.nav-right{display:flex; gap:10px}
-.nav-btn{
-  padding:10px 16px; border-radius:999px; text-decoration:none; color:#fff;
-  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
-  border:1px solid var(--line);
-  backdrop-filter: var(--blur);
-  transition:var(--speed); box-shadow: var(--shadow-1);
+.navlinks {
+  list-style: none;
+  display: flex;
+  gap: 24px;
+  margin: 0;
+  padding: 0;
 }
-.nav-btn:hover{transform:translateY(-1px); box-shadow:0 16px 36px rgba(0,0,0,.45)}
-.nav-btn.secondary{
-  background:linear-gradient(90deg,var(--accent1),var(--hot)); border:none;
+.nav a {
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color .3s;
 }
-
-/* ==== CANVAS WRAP */
-.apple-main{max-width:1180px; margin:36px auto 80px; padding:0 24px}
-
-/* ==== CARDS (glass) */
-.card{
-  border-radius: var(--radius-xl);
-  background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.06));
-  border:1px solid var(--line);
-  backdrop-filter: var(--blur);
-  box-shadow: var(--shadow-2);
-  padding:28px; margin-bottom:24px; transition:var(--speed);
+.nav a:hover { color: var(--accent); }
+.brand {
+  font-weight: 800;
+  font-size: 1.4rem;
+  letter-spacing: -0.02em;
 }
-.card:hover{ transform: translateY(-2px) }
-
-/* ==== LAYOUT GRIDS */
-.grid-4{display:grid; grid-template-columns:repeat(4,1fr); gap:16px}
-.grid-2-1{display:grid; grid-template-columns:2fr 1fr; gap:18px}
-@media(max-width:1024px){ .grid-4{grid-template-columns:repeat(2,1fr)} .grid-2-1{grid-template-columns:1fr}}
-
-/* ==== TEXT */
-h1{font-size:var(--f-2xl); font-weight:900; letter-spacing:-.02em}
-h2{font-size:var(--f-xl); font-weight:800}
-h3{font-size:var(--f-lg); font-weight:700}
-.subtle{color:var(--muted)}
-.badge{display:inline-block; padding:6px 10px; border-radius:999px; border:1px solid var(--line); background:rgba(255,255,255,.06); color:#dae0ff; font-size:var(--f-xs)}
-
-/* ==== BUTTONS & INPUTS */
-.btn{display:inline-block; border:none; border-radius:14px; padding:12px 16px; cursor:pointer; transition:var(--speed)}
-.btn.primary{background: linear-gradient(90deg, var(--accent1), var(--hot)); color:#fff}
-.btn.secondary{background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.06)); color:#fff; border:1px solid var(--line); backdrop-filter:var(--blur)}
-.btn.link{background:transparent; border:1px solid var(--line); color:#cfe4ff}
-.btn.full{width:100%}
-
-.input,.select{
-  width:100%; padding:12px 14px; border-radius:14px; outline:none; color:#fff;
-  background: rgba(255,255,255,.08); border:1px solid var(--line); backdrop-filter:var(--blur);
-}
-.input:focus,.select:focus{ box-shadow:0 0 0 3px rgba(124,58,237,.25); border-color:transparent}
-
-/* ==== TABLE */
-.table{width:100%; border-collapse:collapse}
-.table th,.table td{padding:12px; border-bottom:1px solid var(--line); text-align:left}
-.table th{color:#c8d1ff; font-weight:700}
-
-/* ==== WOW ELEMENTS */
-.aurora{
-  position:relative; overflow:hidden; border-radius: var(--radius-xl);
-  height:52px; margin-bottom:22px; border:1px solid var(--line);
-  background: radial-gradient(120px 120px at 10% 50%, #ff8dcd55 25%, transparent 60%),
-              radial-gradient(160px 160px at 45% 50%, #9b8bff55 25%, transparent 60%),
-              radial-gradient(140px 140px at 70% 50%, #55e2ff55 25%, transparent 60%),
-              radial-gradient(120px 120px at 90% 50%, #ffe08b55 25%, transparent 60%);
-  filter:saturate(1.2);
-}
-.blobs{
-  position:absolute; inset:-30% -10%; pointer-events:none; z-index:-1;
-  background:
-    radial-gradient(600px 400px at 10% 30%, rgba(124,58,237,.45), transparent 60%),
-    radial-gradient(700px 500px at 80% 20%, rgba(6,182,212,.40), transparent 60%),
-    radial-gradient(600px 500px at 50% 80%, rgba(34,197,94,.35), transparent 60%);
-  filter: blur(60px) saturate(1.1);
-  animation: float 12s ease-in-out infinite alternate;
-}
-@keyframes float{ from{transform:translateY(0)} to{transform:translateY(10px)} }
-
-.gradientAnim{
-  background: linear-gradient(90deg, var(--hot), var(--accent1), var(--accent2), var(--accent3));
-  background-size: 280% 100%;
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  animation: move 9s ease infinite;
-}
-@keyframes move{0%{background-position:0%}50%{background-position:100%}100%{background-position:0%}}
-
-.kpi{display:flex; align-items:center; gap:16px}
-.kpi .coin{
-  width:54px; height:54px; border-radius:16px; display:grid; place-items:center; font-size:24px;
-  background: linear-gradient(180deg, rgba(255,255,255,.20), rgba(255,255,255,.08));
-  border:1px solid var(--line); box-shadow: var(--shadow-2); backdrop-filter: var(--blur);
-}
-.kpiTitle{font-size:var(--f-sm); letter-spacing:.08em; color:#cbd5ff; text-transform:uppercase}
-.kpiValue{font-size:32px; font-weight:900; letter-spacing:-.02em}
-
-/* chips / tips */
-.tip{padding:10px 14px; border-radius:999px; background:rgba(255,255,255,.08); border:1px solid var(--line);
-  display:inline-flex; gap:8px; align-items:center; color:#d7e3ff}
-
-/* ===== Splash Intro ===== */
-#splash {
-  position: fixed; inset: 0; z-index: 9999;
-  display: grid; place-items: center;
-  background:
-    radial-gradient(1200px 700px at 20% -10%, #2a1b5a 0, transparent 60%),
-    radial-gradient(900px 600px at 80% -10%, #0a3249 0, transparent 60%),
-    #0f1220;
-  overflow: hidden;
-  pointer-events: all;
-}
-#splash[hidden]{ display:none; }
-
-.splash-aurora {
-  position: absolute; inset: -30% -10%; z-index: 0; pointer-events:none;
-  background:
-    radial-gradient(900px 600px at 12% 30%, rgba(124,58,237,.45), transparent 60%),
-    radial-gradient(900px 600px at 82% 20%, rgba(6,182,212,.40), transparent 60%),
-    radial-gradient(900px 700px at 60% 85%, rgba(34,197,94,.35), transparent 60%);
-  filter: blur(70px) saturate(1.1);
-  animation: splashFloat 12s ease-in-out infinite alternate;
+.navact {
+  display: flex;
+  gap: 12px;
+  align-items: center;
 }
 
-.splash-card {
-  position: relative; z-index: 2;
-  border-radius: 28px;
-  padding: 40px 48px;
-  background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.06));
-  border: 1px solid rgba(255,255,255,.18);
-  backdrop-filter: saturate(1.2) blur(18px);
-  box-shadow: 0 18px 60px rgba(0,0,0,.45);
+/* ==== HERO ==== */
+.hero {
+  padding: 100px 10% 60px;
   text-align: center;
 }
-
-.splash-logo {
-  font-size: 44px; font-weight: 900; letter-spacing: -0.02em;
-  margin-bottom: 10px;
-  background: linear-gradient(90deg, #ff6b9b, #7c3aed, #06b6d4, #22c55e);
-  background-size: 280% 100%;
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  animation: splashGradient 6s ease infinite;
+.hero h1 {
+  font-size: 64px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  background: linear-gradient(90deg, #000 0%, #222 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 18px;
 }
-.splash-tag { color: #cbd5ff; font-size: 14px; opacity: .95; }
-
-.splash-ring {
-  position: absolute; inset: -50px; z-index: 1; pointer-events: none;
-  background:
-    conic-gradient(from 0deg, rgba(124,58,237,.35), rgba(6,182,212,.25), rgba(34,197,94,.25), rgba(255,107,155,.35), rgba(124,58,237,.35));
-  mask: radial-gradient(closest-side, transparent 62%, #000 64%);
-  filter: blur(8px);
-  animation: ringSpin 9s linear infinite;
-  opacity:.9;
+.hero p {
+  font-size: 22px;
+  color: var(--subtext);
+  max-width: 640px;
+  margin: 0 auto;
 }
 
-.splash-progress {
-  height: 6px; width: 280px; margin: 18px auto 0; border-radius: 999px;
-  background: rgba(255,255,255,.12); overflow: hidden; border: 1px solid rgba(255,255,255,.18);
+/* ==== GRID ==== */
+.grid {
+  display: grid;
+  gap: 30px;
+  margin: 80px auto;
+  padding: 0 8%;
+  max-width: 1300px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
-.splash-progress > i {
-  display:block; height:100%; width:0%;
-  background: linear-gradient(90deg, #7c3aed, #06b6d4, #22c55e);
-  animation: barFill 2.2s ease forwards;
+.card {
+  background: rgba(255,255,255,0.9);
+  border-radius: var(--radius);
+  padding: 40px 30px;
+  box-shadow: var(--shadow);
+  backdrop-filter: var(--blur);
+  transition: var(--transition);
+}
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 25px 70px rgba(0,0,0,0.1);
 }
 
-.splash-skip {
-  position:absolute; right:18px; bottom:18px; z-index:3;
-  padding:8px 12px; border-radius:999px; border:1px solid rgba(255,255,255,.18);
-  background: rgba(255,255,255,.08); color:#e9edff; cursor:pointer;
-  backdrop-filter: blur(8px);
-  transition: .25s ease;
+/* ==== TABLE ==== */
+.table-wrap {
+  border-radius: var(--radius);
 }
-.splash-skip:hover{ transform: translateY(-1px); }
-
-@keyframes splashFloat { from { transform: translateY(0) } to { transform: translateY(12px) } }
-@keyframes splashGradient { 0%{background-position:0%} 50%{background-position:100%} 100%{background-position:0%} }
-@keyframes ringSpin { to { transform: rotate(360deg) } }
-@keyframes barFill { from{width:0%} to{width:100%} }
-
-/* Fade-out of splash */
-.splash-fade {
-  animation: splashFade .6s ease forwards;
+.table {
+  width: 100%;
+  border-collapse: collapse;
 }
-@keyframes splashFade { to { opacity: 0; visibility: hidden } }
-
-/* Respect Reduced Motion */
-@media (prefers-reduced-motion: reduce) {
-  .splash-aurora, .splash-logo, .splash-ring { animation: none !important; }
-  .splash-progress > i { animation-duration: 1s; }
+.table th,
+.table td {
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  text-align: left;
 }
+.table th {
+  font-weight: 600;
+  color: #444;
+}
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+/* ==== BUTTONS ==== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  padding: 14px 30px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  transition: all .25s ease;
+}
+.btn:hover { filter: brightness(1.1); }
+.btn.ghost {
+  background: transparent;
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
+}
+
+/* ==== INPUTS ==== */
+.input, .select, textarea.input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: rgba(255,255,255,0.7);
+  transition: var(--transition);
+  font-family: var(--font-main);
+}
+.input:focus, .select:focus, textarea.input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0,113,227,0.2);
+  outline: none;
+}
+
+/* ==== TYPOGRAPHY ==== */
+h1, h2, h3, h4 {
+  margin: 0;
+  color: var(--text);
+}
+h2 { font-size: 32px; font-weight: 700; margin-bottom: 14px; }
+h3 { font-size: 24px; font-weight: 600; margin-bottom: 10px; }
+p, label, small { color: var(--subtext); }
+small { font-size: 14px; }
+
+/* ==== MICRO ANIMATIONS ==== */
+.fade-in { opacity: 0; transform: translateY(10px); animation: fadein .7s forwards ease-out; }
+@keyframes fadein {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==== UTILITIES ==== */
+.stack {
+  display: grid;
+  gap: 12px;
+}
+.spaced {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.metrics {
+  display: flex;
+  gap: 36px;
+  flex-wrap: wrap;
+}
+.metrics > div small {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 900px) {
+  .hero {
+    padding: 80px 6% 40px;
+  }
+  .hero h1 {
+    font-size: 48px;
+  }
+  .grid {
+    margin: 60px auto;
+    padding: 0 6%;
+  }
+}
+

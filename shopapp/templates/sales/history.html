@@ -1,60 +1,66 @@
 {% extends "layout.html" %}
 {% block title %}Sales · ShopApp{% endblock %}
+
 {% block content %}
+<section class="hero fade-in" style="padding:70px 10% 30px">
+  <h1>Sales</h1>
+  <p>Filter by date or customer, export when needed.</p>
+</section>
 
-<div class="aurora" aria-hidden="true"></div>
-
-<section class="card">
-  <h1><span class="gradientAnim">Sales.</span> History that glows.</h1>
-  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px;">
-    <p class="subtle">Filter by date or customer, view trends instantly.</p>
-    <form method="get" style="display:flex;gap:8px;align-items:center;">
-      <input class="input" type="date" name="from" value="{{ request.args.get('from','') }}">
-      <input class="input" type="date" name="to" value="{{ request.args.get('to','') }}">
-      <select class="select" name="customer">
-        <option value="">All</option>
-        {% for c in customers %}
-        <option value="{{ c[0] }}" {% if request.args.get('customer')==c[0]|string %}selected{% endif %}>{{ c[1] }}</option>
-        {% endfor %}
-      </select>
-      <button class="btn secondary">Apply</button>
-      <a class="btn link" href="{{ url_for('reports.sales_export', **request.args) }}">Export</a>
+<div class="grid">
+  <div class="card fade-in">
+    <h2>Filters</h2>
+    <form method="get" style="display:grid;gap:12px;margin-top:10px">
+      <div><label>From</label><input class="input" type="date" name="from" value="{{ request.args.get('from','') }}"></div>
+      <div><label>To</label><input class="input" type="date" name="to" value="{{ request.args.get('to','') }}"></div>
+      <div>
+        <label>Customer</label>
+        <select class="select" name="customer">
+          <option value="">All</option>
+          {% for c in customers %}
+          <option value="{{ c[0] }}" {% if request.args.get('customer')==c[0]|string %}selected{% endif %}>{{ c[1] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn">Apply</button>
+        <a class="btn ghost" href="{{ url_for('reports.sales_export', **request.args) }}">Export CSV</a>
+      </div>
     </form>
   </div>
-</section>
 
-<section class="grid-4">
-  <div class="card kpi"><div class="coin">📊</div><div><div class="kpiTitle">Records</div><div class="kpiValue" data-count="{{ sales|length }}">0</div></div></div>
-  <div class="card kpi"><div class="coin">💸</div><div><div class="kpiTitle">Revenue</div><div class="kpiValue" data-count="{{ total_revenue or 0 }}">₹0</div></div></div>
-  <div class="card kpi"><div class="coin">🧾</div><div><div class="kpiTitle">Items Sold</div><div class="kpiValue" data-count="{{ total_qty or 0 }}">0</div></div></div>
-  <div class="card kpi"><div class="coin">⭐</div><div><div class="kpiTitle">Avg Order</div><div class="kpiValue" data-count="{{ avg_order or 0 }}">₹0</div></div></div>
-</section>
+  <div class="card fade-in" style="grid-column: span 2;">
+    <div style="display:flex;gap:30px;flex-wrap:wrap">
+      <div>
+        <small>Records</small>
+        <div style="font-size:34px;font-weight:800">{{ sales|length }}</div>
+      </div>
+      <div>
+        <small>Revenue</small>
+        <div style="font-size:34px;font-weight:800">₹{{ (total_revenue or 0)|int }}</div>
+      </div>
+      <div>
+        <small>Items sold</small>
+        <div style="font-size:34px;font-weight:800">{{ (total_qty or 0)|int }}</div>
+      </div>
+      <div>
+        <small>Avg order</small>
+        <div style="font-size:34px;font-weight:800">₹{{ (avg_order or 0)|int }}</div>
+      </div>
+    </div>
 
-<section class="card">
-  <h3>Sales List</h3>
-  <div class="table-wrap" style="overflow:auto;margin-top:12px;">
-    <table class="table">
-      <thead><tr><th>#</th><th>Date</th><th>Item</th><th>Qty</th><th>Total</th><th>Customer</th></tr></thead>
-      <tbody>
-        {% for s in sales %}
-        <tr>
-          <td>{{ s[0] }}</td><td>{{ s[1] }}</td><td>{{ s[2] }}</td>
-          <td>{{ s[3] }}</td><td>₹{{ '%.0f'|format(s[4]) }}</td><td>{{ s[5] or 'Walk-in' }}</td>
-        </tr>
-        {% else %}
-        <tr><td colspan="6" class="subtle">No sales yet — go make some magic 🪄</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="table-wrap" style="overflow:auto;margin-top:18px">
+      <table class="table">
+        <thead><tr><th>#</th><th>Date</th><th>Item</th><th>Qty</th><th>Total</th><th>Customer</th></tr></thead>
+        <tbody>
+          {% for s in sales %}
+          <tr><td>{{ s[0] }}</td><td>{{ s[1] }}</td><td>{{ s[2] }}</td><td>{{ s[3] }}</td><td>₹{{ '%.0f'|format(s[4]) }}</td><td>{{ s[5] or 'Walk-in' }}</td></tr>
+          {% else %}
+          <tr><td colspan="6"><small>No sales found for this range.</small></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
-</section>
-
-{% endblock %}
-{% block scripts %}
-<script>
-document.querySelectorAll('.kpiValue[data-count]').forEach(el=>{
-  const money = el.textContent.trim().startsWith('₹');
-  ShopFX.countUp(el,{money});
-});
-</script>
+</div>
 {% endblock %}
