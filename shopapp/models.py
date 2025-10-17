@@ -255,7 +255,7 @@ class Customer(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    sales = db.relationship('Sale', backref='customer', lazy=True)
+    sales = db.relationship('Sale', back_populates='customer', lazy=True)
 
 
 class Sale(db.Model):
@@ -282,7 +282,7 @@ class Sale(db.Model):
     eway_bill_no = db.Column(db.String(64))
     eway_valid_upto = db.Column(db.DateTime)
 
-    customer = db.relationship('Customer', backref='sales', lazy=True)
+    customer = db.relationship('Customer', back_populates='sales', lazy=True)
     location = db.relationship('ShopLocation', backref=db.backref('sales', lazy=True))
     payment_intents = db.relationship('PaymentIntent', backref='sale', lazy=True)
 
