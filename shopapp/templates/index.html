@@ -1,96 +1,54 @@
-{% extends "layout.html" %}
-{% block title %}Dashboard &middot; ShopApp{% endblock %}
-
+{% extends "layout.html" %}{% block title %}Dashboard · ShopApp{% endblock %}
 {% block content %}
-  <!-- Hero -->
-  <section class="card">
-    <h1><span class="gradient">Store.</span> Your day at a glance.</h1>
-    <p class="subtle" style="margin-top:8px">Fast clarity for revenue, sales, credits & stock — without the noise.</p>
-  </section>
+<div class="confettiBar" aria-hidden="true"></div>
+<section class="card" style="margin-top:18px">
+  <h1><span class="gradientAnim">Store.</span> Your day at a glance.</h1>
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px;">
+    <p class="subtle">Fast clarity for revenue, sales, credits & stock — without the noise.</p>
+    <span id="smartTip" class="tip">💡 Tip: Press Alt + / to open Assistant.</span>
+  </div>
+</section>
 
-  <!-- KPIs -->
-  <section class="grid-4">
-    <div class="card">
-      <div class="kpiTitle">Revenue</div>
-      <div class="kpiValue">&#8377;{{ today_rev or 0 }}</div>
-    </div>
-    <div class="card">
-      <div class="kpiTitle">Sales</div>
-      <div class="kpiValue">{{ today_count or 0 }}</div>
-    </div>
-    <div class="card">
-      <div class="kpiTitle">Unpaid credits</div>
-      <div class="kpiValue">&#8377;{{ unpaid_credits or 0 }}</div>
-    </div>
-    <div class="card">
-      <div class="kpiTitle">Low stock</div>
-      <div class="kpiValue">{{ low_stock_count or 0 }}</div>
-    </div>
-  </section>
+<section class="grid-4">
+  <div class="card kpi"><div class="coin">💰</div><div><div class="kpiTitle">Revenue</div><div class="kpiValue" data-count="{{ today_rev or 0 }}">₹0</div></div></div>
+  <div class="card kpi"><div class="coin">🛒</div><div><div class="kpiTitle">Sales</div><div class="kpiValue" data-count="{{ today_count or 0 }}">0</div></div></div>
+  <div class="card kpi"><div class="coin">📄</div><div><div class="kpiTitle">Unpaid credits</div><div class="kpiValue" data-count="{{ unpaid_credits or 0 }}">₹0</div></div></div>
+  <div class="card kpi"><div class="coin">📦</div><div><div class="kpiTitle">Low stock</div><div class="kpiValue" data-count="{{ low_stock_count or 0 }}">0</div></div></div>
+</section>
 
-  <!-- Chart + Quick actions -->
-  <section class="grid-2-1">
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <h3>7-day performance</h3>
-        <a href="/analytics" class="btn link">Open Analytics</a>
-      </div>
-      <canvas id="chart7" height="150"></canvas>
+<section class="grid-2-1">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <h3>7-day performance</h3>
+      <a href="/analytics" class="btn link breathe">Open Analytics</a>
     </div>
-
-    <div class="card">
-      <h3>Quick sale</h3>
-      <form method="POST" action="/sell" style="display:grid;gap:10px;margin-top:6px;">
-        <div>
-          <label class="kpiTitle" style="letter-spacing:.02em">Item</label>
-          <select class="select" name="item_id" required>
-            {% for i in items %}
-              <option value="{{ i[0] }}">{{ i[1] }} (&#8377;{{ i[2] }}, {{ i[3] }} left)</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div>
-          <label class="kpiTitle" style="letter-spacing:.02em">Customer</label>
-          <select class="select" name="customer_id">
-            <option value="">Walk-in</option>
-            {% for c in customers %}
-              <option value="{{ c[0] }}">{{ c[1] }} ({{ c[2] }})</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div>
-          <label class="kpiTitle" style="letter-spacing:.02em">Quantity</label>
-          <input class="input" type="number" name="quantity" min="1" required />
-        </div>
-        <button class="btn primary full">Sell</button>
-      </form>
-    </div>
-  </section>
+    <canvas id="chart7" height="150"></canvas>
+  </div>
+  <div class="card">
+    <h3>Quick sale</h3>
+    <form method="POST" action="/sell" style="display:grid;gap:10px;margin-top:6px;">
+      <div><label class="kpiTitle">Item</label><select class="select" name="item_id" required>{% for i in items %}<option value="{{ i[0] }}">{{ i[1] }} (₹{{ i[2] }}, {{ i[3] }} left)</option>{% endfor %}</select></div>
+      <div><label class="kpiTitle">Customer</label><select class="select" name="customer_id"><option value="">Walk-in</option>{% for c in customers %}<option value="{{ c[0] }}">{{ c[1] }} ({{ c[2] }})</option>{% endfor %}</select></div>
+      <div><label class="kpiTitle">Quantity</label><input class="input" type="number" name="quantity" min="1" required/></div>
+      <button class="btn primary full" onclick="ShopFX.ping(920,160)">Sell</button>
+    </form>
+  </div>
+</section>
 {% endblock %}
-
 {% block scripts %}
 {{ super() }}
 <script>
-  const d = {{ chart_data or [] | tojson }};
-  const ctx = document.getElementById('chart7');
-  if (ctx && d.length){
-    new Chart(ctx,{
-      type:'line',
-      data:{
-        labels:d.map(r=>r.t),
-        datasets:[
-          {label:'Revenue', data:d.map(r=>r.rev), borderColor:'#7d00ff', backgroundColor:'rgba(125,0,255,.12)', tension:.35, fill:true},
-          {label:'Expenses', data:d.map(r=>r.exp), borderColor:'#ff007a', backgroundColor:'rgba(255,0,122,.10)', tension:.35, fill:true}
-        ]
-      },
-      options:{
-        plugins:{legend:{labels:{color:'#1d1d1f'}}},
-        scales:{
-          x:{ticks:{color:'#333'}, grid:{color:'#eee'}},
-          y:{ticks:{color:'#333'}, grid:{color:'#eee'}}
-        }
-      }
-    });
-  }
+  document.querySelectorAll('.kpiValue[data-count]').forEach(el=>ShopFX.countUp(el,{money:el.textContent.trim().startsWith('₹')}));
+  ShopFX.rotateTip(document.getElementById('smartTip'),[
+    "💡 Tip: Use Quick sale to log in 3 taps.",
+    "📈 Add expenses to see real profit.",
+    "🔔 Set WhatsApp reminders for unpaid credits.",
+    "⌨️ Press Alt + / to open Assistant."
+  ]);
+  const d={{ chart_data or [] | tojson }}, ctx=document.getElementById('chart7');
+  if(ctx&&d.length){new Chart(ctx,{type:'line',data:{labels:d.map(r=>r.t),datasets:[
+    {label:'Revenue',data:d.map(r=>r.rev),borderColor:'#7d00ff',backgroundColor:'rgba(125,0,255,.12)',tension:.35,fill:true},
+    {label:'Expenses',data:d.map(r=>r.exp),borderColor:'#ff007a',backgroundColor:'rgba(255,0,122,.10)',tension:.35,fill:true}]},
+    options:{plugins:{legend:{labels:{color:'#1d1d1f'}}},scales:{x:{grid:{color:'#eee'}},y:{grid:{color:'#eee'}}}}});}
 </script>
 {% endblock %}

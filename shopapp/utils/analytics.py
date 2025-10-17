@@ -286,6 +286,26 @@ def load_analytics(days: int = 90) -> Dict[str, object]:
     weekly_series = _group_period(daily_rows, "weekly")
     monthly_series = _group_period(daily_rows, "monthly")
 
+    sorted_metrics = sorted(item_metrics.values(), key=lambda entry: entry["revenue"], reverse=True)
+    top_metric = sorted_metrics[0] if sorted_metrics else None
+    best_item = None
+    if top_metric and top_metric["revenue"] > 0:
+        best_item = {
+            "item": top_metric["item"].name if top_metric["item"] else None,
+            "revenue": round(top_metric["revenue"], 2),
+            "units_sold": top_metric["units_sold"],
+        }
+
+    low_stock = [
+        {
+            "name": item.name,
+            "current_stock": int(item.current_stock or 0),
+            "reorder_level": int(item.reorder_level or 0),
+        }
+        for item in items
+        if (item.current_stock or 0) <= (item.reorder_level if item.reorder_level is not None else 5)
+    ]
+
     return {
         "summary": summary,
         "daily": daily_series,
@@ -295,6 +315,8 @@ def load_analytics(days: int = 90) -> Dict[str, object]:
         "ltv": _ltv_leaderboard(),
         "categories": _category_breakdown(start),
         "recommendations": _recommendations(items, item_metrics),
+        "best_item": best_item,
+        "low_stock": low_stock,
     }
 
 

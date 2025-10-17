@@ -51,8 +51,16 @@ def _parse_range(start_str: str | None, end_str: str | None) -> tuple[str | None
 def index():
     start, end = today_bounds()
 
-    items = Item.query.order_by(Item.name.asc()).all()
-    customers = Customer.query.order_by(Customer.name.asc()).all()
+    item_rows = Item.query.order_by(Item.name.asc()).all()
+    items = [
+        (item.id, item.name, float(item.price or 0), int(item.current_stock or 0))
+        for item in item_rows
+    ]
+    customer_rows = Customer.query.order_by(Customer.name.asc()).all()
+    customers = [
+        (customer.id, customer.name, customer.phone or 'N/A')
+        for customer in customer_rows
+    ]
 
     today_row = (
         db.session.query(
@@ -142,23 +150,62 @@ def index():
 @sales_bp.route('/sales')
 @login_required
 def history():
-    start_str, end_str, start_dt, end_dt = _parse_range(request.args.get('start'), request.args.get('end'))
+    from_str = request.args.get('from') or request.args.get('start')
+    to_str = request.args.get('to') or request.args.get('end')
+    customer_filter = request.args.get('customer')
 
     query = Sale.query.options(joinedload(Sale.customer))
-    if start_dt:
-        query = query.filter(Sale.date >= start_dt)
-    if end_dt:
-        query = query.filter(Sale.date < end_dt)
 
-    sales = query.order_by(Sale.date.desc()).limit(50).all()
-    total_amount = sum(float(sale.net_total or 0) for sale in sales)
+    if from_str:
+        try:
+            from_dt = datetime.strptime(from_str, '%Y-%m-%d')
+            query = query.filter(Sale.date >= from_dt)
+        except ValueError:
+            from_str = None
+
+    if to_str:
+        try:
+            to_dt = datetime.strptime(to_str, '%Y-%m-%d') + timedelta(days=1)
+            query = query.filter(Sale.date < to_dt)
+        except ValueError:
+            to_str = None
+
+    if customer_filter:
+        try:
+            query = query.filter(Sale.customer_id == int(customer_filter))
+        except (TypeError, ValueError):
+            customer_filter = None
+
+    sales_rows = query.order_by(Sale.date.desc()).all()
+
+    table_rows = [
+        (
+            sale.id,
+            sale.date.strftime('%Y-%m-%d') if sale.date else '',
+            sale.item,
+            int(sale.quantity or 0),
+            float(sale.net_total or sale.total or 0),
+            sale.customer.name if sale.customer else 'Walk-in',
+        )
+        for sale in sales_rows
+    ]
+
+    total_revenue = round(sum(row[4] for row in table_rows), 2)
+    total_qty = sum(row[3] for row in table_rows)
+    avg_order = round(total_revenue / len(table_rows), 2) if table_rows else 0.0
+
+    customers = [
+        (customer.id, customer.name, customer.phone or 'N/A')
+        for customer in Customer.query.order_by(Customer.name.asc()).all()
+    ]
 
     return render_template(
         'sales/history.html',
-        sales=sales,
-        start=start_str,
-        end=end_str,
-        total_amount=total_amount,
+        sales=table_rows,
+        customers=customers,
+        total_revenue=total_revenue,
+        total_qty=total_qty,
+        avg_order=avg_order,
     )
 
 
@@ -295,7 +342,9 @@ def sell():
     if invoice_path:
         session['invoice_ready'] = sale.id
 
-    return redirect(url_for('sales.index'))
+    redirect_url = url_for('sales.index')
+    separator = '&' if '?' in redirect_url else '?'
+    return redirect(f"{redirect_url}{separator}celebrate=1")
 
 
 @sales_bp.route('/invoice/<int:sale_id>')

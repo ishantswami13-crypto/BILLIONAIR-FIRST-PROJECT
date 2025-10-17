@@ -1,0 +1,11 @@
+{% extends "layout.html" %}{% block title %}Add Customer · ShopApp{% endblock %}
+{% block content %}
+<section class="card">
+  <h1><span class="gradientAnim">Add customer.</span></h1>
+  <form method="post" style="display:grid;gap:12px;max-width:520px;margin-top:10px;">
+    <div><label class="kpiTitle">Name</label><input class="input" name="name" required></div>
+    <div><label class="kpiTitle">Phone</label><input class="input" name="phone" required></div>
+    <button class="btn primary" style="max-width:220px;" onclick="ShopFX.ping(900,140)">Save</button>
+  </form>
+</section>
+{% endblock %}

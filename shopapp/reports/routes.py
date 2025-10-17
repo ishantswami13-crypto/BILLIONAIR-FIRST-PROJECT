@@ -187,3 +187,53 @@ def analytics_data():
         'days': days,
         'analytics': analytics,
     })
+
+
+@reports_bp.route('/sales/export.csv')
+@login_required
+def sales_export():
+    from_str = request.args.get('from') or request.args.get('start')
+    to_str = request.args.get('to') or request.args.get('end')
+    customer_filter = request.args.get('customer')
+
+    query = Sale.query.order_by(Sale.date.asc())
+
+    if from_str:
+        try:
+            from_dt = datetime.strptime(from_str, '%Y-%m-%d')
+            query = query.filter(Sale.date >= from_dt)
+        except ValueError:
+            from_str = None
+
+    if to_str:
+        try:
+            to_dt = datetime.strptime(to_str, '%Y-%m-%d') + timedelta(days=1)
+            query = query.filter(Sale.date < to_dt)
+        except ValueError:
+            to_str = None
+
+    if customer_filter:
+        try:
+            query = query.filter(Sale.customer_id == int(customer_filter))
+        except (TypeError, ValueError):
+            customer_filter = None
+
+    rows = query.all()
+    buffer = io.StringIO()
+    writer = csv.writer(buffer)
+    writer.writerow(['ID', 'Date', 'Item', 'Quantity', 'Total', 'Customer'])
+
+    for sale in rows:
+        writer.writerow([
+            sale.id,
+            sale.date.strftime('%Y-%m-%d %H:%M') if sale.date else '',
+            sale.item,
+            int(sale.quantity or 0),
+            f"{float(sale.net_total or sale.total or 0):.2f}",
+            sale.customer.name if sale.customer else 'Walk-in',
+        ])
+
+    response = make_response(buffer.getvalue())
+    response.headers['Content-Type'] = 'text/csv'
+    response.headers['Content-Disposition'] = 'attachment; filename=sales_export.csv'
+    return response

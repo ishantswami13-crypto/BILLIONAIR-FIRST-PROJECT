@@ -1,32 +1,26 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
+    <meta charset="utf-8"/>
     <title>{% block title %}ShopApp{% endblock %}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/apple.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    {% block head %}{% endblock %}
   </head>
   <body>
     <nav class="apple-nav">
-      <div class="nav-left">
-        <a href="/" class="apple-logo">Shop<span>App</span></a>
-      </div>
+      <a href="/" class="apple-logo">Shop<span>App</span></a>
       <ul class="nav-links">
         <li><a href="/">Dashboard</a></li>
         <li><a href="/sales">Sales</a></li>
         <li><a href="/credits">Credits</a></li>
         <li><a href="/analytics">Analytics</a></li>
         <li><a href="/assistant">Assistant</a></li>
+        <li><a href="/customers">Customers</a></li>
       </ul>
       <div class="nav-right">
         <a href="/settings/subscription" class="nav-btn">Plans</a>
-        {% if session.get('user') %}
-          <a href="/logout" class="nav-btn secondary">Logout</a>
-        {% else %}
-          <a href="/login" class="nav-btn secondary">Login</a>
-        {% endif %}
+        {% if session.get('user') %}<a href="/logout" class="nav-btn secondary">Logout</a>{% else %}<a href="/login" class="nav-btn secondary">Login</a>{% endif %}
       </div>
     </nav>
 
@@ -34,6 +28,8 @@
       {% block content %}{% endblock %}
     </main>
 
+    <!-- global FX -->
+    {% include 'partials/appfx.html' %}
     {% block scripts %}{% endblock %}
   </body>
 </html>

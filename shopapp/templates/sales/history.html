@@ -1,58 +1,37 @@
-{% extends "layout.html" %}
-{% block title %}Sales &middot; ShopApp{% endblock %}
-
+{% extends "layout.html" %}{% block title %}Sales · ShopApp{% endblock %}
 {% block content %}
-<section class="card">
-  <div style="display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap;">
-    <div>
-      <h1><span class="gradient">Sales.</span> Clean history & filters.</h1>
-      <p class="subtle" style="margin-top:6px">View, filter, and export your sales.</p>
-    </div>
-    <div style="display:flex;gap:8px;align-items:center;">
-      <form method="get" action="{{ url_for('sales.history') }}" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        <input class="input" type="date" name="start" value="{{ start or '' }}">
-        <input class="input" type="date" name="end" value="{{ end or '' }}">
-        <select class="select" name="customer_id">
-          <option value="">All customers</option>
-          {% for customer in customers %}
-            {% set selected = 'selected' if request.args.get('customer_id') == (customer.id|string) else '' %}
-            <option value="{{ customer.id }}" {{ selected }}>{{ customer.name }}{% if customer.phone %} ({{ customer.phone }}){% endif %}</option>
-          {% endfor %}
-        </select>
-        <button class="btn secondary" type="submit">Apply</button>
-        <a class="btn link" href="{{ url_for('sales.export_csv', start=start or '', end=end or '', customer_id=request.args.get('customer_id','')) }}">Export CSV</a>
-      </form>
-    </div>
+<div class="confettiBar" aria-hidden="true"></div>
+<section class="card" style="margin-top:18px">
+  <div class="sectionTitle"><div class="spark"></div><h1><span class="gradientAnim">Sales.</span> Clean history & filters.</h1></div>
+  <div style="display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap;margin-top:8px;">
+    <p class="subtle">Filter by date or customer, export in one click.</p>
+    <form method="get" style="display:flex;gap:8px;align-items:center;">
+      <input class="input" type="date" name="from" value="{{ request.args.get('from','') }}">
+      <input class="input" type="date" name="to" value="{{ request.args.get('to','') }}">
+      <select class="select" name="customer"><option value="">All customers</option>
+        {% for c in customers %}<option value="{{ c[0] }}" {% if request.args.get('customer')==c[0]|string %}selected{% endif %}>{{ c[1] }} ({{ c[2] }})</option>{% endfor %}
+      </select>
+      <button class="btn secondary">Apply</button>
+      <a class="btn link" href="{{ url_for('reports.sales_export', **request.args) }}">Export CSV</a>
+    </form>
   </div>
 </section>
 
-<section class="card">
-  <div style="display:flex;justify-content:space-between;align-items:center;">
-    <h3>Sales list</h3>
-    <span class="badge">{{ sales|length }} records &middot; &#8377;{{ '%.0f'|format(total_amount or 0) }}</span>
-  </div>
+<section class="grid-4">
+  <div class="card sumCard"><div class="chip">🧮</div><div><div class="label">Records</div><div class="value" data-count="{{ sales|length }}">0</div></div></div>
+  <div class="card sumCard"><div class="chip">💰</div><div><div class="label">Total revenue</div><div class="value" data-count="{{ total_revenue or 0 }}">₹0</div></div></div>
+  <div class="card sumCard"><div class="chip">📦</div><div><div class="label">Items sold</div><div class="value" data-count="{{ total_qty or 0 }}">0</div></div></div>
+  <div class="card sumCard"><div class="chip">⭐</div><div><div class="label">Avg order</div><div class="value" data-count="{{ avg_order or 0 }}">₹0</div></div></div>
+</section>
+
+<section class="card doodle">
+  <div style="display:flex;justify-content:space-between;align-items:center;"><h3>Sales list</h3><span class="badge">{{ sales|length }} rows</span></div>
   <div class="table-wrap" style="overflow:auto;margin-top:10px;">
-    <table class="table">
-      <thead>
-        <tr>
-          <th>#</th><th>Date</th><th>Item</th><th>Qty</th><th>Total</th><th>Customer</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for sale in sales %}
-        <tr>
-          <td>{{ sale.id }}</td>
-          <td>{{ sale.date.strftime('%d %b %Y %H:%M') if sale.date else '--' }}</td>
-          <td>{{ sale.item }}</td>
-          <td>{{ sale.quantity }}</td>
-          <td>&#8377;{{ '%.0f'|format(sale.net_total or 0) }}</td>
-          <td>{{ sale.customer.name if sale.customer else 'Walk-in' }}</td>
-        </tr>
-        {% else %}
-        <tr><td colspan="6" class="subtle">No sales yet.</td></tr>
-        {% endfor %}
-      </tbody>
+    <table class="table"><thead><tr><th>#</th><th>Date</th><th>Item</th><th>Qty</th><th>Total</th><th>Customer</th></tr></thead>
+      <tbody>{% for s in sales %}<tr><td>{{ s[0] }}</td><td>{{ s[1] }}</td><td>{{ s[2] }}</td><td>{{ s[3] }}</td><td>₹{{ '%.0f'|format(s[4]) }}</td><td>{{ s[5] or 'Walk-in' }}</td></tr>
+      {% else %}<tr><td colspan="6" class="subtle">No sales yet — use Quick sale to add your first 🚀</td></tr>{% endfor %}</tbody>
     </table>
   </div>
 </section>
 {% endblock %}
+{% block scripts %}<script>document.querySelectorAll('.value[data-count]').forEach(el=>ShopFX.countUp(el,{money:el.textContent.trim().startsWith('₹')}));</script>{% endblock %}
