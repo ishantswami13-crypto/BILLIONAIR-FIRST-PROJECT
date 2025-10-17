@@ -4,6 +4,11 @@ The job is triggered nightly by APScheduler (see shopapp.__init__), but it can
 also be run manually::
 
     python drive_backup.py
+    python drive_backup.py purge --limit 7
+
+Every backup is a ZIP archive that bundles ``shop.db`` and a manifest file. The
+script keeps the most recent seven archives by default and exposes a purge
+command for manual maintenance.
 
 For the upload to work you must provide credentials.json (client secrets from
 Google Cloud) and the first run will create/refresh token.pickle. When the
@@ -13,10 +18,13 @@ scheduled jobs.
 
 from __future__ import annotations
 
+import argparse
 import datetime as _dt
 import json
 import logging
 import pickle
+import sys
+import zipfile
 from pathlib import Path
 from typing import Optional
 
@@ -96,46 +104,126 @@ def _get_drive_service() -> Optional[object]:
         return None
 
 
-def backup_to_drive() -> bool:
-    """Upload a timestamped copy of `shop.db` to Google Drive."""
+def _build_archive(now_utc: _dt.datetime) -> Path:
+    BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+    archive_name = f"shop_backup_{now_utc:%Y-%m-%d_%H%M%S}.zip"
+    archive_path = BACKUP_DIR / archive_name
+
+    try:
+        db_size = DB_PATH.stat().st_size
+    except OSError:
+        db_size = None
+
+    manifest = {
+        "created_at": now_utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "database": {
+            "path": str(DB_PATH),
+            "size_bytes": db_size,
+        },
+        "version": 1,
+    }
+
+    with zipfile.ZipFile(archive_path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        archive.write(DB_PATH, arcname="shop.db")
+        archive.writestr("manifest.json", json.dumps(manifest, indent=2))
+
+    return archive_path
+
+
+def purge_old_backups(limit: int = 7) -> list[Path]:
+    """Delete the oldest backup archives, keeping ``limit`` most recent copies."""
+    BACKUP_DIR.mkdir(exist_ok=True)
+    if limit < 0:
+        limit = 0
+
+    def _mtime(path: Path) -> float:
+        try:
+            return path.stat().st_mtime
+        except OSError:
+            return 0.0
+
+    archives = sorted(
+        BACKUP_DIR.glob("shop_backup_*.zip"),
+        key=_mtime,
+        reverse=True,
+    )
+
+    removed: list[Path] = []
+    for candidate in archives[limit:]:
+        try:
+            candidate.unlink()
+            removed.append(candidate)
+        except OSError as exc:  # pragma: no cover - filesystem permissions
+            logger.warning("Unable to purge old backup %s: %s", candidate, exc)
+    return removed
+
+
+def backup_to_drive(retain: int = 7) -> bool:
+    """Create a ZIP archive of ``shop.db`` and upload it to Google Drive."""
     if not DB_PATH.exists():
         logger.warning("Google Drive backup skipped: database %s not found", DB_PATH)
         return False
 
+    now_utc = _dt.datetime.now(_dt.timezone.utc)
+    archive_path = _build_archive(now_utc)
+    logger.info("Backup archive created at %s", archive_path)
+
     service = _get_drive_service()
     if not service:
-        # Details already logged; keep scheduler alive
+        logger.warning("Google Drive backup skipped: Drive client unavailable.")
+        removed = purge_old_backups(retain)
+        if removed:
+            logger.info("Purged %d old backup(s) locally.", len(removed))
         return False
 
-    BACKUP_DIR.mkdir(exist_ok=True)
-    now_utc = _dt.datetime.now(_dt.timezone.utc)
-    backup_name = f"shop_backup_{now_utc:%Y-%m-%d_%H%M%S}.db"
-    backup_path = BACKUP_DIR / backup_name
+    media = MediaFileUpload(str(archive_path), mimetype="application/zip")  # type: ignore[call-arg]
+    metadata = {
+        "name": archive_path.name,
+        "description": f"ShopApp backup {now_utc:%Y-%m-%d}",
+    }
 
-    backup_path.write_bytes(DB_PATH.read_bytes())
-
-    media = MediaFileUpload(str(backup_path), mimetype="application/x-sqlite3")  # type: ignore[call-arg]
-    metadata = {"name": backup_name}
-
+    uploaded = False
     try:
         created = service.files().create(body=metadata, media_body=media, fields="id").execute()
         file_id = created.get("id")
         logger.info("Backup uploaded to Google Drive (id=%s)", file_id)
-        return True
     except HttpError as exc:  # pragma: no cover - network/Google failure
         logger.exception("Google Drive upload failed: %s", exc)
     except Exception as exc:  # pragma: no cover - unexpected failure
         logger.exception("Unexpected error during Drive backup: %s", exc)
+    else:
+        uploaded = True
+    finally:
+        removed = purge_old_backups(retain)
+        if removed:
+            logger.info("Purged %d old backup(s) locally.", len(removed))
 
-    return False
+    return uploaded
+
+
+def main(argv: Optional[list[str]] = None) -> int:
+    parser = argparse.ArgumentParser(description="ShopApp Google Drive backup helper.")
+    parser.add_argument("command", nargs="?", choices=["purge"], help="only purge local archives without uploading")
+    parser.add_argument("--limit", type=int, default=7, help="number of archives to retain (default: 7)")
+    args = parser.parse_args(argv)
+
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+
+    if args.command == "purge":
+        removed = purge_old_backups(limit=args.limit)
+        print(f"Purged {len(removed)} archive(s).")
+        return 0
+
+    success = backup_to_drive(retain=args.limit)
+    if success:
+        print("Backup completed successfully.")
+        return 0
+
+    print("Backup skipped or failed. See logs for details.")
+    return 1
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
-    success = backup_to_drive()
-    if success:
-        print("Backup completed successfully.")
-    else:
-        print("Backup skipped or failed. See logs for details.")
+    sys.exit(main())
 
 

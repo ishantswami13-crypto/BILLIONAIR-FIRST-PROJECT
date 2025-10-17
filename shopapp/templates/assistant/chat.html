@@ -1,27 +1,49 @@
 {% extends "layout.html" %}
 {% block title %}Assistant{% endblock %}
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/muse.css') }}?v={{ app_version or '7.0.0' }}">
+{% endblock %}
 {% block content %}
-<section class="card fadeUp">
-  <h1 style="font-size:var(--f-xl);font-weight:700;">Assistant</h1>
-  <p style="color:var(--ink-60)">Ask about revenue, inventory, credits, or customers.</p>
-  <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-    <button class="btn" onclick="quick('Revenue last 7 days')">Revenue last 7 days</button>
-    <button class="btn" onclick="quick('Which items are low stock?')">Which items are low stock?</button>
-    <button class="btn" onclick="quick('Total unpaid credits this month')">Total unpaid credits this month</button>
-    <button class="btn" onclick="quick('Top 5 customers by spend')">Top 5 customers by spend</button>
+<section class="card fadeUp muse-header">
+  <div class="muse-avatar">
+    <img src="{{ url_for('static', filename='svg/muse-avatar.svg') }}" alt="Shop Muse avatar" width="96" height="96" loading="lazy">
+  </div>
+  <div>
+    <h1>Shop Muse</h1>
+    <p>Hi, I'm your retail co-pilot. Ask for profit trends, stock alerts, or credit follow-ups.</p>
+    <div class="muse-quick">
+      <button class="btn" onclick="quick('What was our net profit last week?')">Net profit last week</button>
+      <button class="btn" onclick="quick('Which SKUs need reordering?')">Reorder alerts</button>
+      <button class="btn" onclick="quick('List overdue credits by customer')">Overdue credits</button>
+      <button class="btn" onclick="quick('Show daily revenue and expenses for 30 days')">30-day revenue vs expenses</button>
+    </div>
   </div>
 </section>
 
-<section class="card fadeUp" style="animation-delay:.06s">
-  <div id="chat" style="display:flex;flex-direction:column;gap:10px;max-height:56vh;overflow:auto;">
+<section class="card fadeUp muse-chat" style="animation-delay:.08s">
+  <div id="chat" class="muse-thread">
     {% for m in messages %}
-      <div style="align-self: {{ 'flex-end' if m.role=='user' else 'flex-start' }}; background: {{ 'var(--accent-soft)' if m.role=='assistant' else 'rgba(255,255,255,.06)' }}; border:1px solid var(--line); padding:10px 12px; border-radius:12px; max-width:70%;">
-        <div style="color:{{ 'var(--accent)' if m.role=='assistant' else 'var(--ink-80)' }};white-space:pre-wrap;">{{ m.text }}</div>
+      <div class="muse-bubble muse-{{ m.role }}">
+        {% if m.role != 'user' %}
+          <div class="muse-pip" aria-hidden="true">
+            <img src="{{ url_for('static', filename='svg/muse-avatar.svg') }}" alt="" width="28" height="28" loading="lazy">
+          </div>
+        {% endif %}
+        <div class="muse-text">
+          <div class="muse-label">{{ 'You' if m.role=='user' else 'Muse' }}</div>
+          <div class="muse-body">{{ m.text }}</div>
+        </div>
+      </div>
+    {% else %}
+      <div class="muse-empty">
+        <p>Try asking <strong>"Project revenue this month vs last month."</strong></p>
+        <p class="muse-hint">Muse answers using your last 90 days of sales, expenses, inventory, and credit data.</p>
       </div>
     {% endfor %}
   </div>
-  <form method="post" style="margin-top:10px;display:flex;gap:8px;">
-    <input type="text" name="q" placeholder="Ask anything…" required>
+  <form method="post" class="muse-input">
+    <input type="text" name="q" placeholder="Ask anything..." autocomplete="off" required>
     <button class="btn primary">Send</button>
   </form>
 </section>
@@ -29,6 +51,13 @@
 {% endblock %}
 {% block scripts %}
 <script>
-  function quick(t){ const inp=document.querySelector('input[name="q"]'); inp.value=t; inp.form.submit(); }
+  const thread = document.getElementById('chat');
+  if(thread){ thread.scrollTop = thread.scrollHeight; }
+  function quick(t){
+    const inp = document.querySelector('.muse-input input[name="q"]');
+    if(!inp) return;
+    inp.value = t;
+    inp.form.submit();
+  }
 </script>
 {% endblock %}

@@ -8,6 +8,7 @@ from sqlalchemy import func
 
 from shopapp.extensions import db
 from shopapp.models import Credit, Item, Sale, Setting
+from shopapp.utils.audit import log_event
 from shopapp.utils.mail import send_mail
 
 
@@ -108,24 +109,39 @@ def build_email(summary: Dict[str, Any]) -> str:
 
 
 def lock_sales_for_today() -> None:
-    today = datetime.utcnow().strftime("%Y-%m-%d")
+    now = datetime.utcnow()
+    today = now.strftime("%Y-%m-%d")
     record = Setting.query.filter_by(key="sales_lock_date").first()
+    previous_lock = record.value if record and record.value else None
     if not record:
         record = Setting(key="sales_lock_date", value=today)
         db.session.add(record)
     else:
         record.value = today
 
+    auto_message = "Locked automatically after daily report."
     reason = Setting.query.filter_by(key="sales_lock_reason").first()
     if not reason:
-        reason = Setting(key="sales_lock_reason", value="Locked automatically after daily report.")
+        reason = Setting(key="sales_lock_reason", value=auto_message)
         db.session.add(reason)
     else:
-        reason.value = "Locked automatically after daily report."
+        reason.value = auto_message
 
-    start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     end = start + timedelta(days=1)
-    Sale.query.filter(Sale.date >= start, Sale.date < end).update({"locked": True})
+    locked_count = (
+        Sale.query.filter(Sale.date >= start, Sale.date < end)
+        .update({"locked": True}, synchronize_session=False)
+        or 0
+    )
+
+    log_event(
+        "sales_lock_auto",
+        resource_type="sales",
+        resource_id=None,
+        before={"previous_lock": previous_lock},
+        after={"locked_date": today, "locked_sales": int(locked_count)},
+    )
 
     db.session.commit()
 

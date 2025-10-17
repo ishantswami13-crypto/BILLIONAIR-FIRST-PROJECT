@@ -1,9 +1,11 @@
 import json
+from datetime import datetime
 
-from flask import Blueprint, render_template, request
+from flask import Blueprint, make_response, render_template, request
 from sqlalchemy import or_
 
 from ..models import AuditLog, User
+from ..utils.exports import build_audit_log_csv, generate_ca_bundle
 from ..utils.decorators import admin_required, login_required
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
@@ -99,3 +101,32 @@ def audit_log():
         page=pagination,
         q=search,
     )
+
+
+@admin_bp.route("/audit-log/export.csv")
+@login_required
+@admin_required
+def audit_log_export():
+    entries = AuditLog.query.order_by(AuditLog.ts.asc()).all()
+    csv_data = build_audit_log_csv(entries)
+    response = make_response(csv_data)
+    response.headers["Content-Type"] = "text/csv"
+    stamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    response.headers["Content-Disposition"] = f"attachment; filename=audit_log_{stamp}.csv"
+    return response
+
+
+@admin_bp.route("/exports/ca-bundle")
+@login_required
+@admin_required
+def export_ca_bundle():
+    try:
+        days = int(request.args.get("days", 30))
+    except (TypeError, ValueError):
+        days = 30
+
+    bundle_bytes, filename = generate_ca_bundle(days=days)
+    response = make_response(bundle_bytes)
+    response.headers["Content-Type"] = "application/zip"
+    response.headers["Content-Disposition"] = f"attachment; filename={filename}"
+    return response

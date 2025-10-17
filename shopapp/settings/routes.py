@@ -121,13 +121,17 @@ def unlock_day():
         flash("Add a short reason before unlocking the books.", "warning")
         return redirect(url_for("settings.branding"))
 
-    Setting.query.filter_by(key="sales_lock_date").delete()
+    lock_setting = Setting.query.filter_by(key="sales_lock_date").first()
+    previous_lock = lock_setting.value if lock_setting and lock_setting.value else None
+    if lock_setting:
+        db.session.delete(lock_setting)
 
-    Sale.query.update({"locked": False})
-    message = (
-        f"Unlocked manually on {datetime.utcnow():%Y-%m-%d %H:%M} "
-        f"by {session.get('user') or 'system'}: {reason}"
+    unlocked_total = (
+        Sale.query.update({"locked": False}, synchronize_session=False) or 0
     )
+    timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M")
+    actor = session.get("user") or "system"
+    message = f"Unlocked manually on {timestamp} by {actor}: {reason} ({int(unlocked_total)} sales reset)"
     lock_reason = Setting.query.filter_by(key="sales_lock_reason").first()
     if not lock_reason:
         lock_reason = Setting(key="sales_lock_reason", value=message)
@@ -135,14 +139,18 @@ def unlock_day():
     else:
         lock_reason.value = message
 
-    db.session.commit()
     log_event(
         "unlock_day",
         resource_type="settings",
         resource_id=None,
-        before=None,
-        after={"action": "unlock", "reason": reason},
+        before={"locked_date": previous_lock},
+        after={
+            "action": "unlock",
+            "reason": reason,
+            "unlocked_sales": int(unlocked_total),
+        },
     )
+    db.session.commit()
     flash("Sales lock cleared. Override reason recorded.", "success")
     return redirect(url_for("settings.branding"))
 

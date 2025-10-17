@@ -41,6 +41,14 @@
       </div>
 
       {% block content %}{% endblock %}
+      <footer class="app-footer fadeUp" style="animation-delay:.16s">
+        <span>Powered by ShopApp Cloud &copy; v{{ app_version or '7.0.0' }}</span>
+        <nav>
+          <a href="mailto:support@shopapp.cloud">Support</a>
+          <a href="{{ url_for('marketing.landing') }}#terms" target="_blank" rel="noopener">Terms</a>
+          <a href="{{ url_for('marketing.landing') }}#privacy" target="_blank" rel="noopener">Privacy</a>
+        </nav>
+      </footer>
     </main>
   </div>
 

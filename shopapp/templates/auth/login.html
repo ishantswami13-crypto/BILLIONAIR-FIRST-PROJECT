@@ -2,18 +2,107 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Login · ShopApp</title>
+  <title>Login &middot; ShopApp</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
   <style>
-    .center{min-height:100vh;display:grid;place-items:center;padding:28px}
+    .center{
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:22px;
+      padding:28px;
+    }
     .panel{max-width:420px;width:100%}
+    .trust-banner{
+      max-width:640px;
+      width:100%;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--hairline);
+      border-radius:20px;
+      padding:20px 22px;
+      box-shadow:0 18px 40px rgba(0,0,0,.4);
+      backdrop-filter:blur(24px) saturate(180%);
+      display:grid;
+      gap:18px;
+    }
+    .trust-header{display:flex;flex-direction:column;gap:8px}
+    .trust-title{
+      font-size:var(--f-lg);
+      font-weight:700;
+      letter-spacing:-.01em;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .trust-title::before{
+      content:"\2605";
+      color:var(--accent);
+      font-size:var(--f-lg);
+    }
+    .trust-body{color:var(--ink-dim);font-size:var(--f-sm);line-height:1.5}
+    .trust-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .trust-actions .cta{
+      padding:8px 14px;
+      border-radius:12px;
+      background:var(--accent);
+      color:#fff;
+      font-weight:600;
+      text-decoration:none;
+      box-shadow:0 8px 24px rgba(10,132,255,.35);
+      transition:transform .18s var(--ease), box-shadow .18s var(--ease);
+    }
+    .trust-actions .cta:hover{
+      transform:translateY(-2px);
+      box-shadow:0 12px 32px rgba(10,132,255,.45);
+    }
+    .trust-actions .caption{color:var(--ink-soft);font-size:var(--f-xs)}
+    .trust-logos{
+      overflow:hidden;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+      padding:12px;
+    }
+    .logo-track{
+      display:flex;
+      gap:28px;
+      animation:marquee 18s linear infinite;
+      width:max-content;
+      color:var(--ink-soft);
+      font-weight:600;
+      font-size:var(--f-sm);
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+    .logo-track span{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      white-space:nowrap;
+    }
+    .logo-track span::before{
+      content:"\2022";
+      color:var(--accent-mint);
+    }
+    @keyframes marquee{
+      from{transform:translateX(0)}
+      to{transform:translateX(-50%)}
+    }
+    @media (max-width:600px){
+      .trust-banner{padding:18px}
+      .trust-actions{flex-direction:column;align-items:stretch}
+      .trust-actions .cta{width:100%;text-align:center}
+      .trust-actions .caption{text-align:center}
+    }
   </style>
 </head>
 <body>
   <div class="center">
-    <div class="card panel fadeUp">
+    <div class="card panel fadeUp" style="animation-delay:.05s">
       <h1 style="font-size:var(--f-xl);font-weight:700;letter-spacing:-.01em;">Welcome back</h1>
       <p style="color:var(--ink-60)">Sign in to continue.</p>
       <form method="post" style="margin-top:12px;display:flex;flex-direction:column;gap:12px;">
@@ -22,6 +111,32 @@
         <button class="btn primary" style="width:100%;">Login</button>
       </form>
       <p style="color:var(--ink-60);margin-top:10px;">No account? <a href="/register" class="btn" style="padding:6px 10px;">Create one</a></p>
+    </div>
+    <div class="trust-banner fadeUp" style="animation-delay:.12s">
+      <div class="trust-header">
+        <div class="trust-title">Trusted by 500+ businesses</div>
+        <div class="trust-body">Neighbourhood retailers, franchises, and D2C brands close their books nightly with ShopApp Cloud.</div>
+      </div>
+      <div class="trust-actions">
+        <a class="cta" href="{{ url_for('marketing.landing') }}#case-studies">See case studies</a>
+        <span class="caption">Catch live deployments and growth stories from our customers.</span>
+      </div>
+      <div class="trust-logos" aria-label="Customer logos marquee">
+        <div class="logo-track">
+          <span>Urban Mart</span>
+          <span>Cafe Saffron</span>
+          <span>Glow Cosmetics</span>
+          <span>Sharma Electronics</span>
+          <span>Luxe Linen Co.</span>
+          <span>FreshFarm Organics</span>
+          <span>Urban Mart</span>
+          <span>Cafe Saffron</span>
+          <span>Glow Cosmetics</span>
+          <span>Sharma Electronics</span>
+          <span>Luxe Linen Co.</span>
+          <span>FreshFarm Organics</span>
+        </div>
+      </div>
     </div>
   </div>
 </body>
