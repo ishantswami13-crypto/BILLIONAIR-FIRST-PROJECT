@@ -24,6 +24,10 @@ from .utils.feature_flags import feature_enabled, get_active_plan, reset_cache a
 from .utils.flags import flags
 from .utils.nudges import send_streak_reminder
 from .utils.subscription import get_subscription_context
+from .onboarding import onboarding_bp
+from .compliance import compliance_bp
+from .api import api_bp
+from .payments import payments_bp
 from .security import can_access, get_current_role
 import daily_report
 from .credits.tasks import send_credit_reminders
@@ -33,7 +37,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import joinedload
 
 from .utils.schema import ensure_columns
-from .models import FeatureFlag, Plan, PlanFeature, Quest, Setting, ShopProfile, User, UserRole
+from .models import FeatureFlag, Plan, PlanFeature, Quest, Setting, ShopLocation, ShopProfile, User, UserRole
 from .plans import BASE_FEATURES
 
 LEGACY_COLUMN_REQUIREMENTS = {
@@ -46,6 +50,12 @@ LEGACY_COLUMN_REQUIREMENTS = {
 
 SCHEMA_PATCHES = {
     "shop_profile": {
+        "shop_name": "shop_name VARCHAR(255)",
+        "currency": "currency VARCHAR(8) DEFAULT 'INR'",
+        "timezone": "timezone VARCHAR(64) DEFAULT 'Asia/Kolkata'",
+        "gst_enabled": "gst_enabled BOOLEAN DEFAULT 0",
+        "low_stock_threshold": "low_stock_threshold INTEGER DEFAULT 5",
+        "opening_cash": "opening_cash REAL DEFAULT 0",
         "logo_path": "logo_path VARCHAR(255)",
         "invoice_prefix": "invoice_prefix VARCHAR(20) DEFAULT 'INV'",
         "primary_color": "primary_color VARCHAR(20)",
@@ -62,6 +72,14 @@ SCHEMA_PATCHES = {
     "sales": {
         "invoice_number": "invoice_number VARCHAR(64)",
         "locked": "locked BOOLEAN DEFAULT 0",
+        "location_id": "location_id INTEGER",
+        "gst_status": "gst_status VARCHAR(20) DEFAULT 'pending'",
+        "irn": "irn VARCHAR(64)",
+        "ack_no": "ack_no VARCHAR(64)",
+        "ack_date": "ack_date DATETIME",
+        "signed_invoice_path": "signed_invoice_path VARCHAR(255)",
+        "eway_bill_no": "eway_bill_no VARCHAR(64)",
+        "eway_valid_upto": "eway_valid_upto DATETIME",
     },
     "audit_log": {
         "resource_type": "resource_type VARCHAR(64)",
@@ -94,6 +112,24 @@ SCHEMA_PATCHES = {
         "reminder_count": "reminder_count INTEGER DEFAULT 0",
         "reminder_opt_out": "reminder_opt_out BOOLEAN DEFAULT 0",
         "reminder_phone": "reminder_phone VARCHAR(50)"
+    },
+    "items": {
+        "created_at": "created_at DATETIME DEFAULT CURRENT_TIMESTAMP",
+        "updated_at": "updated_at DATETIME"
+    },
+    "customers": {
+        "created_at": "created_at DATETIME DEFAULT CURRENT_TIMESTAMP",
+        "updated_at": "updated_at DATETIME"
+    },
+    "purchase_orders": {
+        "status": "status VARCHAR(50) DEFAULT 'draft'",
+        "total_cost": "total_cost REAL DEFAULT 0",
+        "notes": "notes TEXT",
+        "created_at": "created_at DATETIME DEFAULT CURRENT_TIMESTAMP",
+        "received_at": "received_at DATETIME"
+    },
+    "purchase_items": {
+        "cost_price": "cost_price REAL"
     },
 }
 
@@ -185,6 +221,11 @@ def _bootstrap_app(app: Flask) -> None:
         ensure_columns(engine, table, columns)
 
     db.create_all()
+
+    with engine.begin() as conn:
+        conn.execute(text("UPDATE items SET updated_at = COALESCE(updated_at, CURRENT_TIMESTAMP)"))
+        conn.execute(text("UPDATE customers SET updated_at = COALESCE(updated_at, CURRENT_TIMESTAMP)"))
+
     _seed_plans()
     _seed_engagement_objects()
 
@@ -193,18 +234,36 @@ def _bootstrap_app(app: Flask) -> None:
         profile = ShopProfile(
             id=1,
             name='My Shop',
+            shop_name='My Shop',
             address='',
             phone='',
             gst='',
             invoice_prefix='INV',
             primary_color='#0A2540',
             secondary_color='#62b5ff',
+            currency='INR',
+            timezone='Asia/Kolkata',
+            gst_enabled=False,
+            low_stock_threshold=5,
+            opening_cash=0,
             plan_slug='pro',
         )
         db.session.add(profile)
     else:
         if not getattr(profile, 'plan_slug', None):
             profile.plan_slug = 'pro'
+        if not getattr(profile, 'shop_name', None):
+            profile.shop_name = profile.name or 'My Shop'
+        if not getattr(profile, 'currency', None):
+            profile.currency = 'INR'
+        if not getattr(profile, 'timezone', None):
+            profile.timezone = 'Asia/Kolkata'
+        if getattr(profile, 'gst_enabled', None) is None:
+            profile.gst_enabled = False
+        if getattr(profile, 'low_stock_threshold', None) is None:
+            profile.low_stock_threshold = 5
+        if getattr(profile, 'opening_cash', None) is None:
+            profile.opening_cash = 0
 
     if profile:
         plan_lookup_slug = profile.plan_slug or app.config.get("ACTIVE_PLAN", "pro")
@@ -213,6 +272,15 @@ def _bootstrap_app(app: Flask) -> None:
             profile.plan_id = plan_obj.id
             if not profile.plan_slug:
                 profile.plan_slug = plan_obj.slug
+        if not getattr(profile, "locations", None):
+            default_location = ShopLocation(
+                profile=profile,
+                name=profile.shop_name or profile.name or "Head Office",
+                gstin=profile.gst or None,
+                address=profile.address or "",
+                is_default=True,
+            )
+            db.session.add(default_location)
 
     cfg = app.config
     admin_username = cfg.get('DEFAULT_ADMIN_USERNAME', 'admin')
@@ -350,6 +418,10 @@ def create_app(config_object: type[Config] | None = None) -> Flask:
     app.register_blueprint(settings_bp)
     app.register_blueprint(assistant_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(onboarding_bp)
+    app.register_blueprint(compliance_bp)
+    app.register_blueprint(api_bp)
+    app.register_blueprint(payments_bp)
     app.register_blueprint(sales_bp, url_prefix='/app')
     app.register_blueprint(reports_bp)
     app.register_blueprint(inventory_bp)

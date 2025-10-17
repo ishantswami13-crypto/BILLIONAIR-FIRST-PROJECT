@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+{% block title %}Welcome · ShopApp{% endblock %}
+
+{% block content %}
+<section class="hero fade-in" style="padding:80px 10% 30px;">
+  <h1>Let’s set up your shop.</h1>
+  <p>Just the basics. You can change these later.</p>
+</section>
+
+<section class="grid" style="max-width:960px;margin-top:0">
+  <div class="card fade-in" style="grid-column:1/-1">
+    <form method="post" style="display:grid;gap:16px;max-width:640px;margin:0 auto">
+      <div>
+        <label style="display:block;margin-bottom:6px;color:#555">Shop name</label>
+        <input class="input" type="text" name="shop_name" placeholder="Ramesh General Store" value="{{ profile.shop_name or '' }}" required>
+      </div>
+      <div style="display:grid;gap:12px;grid-template-columns:1fr 1fr">
+        <div>
+          <label style="display:block;margin-bottom:6px;color:#555">Currency</label>
+          <select class="select" name="currency">
+            {% for code,label in [('INR','Indian Rupee ₹'),('USD','US Dollar $'),('EUR','Euro €')] %}
+              <option value="{{ code }}" {% if profile.currency==code %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label style="display:block;margin-bottom:6px;color:#555">Timezone</label>
+          <select class="select" name="timezone">
+            {% for tz in timezones %}
+            <option value="{{ tz }}" {% if profile.timezone==tz %}selected{% endif %}>{{ tz }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <input id="gst" type="checkbox" name="gst_enabled" {% if profile.gst_enabled %}checked{% endif %}>
+        <label for="gst">Enable GST fields (optional)</label>
+      </div>
+      <button class="btn" type="submit">Continue</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

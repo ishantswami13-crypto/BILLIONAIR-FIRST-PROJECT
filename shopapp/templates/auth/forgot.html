@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+{% block title %}Forgot password · ShopApp{% endblock %}
+
+{% block content %}
+<section class="hero fade-in" style="padding:80px 10% 30px;">
+  <h1>Forgot your password?</h1>
+  <p>We’ll send you a secure reset link.</p>
+</section>
+
+<section class="grid" style="max-width:880px;margin-top:0">
+  <div class="card fade-in" style="grid-column:1/-1">
+    <form method="post" style="display:grid;gap:16px;max-width:520px;margin:0 auto">
+      <div>
+        <label style="display:block;margin-bottom:6px;color:#555">Username or Email</label>
+        <input class="input" type="text" name="identifier" placeholder="e.g. ramesh_shop or you@mail.com" required>
+      </div>
+      <button class="btn" type="submit">Send reset link</button>
+      <div style="text-align:center;margin-top:6px">
+        <small>Remembered it? <a href="{{ url_for('auth.login') }}" style="color:#0071e3;text-decoration:none">Sign in</a></small>
+      </div>
+      {% if info %}<div style="text-align:center;color:#2ba24c;margin-top:6px"><small>{{ info }}</small></div>{% endif %}
+      {% if error %}<div style="text-align:center;color:#c00000;margin-top:6px"><small>{{ error }}</small></div>{% endif %}
+    </form>
+  </div>
+</section>
+{% endblock %}

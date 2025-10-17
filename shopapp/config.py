@@ -59,6 +59,19 @@ class BaseConfig:
     MAIL_SENDER = os.getenv('MAIL_SENDER', 'no-reply@example.local')
     PERMANENT_SESSION_LIFETIME = timedelta(days=30)
 
+    GST_PROVIDER = os.getenv('GST_PROVIDER', 'nic')
+    GST_USERNAME = os.getenv('GST_USERNAME')
+    GST_PASSWORD = os.getenv('GST_PASSWORD')
+    GST_CLIENT_ID = os.getenv('GST_CLIENT_ID')
+    GST_CLIENT_SECRET = os.getenv('GST_CLIENT_SECRET')
+    GST_SANDBOX = os.getenv('GST_SANDBOX', 'true')
+
+    RAZORPAY_KEY_ID = os.getenv('RAZORPAY_KEY_ID')
+    RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET')
+    STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
+    RAZORPAY_WEBHOOK_SECRET = os.getenv('RAZORPAY_WEBHOOK_SECRET')
+    STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
+
 
 class DevConfig(BaseConfig):
     DEBUG = True

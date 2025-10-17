@@ -141,6 +141,12 @@ class ShopProfile(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
+    shop_name = db.Column(db.String(255))
+    currency = db.Column(db.String(8), default='INR')
+    timezone = db.Column(db.String(64), default='Asia/Kolkata')
+    gst_enabled = db.Column(db.Boolean, default=False)
+    low_stock_threshold = db.Column(db.Integer, default=5)
+    opening_cash = db.Column(db.Float, default=0)
     address = db.Column(db.Text)
     phone = db.Column(db.String(50))
     gst = db.Column(db.String(50))
@@ -195,6 +201,32 @@ class ShopProfile(db.Model):
         delta = self.trial_ends_at - datetime.utcnow()
         return max(0, int(delta.total_seconds() // 86400) + (1 if delta.total_seconds() % 86400 else 0))
 
+    @property
+    def default_location(self):
+        return next((location for location in getattr(self, "locations", []) if location.is_default), None)
+
+
+class ShopLocation(db.Model):
+    __tablename__ = 'shop_locations'
+
+    id = db.Column(db.Integer, primary_key=True)
+    profile_id = db.Column(db.Integer, db.ForeignKey('shop_profile.id'), nullable=False)
+    name = db.Column(db.String(120), nullable=False)
+    gstin = db.Column(db.String(20))
+    state_code = db.Column(db.String(4))
+    address = db.Column(db.Text)
+    city = db.Column(db.String(120))
+    pincode = db.Column(db.String(10))
+    phone = db.Column(db.String(20))
+    is_default = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    profile = db.relationship(
+        'ShopProfile',
+        backref=db.backref('locations', lazy=True, cascade='all, delete-orphan'),
+    )
+
 
 class Item(db.Model):
     __tablename__ = 'items'
@@ -207,6 +239,8 @@ class Item(db.Model):
     gst_rate = db.Column(db.Float, default=0)
     reorder_level = db.Column(db.Integer, default=5)
     hsn = db.Column(db.String(50))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
 class Customer(db.Model):
@@ -218,6 +252,8 @@ class Customer(db.Model):
     email = db.Column(db.String(255))
     address = db.Column(db.Text)
     gstin = db.Column(db.String(50))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     sales = db.relationship('Sale', backref='customer', lazy=True)
 
@@ -237,6 +273,66 @@ class Sale(db.Model):
     net_total = db.Column(db.Float, default=0)
     invoice_number = db.Column(db.String(64), unique=True)
     locked = db.Column(db.Boolean, default=False, nullable=False)
+    location_id = db.Column(db.Integer, db.ForeignKey('shop_locations.id'))
+    gst_status = db.Column(db.String(20), default='pending', nullable=False)
+    irn = db.Column(db.String(64))
+    ack_no = db.Column(db.String(64))
+    ack_date = db.Column(db.DateTime)
+    signed_invoice_path = db.Column(db.String(255))
+    eway_bill_no = db.Column(db.String(64))
+    eway_valid_upto = db.Column(db.DateTime)
+
+    customer = db.relationship('Customer', backref='sales', lazy=True)
+    location = db.relationship('ShopLocation', backref=db.backref('sales', lazy=True))
+    payment_intents = db.relationship('PaymentIntent', backref='sale', lazy=True)
+
+
+class EInvoiceSubmission(db.Model):
+    __tablename__ = 'einvoice_submissions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    sale_id = db.Column(db.Integer, db.ForeignKey('sales.id'), nullable=False)
+    status = db.Column(db.String(20), default='pending', nullable=False)
+    payload = db.Column(db.Text)
+    response = db.Column(db.Text)
+    error_message = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    submitted_at = db.Column(db.DateTime)
+    acknowledged_at = db.Column(db.DateTime)
+
+    sale = db.relationship('Sale', backref=db.backref('einvoice_submissions', lazy=True))
+
+
+class PaymentIntent(db.Model):
+    __tablename__ = 'payment_intents'
+
+    id = db.Column(db.Integer, primary_key=True)
+    sale_id = db.Column(db.Integer, db.ForeignKey('sales.id'))
+    amount = db.Column(db.Float, nullable=False)
+    currency = db.Column(db.String(8), default='INR', nullable=False)
+    provider = db.Column(db.String(32), nullable=False)
+    status = db.Column(db.String(20), default='pending', nullable=False)
+    customer_reference = db.Column(db.String(128))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    metadata = db.Column(db.Text)
+
+    transactions = db.relationship('PaymentTransaction', backref='intent', lazy=True, cascade='all, delete-orphan')
+
+
+class PaymentTransaction(db.Model):
+    __tablename__ = 'payment_transactions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    intent_id = db.Column(db.Integer, db.ForeignKey('payment_intents.id'), nullable=False)
+    provider = db.Column(db.String(32), nullable=False)
+    status = db.Column(db.String(20), default='created', nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    reference = db.Column(db.String(120))
+    raw_response = db.Column(db.Text)
+    error = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    processed_at = db.Column(db.DateTime)
 
 
 class Credit(db.Model):
@@ -276,9 +372,13 @@ class PurchaseOrder(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     supplier_id = db.Column(db.Integer, db.ForeignKey('suppliers.id'))
     order_date = db.Column(db.Date, default=date.today)
-    status = db.Column(db.String(50), default='received')
+    status = db.Column(db.String(50), default='draft')
     total_cost = db.Column(db.Float, default=0)
     notes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    received_at = db.Column(db.DateTime)
+
+    supplier = db.relationship('Supplier', backref=db.backref('orders', lazy=True))
 
 
 class PurchaseItem(db.Model):
@@ -289,6 +389,9 @@ class PurchaseItem(db.Model):
     item_id = db.Column(db.Integer, db.ForeignKey('items.id'))
     quantity = db.Column(db.Integer)
     cost_price = db.Column(db.Float)
+
+    order = db.relationship('PurchaseOrder', backref=db.backref('lines', lazy=True, cascade='all, delete-orphan'))
+    item = db.relationship('Item', lazy=True)
 
 
 class ExpenseCategory(db.Model):

@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+{% block title %}Reset password · ShopApp{% endblock %}
+
+{% block content %}
+<section class="hero fade-in" style="padding:80px 10% 30px;">
+  <h1>Set a new password.</h1>
+  <p>Choose a strong password you’ll remember.</p>
+</section>
+
+<section class="grid" style="max-width:880px;margin-top:0">
+  <div class="card fade-in" style="grid-column:1/-1">
+    <form method="post" style="display:grid;gap:16px;max-width:520px;margin:0 auto">
+      <div>
+        <label style="display:block;margin-bottom:6px;color:#555">New password</label>
+        <input class="input" type="password" name="password" placeholder="••••••••" required>
+      </div>
+      <div>
+        <label style="display:block;margin-bottom:6px;color:#555">Confirm new password</label>
+        <input class="input" type="password" name="confirm" placeholder="••••••••" required>
+      </div>
+      <button class="btn" type="submit">Update password</button>
+      {% if error %}<div style="text-align:center;color:#c00000;margin-top:6px"><small>{{ error }}</small></div>{% endif %}
+      {% if info %}<div style="text-align:center;color:#2ba24c;margin-top:6px"><small>{{ info }}</small></div>{% endif %}
+    </form>
+  </div>
+</section>
+{% endblock %}

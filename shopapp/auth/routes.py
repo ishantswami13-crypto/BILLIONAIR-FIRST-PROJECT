@@ -1,7 +1,9 @@
 from datetime import datetime
 import secrets
+from typing import Optional
 
 from flask import Blueprint, current_app, flash, g, redirect, render_template, request, session, url_for
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from sqlalchemy.exc import IntegrityError
 
 from ..extensions import db
@@ -12,6 +14,25 @@ from ..utils.otp import request_otp, verify_otp
 from ..utils.track import track
 
 auth_bp = Blueprint('auth', __name__)
+
+
+def _reset_serializer() -> URLSafeTimedSerializer:
+    secret = current_app.config.get("SECRET_KEY") or current_app.secret_key
+    if not secret:
+        raise RuntimeError("SECRET_KEY must be configured to use password reset.")
+    return URLSafeTimedSerializer(secret, salt="shopapp-password-reset")
+
+
+def make_reset_token(username: str) -> str:
+    return _reset_serializer().dumps({"u": username})
+
+
+def read_reset_token(token: str, max_age: int = 7200) -> Optional[str]:
+    try:
+        data = _reset_serializer().loads(token, max_age=max_age)
+    except (BadSignature, SignatureExpired):
+        return None
+    return data.get("u")
 
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
@@ -44,6 +65,52 @@ def login():
             return redirect(url_for('sales.index'))
         flash('Login failed. Check credentials.')
     return render_template('auth/login.html')
+
+
+@auth_bp.route('/forgot', methods=['GET', 'POST'])
+def forgot():
+    info = error = None
+    if request.method == 'POST':
+        identifier = request.form.get('identifier', '').strip()
+        if not identifier:
+            error = "Enter your username or email."
+        else:
+            user = User.query.filter_by(username=identifier).first()
+            if not user and identifier:
+                user = User.query.filter(User.email.ilike(identifier)).first()
+            if user:
+                token = make_reset_token(user.username)
+                reset_link = url_for('auth.reset_password', token=token, _external=True)
+                current_app.logger.info("Password reset link for %s: %s", user.username, reset_link)
+            info = "If that account exists, we’ve sent a reset link."
+    return render_template('auth/forgot.html', info=info, error=error)
+
+
+@auth_bp.route('/reset/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    username = read_reset_token(token)
+    if not username:
+        return render_template('auth/reset.html', error="Link invalid or expired."), 400
+
+    info = error = None
+    if request.method == 'POST':
+        password = request.form.get('password', '')
+        confirm = request.form.get('confirm', '')
+        if len(password) < 6:
+            error = "Password must be at least 6 characters."
+        elif password != confirm:
+            error = "Passwords do not match."
+        else:
+            user = User.query.filter_by(username=username).first()
+            if not user:
+                error = "Account not found."
+            else:
+                user.set_password(password)
+                db.session.add(user)
+                db.session.commit()
+                info = "Password updated. You can now sign in."
+                return render_template('auth/reset.html', info=info)
+    return render_template('auth/reset.html', error=error, info=info)
 
 
 @auth_bp.route('/register', methods=['GET', 'POST'])

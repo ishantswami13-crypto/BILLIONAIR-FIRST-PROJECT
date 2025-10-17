@@ -54,7 +54,14 @@
         <thead><tr><th>#</th><th>Date</th><th>Item</th><th>Qty</th><th>Total</th><th>Customer</th></tr></thead>
         <tbody>
           {% for s in sales %}
-          <tr><td>{{ s[0] }}</td><td>{{ s[1] }}</td><td>{{ s[2] }}</td><td>{{ s[3] }}</td><td>₹{{ '%.0f'|format(s[4]) }}</td><td>{{ s[5] or 'Walk-in' }}</td></tr>
+          <tr>
+            <td><a href="{{ url_for('sales.detail', sale_id=s[0]) }}" style="color:#0071e3;text-decoration:none">{{ s[0] }}</a></td>
+            <td>{{ s[1] }}</td>
+            <td>{{ s[2] }}</td>
+            <td>{{ s[3] }}</td>
+            <td>₹{{ '%.0f'|format(s[4]) }}</td>
+            <td>{{ s[5] or 'Walk-in' }}</td>
+          </tr>
           {% else %}
           <tr><td colspan="6"><small>No sales found for this range.</small></td></tr>
           {% endfor %}

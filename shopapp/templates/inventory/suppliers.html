@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+{% block title %}Suppliers · ShopApp{% endblock %}
+
+{% block content %}
+<section class="hero fade-in" style="padding:70px 10% 30px">
+  <h1>Suppliers</h1>
+  <p>Keep your vendor directory handy for quick purchase orders.</p>
+</section>
+
+<section class="grid" style="max-width:1000px">
+  <div class="card fade-in" style="grid-column:1/-1">
+    <h2>Add supplier</h2>
+    <form method="post" style="display:grid;gap:14px;margin-top:14px">
+      <div>
+        <label style="display:block;margin-bottom:6px">Name</label>
+        <input class="input" type="text" name="name" placeholder="Acme Traders" required>
+      </div>
+      <div style="display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+        <div>
+          <label style="display:block;margin-bottom:6px">Contact person</label>
+          <input class="input" type="text" name="contact_name" placeholder="Ramesh Kumar">
+        </div>
+        <div>
+          <label style="display:block;margin-bottom:6px">Phone</label>
+          <input class="input" type="text" name="phone" placeholder="+91 98765 43210">
+        </div>
+        <div>
+          <label style="display:block;margin-bottom:6px">Email</label>
+          <input class="input" type="email" name="email" placeholder="orders@example.com">
+        </div>
+      </div>
+      <div>
+        <label style="display:block;margin-bottom:6px">Address</label>
+        <textarea class="input" name="address" rows="2" placeholder="Street, City, PIN"></textarea>
+      </div>
+      <div>
+        <label style="display:block;margin-bottom:6px">Notes</label>
+        <textarea class="input" name="notes" rows="2" placeholder="Preferred delivery window, payment terms…"></textarea>
+      </div>
+      <button class="btn" type="submit">Save supplier</button>
+    </form>
+  </div>
+
+  <div class="card fade-in" style="grid-column:1/-1">
+    <h2>Directory</h2>
+    <div class="table-wrap" style="overflow:auto;margin-top:14px">
+      <table class="table">
+        <thead>
+          <tr><th>Name</th><th>Contact</th><th>Phone</th><th>Email</th></tr>
+        </thead>
+        <tbody>
+          {% for supplier in suppliers %}
+          <tr>
+            <td>{{ supplier.name }}</td>
+            <td>{{ supplier.contact_name or '—' }}</td>
+            <td>{{ supplier.phone or '—' }}</td>
+            <td>{{ supplier.email or '—' }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4"><small>No suppliers yet. Add your first vendor above.</small></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}

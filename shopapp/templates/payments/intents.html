@@ -1,0 +1,159 @@
+{% extends "layout.html" %}
+{% block title %}Payments · ShopApp{% endblock %}
+
+{% block content %}
+<section class="hero fade-in" style="padding:70px 10% 30px">
+  <h1>Payment Intents</h1>
+  <p>Monitor checkout activity across Razorpay, Stripe, and cash flows.</p>
+</section>
+
+<div class="grid">
+  <div class="card fade-in">
+    <h2>Summary</h2>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:12px">
+      <div>
+        <small>Total intents (last 100)</small>
+        <div style="font-size:32px;font-weight:700">{{ intents|length }}</div>
+      </div>
+      <div>
+        <small>Captured count</small>
+        <div style="font-size:32px;font-weight:700">{{ captured_count }}</div>
+      </div>
+      <div>
+        <small>Total amount</small>
+        <div style="font-size:32px;font-weight:700">₹{{ '%.2f'|format(total_amount) }}</div>
+      </div>
+      <div>
+        <small>Captured amount</small>
+        <div style="font-size:32px;font-weight:700">₹{{ '%.2f'|format(captured_amount) }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card fade-in">
+    <h2>Providers</h2>
+    <ul style="margin-top:14px;list-style:none;padding:0;display:grid;gap:10px">
+      {% for provider in providers %}
+      <li style="padding:12px 16px;border:1px solid #e3e6ee;border-radius:12px;display:flex;justify-content:space-between;align-items:center">
+        <span>{{ provider.display_name }}</span>
+        <span style="font-size:12px;padding:4px 10px;border-radius:999px;{% if provider.enabled %}background:#e8f7ee;color:#1b7f3b{% else %}background:#f8f1f2;color:#b6203a{% endif %}">
+          {% if provider.enabled %}Enabled{% else %}Not configured{% endif %}
+        </span>
+      </li>
+      {% else %}
+      <li><small>No providers configured.</small></li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="card fade-in" style="grid-column:1/-1">
+    <h2>Recent intents</h2>
+    <div class="table-wrap" style="overflow:auto;margin-top:14px">
+      <table class="table">
+        <thead>
+          <tr><th>ID</th><th>Sale</th><th>Provider</th><th>Status</th><th>Amount</th><th>Updated</th></tr>
+        </thead>
+        <tbody id="intentsTableBody">
+          {% for intent in intents %}
+          <tr>
+            <td>{{ intent.id }}</td>
+            <td>{% if intent.sale_id %}<a href="{{ url_for('sales.detail', sale_id=intent.sale_id) }}" style="color:#0071e3;text-decoration:none">Sale {{ intent.sale_id }}</a>{% else %}—{% endif %}</td>
+            <td>{{ intent.provider|title }}</td>
+            <td>{{ intent.status|replace('_',' ')|title }}</td>
+            <td>₹{{ '%.2f'|format(intent.amount) }}</td>
+            <td>{{ intent.updated_at.strftime('%d %b %Y %H:%M') if intent.updated_at else '—' }}</td>
+          </tr>
+          {% else %}
+          <tr data-empty="true"><td colspan="6"><small>No payment intents recorded yet.</small></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:16px;text-align:center">
+      <button class="btn ghost" id="loadMoreIntents" data-endpoint="{{ url_for('payments.list_intents') }}">Load more</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+(function(){
+  const tableBody = document.getElementById('intentsTableBody');
+  const loadBtn = document.getElementById('loadMoreIntents');
+  if (!tableBody || !loadBtn) return;
+  const PAGE_SIZE = 50;
+  if (tableBody.querySelectorAll('tr:not([data-empty="true"])').length < PAGE_SIZE) {
+    loadBtn.textContent = 'No more results';
+    loadBtn.disabled = true;
+  }
+
+  const formatAmount = (value) => {
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(Number(value || 0));
+  };
+
+  const formatTimestamp = (value) => {
+    if (!value) return '—';
+    const dt = new Date(value);
+    if (Number.isNaN(dt.getTime())) return value;
+    return dt.toLocaleString();
+  };
+
+  const renderRow = (intent) => {
+    const tr = document.createElement('tr');
+    const saleLink = intent.sale_id
+      ? `<a href="/sales/${intent.sale_id}" style="color:#0071e3;text-decoration:none">Sale ${intent.sale_id}</a>`
+      : '—';
+    tr.innerHTML = `
+      <td>${intent.id}</td>
+      <td>${saleLink}</td>
+      <td>${(intent.provider || '').replace(/^\w/, c => c.toUpperCase())}</td>
+      <td>${(intent.status || '').replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase())}</td>
+      <td>${formatAmount(intent.amount)}</td>
+      <td>${formatTimestamp(intent.updated_at)}</td>
+    `;
+    return tr;
+  };
+
+  let loading = false;
+  loadBtn.addEventListener('click', async () => {
+    if (loading) return;
+    loading = true;
+    loadBtn.disabled = true;
+    const original = loadBtn.textContent;
+    loadBtn.textContent = 'Loading…';
+    try {
+      const offset = tableBody.querySelectorAll('tr:not([data-empty="true"])').length;
+      const response = await fetch(`${loadBtn.dataset.endpoint}?offset=${offset}&limit=${PAGE_SIZE}`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const payload = await response.json();
+      if (!Array.isArray(payload) || payload.length === 0) {
+        loadBtn.textContent = 'No more results';
+        return;
+      }
+      const emptyRow = tableBody.querySelector('[data-empty="true"]');
+      if (emptyRow) {
+        emptyRow.remove();
+      }
+      payload.forEach(intent => {
+        tableBody.appendChild(renderRow(intent));
+      });
+      if (payload.length < PAGE_SIZE) {
+        loadBtn.textContent = 'No more results';
+        loadBtn.disabled = true;
+      } else {
+        loadBtn.textContent = original;
+        loadBtn.disabled = false;
+      }
+    } catch (err) {
+      console.error(err);
+      loadBtn.textContent = 'Retry load';
+      loadBtn.disabled = false;
+    } finally {
+      loading = false;
+    }
+  });
+})();
+</script>
+{% endblock %}

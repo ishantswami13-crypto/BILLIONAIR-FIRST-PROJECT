@@ -1,0 +1,90 @@
+{% extends "layout.html" %}
+{% block title %}Reorder Planner · ShopApp{% endblock %}
+
+{% block content %}
+<section class="hero fade-in" style="padding:70px 10% 30px">
+  <h1>Reorder Planner</h1>
+  <p>Review low-stock items and raise a draft purchase order in seconds.</p>
+</section>
+
+{% if not low_stock %}
+  <div class="card fade-in" style="max-width:760px;margin:0 auto">
+    <h2>All clear</h2>
+    <p style="margin-top:8px">No items are below their reorder levels right now. Keep monitoring for demand spikes.</p>
+  </div>
+{% else %}
+  <section class="grid" style="max-width:1120px">
+    <div class="card fade-in" style="grid-column:1/-1">
+      <h2>Summary</h2>
+      <p style="margin-top:6px;font-size:14px">Need to review existing orders? Visit the <a href="{{ url_for('inventory.orders') }}" style="color:#0071e3;text-decoration:none">purchase order board</a>.</p>
+      <div style="display:flex;gap:24px;flex-wrap:wrap;margin-top:16px">
+        <div>
+          <small>Low-stock items</small>
+          <div style="font-size:34px;font-weight:700">{{ low_stock|length }}</div>
+        </div>
+        <div>
+          <small>Suggested spend</small>
+          <div style="font-size:34px;font-weight:700">₹{{ '%.2f'|format(recommended_total) }}</div>
+        </div>
+        <div>
+          <small>Top priority</small>
+          <div style="font-size:34px;font-weight:700">
+            {{ low_stock[0].name if low_stock else '-' }}
+          </div>
+        </div>
+      </div>
+      <p style="margin-top:18px;font-size:14px;color:#555">Suggested quantities aim to bring stock back to twice the reorder level.</p>
+    </div>
+
+    <div class="card fade-in" style="grid-column:1/-1">
+      <form method="post" style="display:grid;gap:18px">
+        <div style="display:grid;gap:16px">
+          <div>
+            <label style="display:block;margin-bottom:6px">Supplier</label>
+            {% if suppliers %}
+              <select class="select" name="supplier_id" required>
+                <option value="">Select supplier…</option>
+                {% for supplier in suppliers %}
+                <option value="{{ supplier.id }}">{{ supplier.name }}</option>
+                {% endfor %}
+              </select>
+              <small>Need someone else? <a href="{{ url_for('inventory.suppliers') }}" style="color:#0071e3;text-decoration:none">Add supplier</a>.</small>
+            {% else %}
+              <div style="padding:12px;border:1px dashed #e0e4ee;border-radius:10px;background:#f8f9fc">
+                <small>No suppliers yet. <a href="{{ url_for('inventory.suppliers') }}">Add one now</a> to generate purchase orders.</small>
+              </div>
+            {% endif %}
+          </div>
+          <div>
+            <label style="display:block;margin-bottom:6px">Notes (optional)</label>
+            <textarea class="input" name="notes" rows="2" placeholder="Delivery expectations, payment terms…"></textarea>
+          </div>
+        </div>
+
+        <div class="table-wrap" style="overflow:auto">
+          <table class="table">
+            <thead>
+              <tr><th>Item</th><th>Stock</th><th>Reorder level</th><th>Suggested qty</th><th>Order qty</th></tr>
+            </thead>
+            <tbody>
+              {% for item in low_stock %}
+              <tr>
+                <td>{{ item.name }}</td>
+                <td>{{ item.current_stock }}</td>
+                <td>{{ item.reorder_level }}</td>
+                <td>{{ item.recommended }}</td>
+                <td>
+                  <input class="input" type="number" name="qty_{{ item.id }}" min="0" value="{{ item.recommended }}">
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <button class="btn" type="submit" {% if not suppliers %}disabled{% endif %}>Create draft purchase order</button>
+      </form>
+    </div>
+  </section>
+{% endif %}
+{% endblock %}

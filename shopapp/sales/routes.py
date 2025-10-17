@@ -1,5 +1,6 @@
 ﻿import csv
 import io
+import json
 from datetime import datetime, timedelta
 
 from flask import (Blueprint, current_app, flash, make_response, redirect, render_template,
@@ -8,12 +9,15 @@ from sqlalchemy import func
 from sqlalchemy.orm import joinedload
 
 from ..extensions import db
-from ..models import AuditLog, Credit, Customer, Expense, Item, Sale, Setting
+from ..models import (AuditLog, Credit, Customer, EInvoiceSubmission, Expense, Item, PaymentIntent,
+                      PaymentTransaction, Sale, Setting, ShopProfile)
 from ..utils.decorators import login_required
 from ..utils.audit import log_event
 from ..utils.invoices import next_invoice_number
 from ..utils.mail import send_mail
 from ..utils.pdfs import create_invoice_pdf
+from ..compliance.services import GSTIntegrationError, get_gst_service
+from ..payments import get_payments_service
 
 sales_bp = Blueprint('sales', __name__)
 
@@ -209,6 +213,174 @@ def history():
     )
 
 
+@sales_bp.route('/sales/<int:sale_id>')
+@login_required
+def detail(sale_id: int):
+    sale = (
+        Sale.query.options(
+            joinedload(Sale.customer),
+            joinedload(Sale.location),
+        )
+        .filter(Sale.id == sale_id)
+        .first()
+    )
+    if not sale:
+        flash('Sale not found.', 'warning')
+        return redirect(url_for('sales.history'))
+
+    submissions = (
+        EInvoiceSubmission.query.filter_by(sale_id=sale_id)
+        .order_by(EInvoiceSubmission.created_at.desc())
+        .all()
+    )
+
+    payment_intents = (
+        PaymentIntent.query.filter_by(sale_id=sale_id)
+        .order_by(PaymentIntent.created_at.desc())
+        .all()
+    )
+    providers = get_payments_service().list_providers()
+
+    service = get_gst_service()
+    gst_configured = service.is_configured()
+    live_status = None
+    if sale.irn and gst_configured:
+        try:
+            live_status = service.fetch_status(sale.irn)
+        except GSTIntegrationError as exc:
+            flash(f'Could not refresh GST status: {exc}', 'warning')
+
+    return render_template(
+        'sales/detail.html',
+        sale=sale,
+        submissions=submissions,
+        gst_configured=gst_configured,
+        live_status=live_status,
+        payment_intents=payment_intents,
+        payment_providers=[p for p in providers if p["enabled"]],
+    )
+
+
+@sales_bp.post('/sales/<int:sale_id>/gst/submit')
+@login_required
+def submit_gst(sale_id: int):
+    sale = (
+        Sale.query.options(
+            joinedload(Sale.customer),
+            joinedload(Sale.location),
+        )
+        .filter(Sale.id == sale_id)
+        .first()
+    )
+    if not sale:
+        flash('Sale not found.', 'warning')
+        return redirect(url_for('sales.history'))
+
+    service = get_gst_service()
+    if not service.is_configured():
+        flash('GST provider not configured. Add credentials in settings.', 'warning')
+        return redirect(url_for('sales.detail', sale_id=sale_id))
+
+    payload = {
+        "invoice_number": sale.invoice_number,
+        "date": sale.date.isoformat() if sale.date else None,
+        "total": float(sale.net_total or sale.total or 0),
+        "location_gstin": sale.location.gstin if sale.location else None,
+        "customer": {
+            "name": sale.customer.name if sale.customer else "Walk-in",
+            "gstin": getattr(sale.customer, "gstin", None) if sale.customer else None,
+        },
+    }
+
+    try:
+        response = service.submit_einvoice(sale.id, payload)
+    except GSTIntegrationError as exc:
+        flash(f'GST submission failed: {exc}', 'danger')
+        return redirect(url_for('sales.detail', sale_id=sale_id))
+
+    submission = EInvoiceSubmission(
+        sale_id=sale.id,
+        status=response.get("status", "queued"),
+        payload=json.dumps(payload),
+        response=json.dumps(response),
+    )
+
+    sale.gst_status = submission.status or sale.gst_status
+    sale.irn = response.get("irn") or sale.irn
+    sale.ack_no = response.get("ack_no") or sale.ack_no
+    ack_date_raw = response.get("ack_date")
+    if ack_date_raw:
+        try:
+            sale.ack_date = datetime.fromisoformat(ack_date_raw)
+        except ValueError:
+            pass
+
+    if response.get("eway_bill_no"):
+        sale.eway_bill_no = response.get("eway_bill_no")
+    if response.get("eway_valid_upto"):
+        try:
+            sale.eway_valid_upto = datetime.fromisoformat(response.get("eway_valid_upto"))
+        except ValueError:
+            pass
+
+    db.session.add(submission)
+    db.session.add(sale)
+    db.session.commit()
+
+    flash('GST submission queued.', 'success')
+    return redirect(url_for('sales.detail', sale_id=sale_id))
+
+
+@sales_bp.post('/sales/<int:sale_id>/payments')
+@login_required
+def create_payment_intent_for_sale(sale_id: int):
+    sale = Sale.query.get(sale_id)
+    if not sale:
+        flash('Sale not found.', 'warning')
+        return redirect(url_for('sales.history'))
+
+    service = get_payments_service()
+    provider_name = (request.form.get('provider') or 'razorpay').lower()
+    provider = service.get_provider(provider_name)
+    if not provider or not provider.enabled:
+        flash('Selected provider is not available.', 'warning')
+        return redirect(url_for('sales.detail', sale_id=sale_id))
+
+    try:
+        amount = float(request.form.get('amount') or sale.net_total or sale.total or 0)
+    except (TypeError, ValueError):
+        amount = float(sale.net_total or sale.total or 0)
+
+    if amount <= 0:
+        flash('Amount must be greater than zero.', 'warning')
+        return redirect(url_for('sales.detail', sale_id=sale_id))
+
+    profile = ShopProfile.query.get(1)
+
+    intent = PaymentIntent(
+        sale_id=sale.id,
+        amount=amount,
+        currency=(profile.currency if profile else 'INR'),
+        provider=provider.name,
+        status='pending',
+        customer_reference=request.form.get('reference') or None,
+    )
+    db.session.add(intent)
+    db.session.flush()
+
+    txn = PaymentTransaction(
+        intent=intent,
+        provider=provider.name,
+        status='created',
+        amount=amount,
+    )
+    db.session.add(txn)
+    db.session.commit()
+
+    flash('Payment intent created.', 'success')
+    return redirect(url_for('sales.detail', sale_id=sale_id))
+
+
 @sales_bp.route('/sales/export.csv')
 @login_required
 def export_csv():
@@ -292,6 +464,15 @@ def sell():
 
     item.current_stock -= quantity
 
+    location_id = None
+    profile = ShopProfile.query.get(1)
+    if profile:
+        default_location = profile.default_location
+        if not default_location and getattr(profile, "locations", None):
+            default_location = profile.locations[0]
+        if default_location:
+            location_id = default_location.id
+
     sale = Sale(
         item=item.name,
         quantity=quantity,
@@ -301,7 +482,8 @@ def sell():
         discount=discount,
         tax=tax,
         net_total=net_total,
-        invoice_number=next_invoice_number()
+        invoice_number=next_invoice_number(),
+        location_id=location_id,
     )
     db.session.add(sale)
     db.session.flush()

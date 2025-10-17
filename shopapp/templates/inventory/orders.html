@@ -1,0 +1,91 @@
+{% extends "layout.html" %}
+{% block title %}Purchase Orders · ShopApp{% endblock %}
+
+{% block content %}
+<section class="hero fade-in" style="padding:70px 10% 30px">
+  <h1>Purchase Orders</h1>
+  <p>Track vendor orders from draft to received and adjust stock with one click.</p>
+</section>
+
+<section class="grid" style="max-width:1120px">
+  <div class="card fade-in" style="grid-column:1/-1">
+    <h2>Overview</h2>
+    {% set total_orders = orders|length %}
+    {% set draft_orders = orders|selectattr('status', 'equalto', 'draft')|list|length %}
+    {% set open_orders = orders|selectattr('status', 'in', ['draft', 'issued'])|list|length %}
+    {% set received_orders = orders|selectattr('status', 'equalto', 'received')|list|length %}
+    <div style="display:flex;gap:24px;flex-wrap:wrap;margin-top:16px">
+      <div>
+        <small>Total</small>
+        <div style="font-size:34px;font-weight:700">{{ total_orders }}</div>
+      </div>
+      <div>
+        <small>Draft</small>
+        <div style="font-size:34px;font-weight:700">{{ draft_orders }}</div>
+      </div>
+      <div>
+        <small>Open (Draft + Issued)</small>
+        <div style="font-size:34px;font-weight:700">{{ open_orders }}</div>
+      </div>
+      <div>
+        <small>Received</small>
+        <div style="font-size:34px;font-weight:700">{{ received_orders }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card fade-in" style="grid-column:1/-1">
+    <div class="table-wrap" style="overflow:auto">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Supplier</th>
+            <th>Status</th>
+            <th>Total</th>
+            <th>Created</th>
+            <th>Received</th>
+            <th>Lines</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in orders %}
+          <tr>
+            <td>{{ order.id }}</td>
+            <td>{{ order.supplier.name if order.supplier else '—' }}</td>
+            <td>{{ order.status|title }}</td>
+            <td>₹{{ '%.2f'|format(order.total_cost or 0) }}</td>
+            <td>{{ order.created_at.strftime('%d %b %Y %H:%M') if order.created_at else '—' }}</td>
+            <td>{{ order.received_at.strftime('%d %b %Y %H:%M') if order.received_at else '—' }}</td>
+            <td>
+              <details>
+                <summary>{{ order.lines|length }} items</summary>
+                <ul style="margin:8px 0 0 14px;display:grid;gap:4px">
+                  {% for line in order.lines %}
+                  <li>{{ line.item.name if line.item else 'Unknown' }} &times; {{ line.quantity }}</li>
+                  {% endfor %}
+                </ul>
+              </details>
+            </td>
+            <td>
+              <form method="post" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                <input type="hidden" name="order_id" value="{{ order.id }}">
+                {% if order.status == 'draft' %}
+                  <button class="btn ghost" name="action" value="issue" type="submit">Mark issued</button>
+                {% endif %}
+                {% if order.status != 'received' %}
+                  <button class="btn" name="action" value="receive" type="submit">Receive & update stock</button>
+                {% endif %}
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="8"><small>No purchase orders yet. Generate one from the <a href="{{ url_for('inventory.reorder') }}">reorder planner</a>.</small></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}
