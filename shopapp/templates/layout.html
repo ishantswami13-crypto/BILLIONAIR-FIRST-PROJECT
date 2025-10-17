@@ -1,37 +1,53 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8"/>
-    <title>{% block title %}ShopApp{% endblock %}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/apple.css') }}">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  </head>
-  <body>
-    <div class="blobs" aria-hidden="true"></div>
+<head>
+  <meta charset="utf-8"/>
+  <title>{% block title %}ShopApp{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <!-- fonts (system-first; optional: uncomment if you want Inter webfont) -->
+  <!-- <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet"> -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/premium.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
 
-    <nav class="apple-nav">
-      <a href="/" class="apple-logo">Shop<span>App</span></a>
-      <ul class="nav-links">
-        <li><a href="/">Dashboard</a></li>
-        <li><a href="/sales">Sales</a></li>
-        <li><a href="/credits">Credits</a></li>
-        <li><a href="/analytics">Analytics</a></li>
-        <li><a href="/assistant">Assistant</a></li>
-        <li><a href="/customers">Customers</a></li>
-      </ul>
-      <div class="nav-right">
-        <a class="nav-btn" href="/settings/subscription">Plans</a>
-        {% if session.get('user') %}<a class="nav-btn secondary" href="/logout">Logout</a>{% else %}
-        <a class="nav-btn secondary" href="/login">Login</a>{% endif %}
-      </div>
-    </nav>
+  <nav class="nav">
+    <a href="/" class="brand">Shop<b>App</b></a>
+    <ul class="navlinks">
+      <li><a href="/">Dashboard</a></li>
+      <li><a href="/sales">Sales</a></li>
+      <li><a href="/credits">Credits</a></li>
+      <li><a href="/analytics">Analytics</a></li>
+      <li><a href="/assistant">Assistant</a></li>
+      <li><a href="/customers">Customers</a></li>
+    </ul>
+    <div class="navact">
+      <button id="themeToggle" class="btn ghost press" title="Toggle theme">🌓</button>
+      {% if session.get('user') %}
+        <a class="btn primary press" href="/logout">Logout</a>
+      {% else %}
+        <a class="btn primary press" href="/login">Login</a>
+      {% endif %}
+    </div>
+  </nav>
 
-    <main class="apple-main">
-      {% block content %}{% endblock %}
-    </main>
+  <main class="main">
+    <!-- spatial strip -->
+    <div class="parallax" aria-hidden="true"></div>
 
-    {% include 'partials/appfx.html' %}
-    {% block scripts %}{% endblock %}
-  </body>
+    <!-- hero (emotional + whitespace) -->
+    <section class="hero">
+      <div class="kicker"><span class="dot"></span><span id="greet">Good day</span>, {{ session.get('user') or 'Owner' }}</div>
+      <h1>Run your store with <span style="background:linear-gradient(90deg,var(--accHot),var(--acc1),var(--acc2));-webkit-background-clip:text;-webkit-text-fill-color:transparent">clarity</span>.</h1>
+      <p class="subtle" id="tip">Tip: Use Quick Sale to log in 3 taps.</p>
+    </section>
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- global helpers -->
+  <script src="{{ url_for('static', filename='js/premium.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
 </html>

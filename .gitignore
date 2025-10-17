@@ -19,3 +19,12 @@ token.pickle
 *.p12
 __pycache__/
 *.pyc
+.env
+*.env
+credentials.json
+*.sqlite
+*.db-journal
+__pycache__/
+*.pyc
+.DS_Store
+*.log
