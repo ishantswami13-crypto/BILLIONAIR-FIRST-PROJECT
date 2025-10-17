@@ -1,0 +1,21 @@
+<div id="addCustomerSheet" class="sheet hidden">
+  <div class="sheet-content fadeUp">
+    <h2 style="font-size:var(--f-lg);font-weight:600;">Add Customer</h2>
+    <form method="POST" action="/customers/add" style="margin-top:12px;display:flex;flex-direction:column;gap:12px;">
+      <div>
+        <label>Name</label>
+        <input name="name" required>
+      </div>
+      <div>
+        <label>Phone</label>
+        <input type="tel" name="phone" required pattern="[0-9]{10}">
+      </div>
+      <div>
+        <label>Email (optional)</label>
+        <input type="email" name="email">
+      </div>
+      <button class="btn primary" style="width:100%;" onclick="toast('Customer added ✓');closeSheet('addCustomerSheet');launchConfetti()">Save Customer</button>
+      <button type="button" class="btn" style="width:100%;" onclick="closeSheet('addCustomerSheet')">Cancel</button>
+    </form>
+  </div>
+</div>

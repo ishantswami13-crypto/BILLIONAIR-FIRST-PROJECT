@@ -49,9 +49,11 @@
     </main>
   </div>
 
-  <!-- Global toast + Add-Item modal if present -->
+  <!-- Global toast + optional sheets -->
   <div id="toast" class="toast">Saved ✓</div>
   {% include "components/modal_add_item.html" ignore missing %}
+  {% include "components/modal_add_customer.html" ignore missing %}
+  {% include "components/modal_add_expense.html" ignore missing %}
 
   <script type="module" src="{{ url_for('static', filename='js/ui.js') }}?v={{ app_version or '1.0.0' }}"></script>
   {% block scripts %}{% endblock %}

@@ -1,0 +1,26 @@
+<div id="addExpenseSheet" class="sheet hidden">
+  <div class="sheet-content fadeUp">
+    <h2 style="font-size:var(--f-lg);font-weight:600;">Add Expense</h2>
+    <form method="POST" action="/expenses/add" style="margin-top:12px;display:flex;flex-direction:column;gap:12px;">
+      <div>
+        <label>Category</label>
+        <select name="category">
+          <option>Supplies</option>
+          <option>Logistics</option>
+          <option>Maintenance</option>
+          <option>Utilities</option>
+        </select>
+      </div>
+      <div>
+        <label>Amount (₹)</label>
+        <input type="number" name="amount" step="0.01" required>
+      </div>
+      <div>
+        <label>Note</label>
+        <input name="note">
+      </div>
+      <button class="btn primary" style="width:100%;" onclick="toast('Expense added ✓');closeSheet('addExpenseSheet');launchConfetti()">Save Expense</button>
+      <button type="button" class="btn" style="width:100%;" onclick="closeSheet('addExpenseSheet')">Cancel</button>
+    </form>
+  </div>
+</div>

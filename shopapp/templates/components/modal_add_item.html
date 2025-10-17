@@ -1,0 +1,21 @@
+<div id="addItemSheet" class="sheet hidden">
+  <div class="sheet-content fadeUp">
+    <h2 style="font-size:var(--f-lg);font-weight:600;">Add Item</h2>
+    <form method="POST" action="/items/add" style="margin-top:12px;display:flex;flex-direction:column;gap:12px;">
+      <div>
+        <label>Item name</label>
+        <input name="name" required>
+      </div>
+      <div>
+        <label>Price (₹)</label>
+        <input type="number" name="price" step="0.01" required>
+      </div>
+      <div>
+        <label>Stock quantity</label>
+        <input type="number" name="stock" required>
+      </div>
+      <button class="btn primary" style="width:100%;" onclick="toast('Item added ✓');closeSheet('addItemSheet');launchConfetti()">Save Item</button>
+      <button type="button" class="btn" style="width:100%;" onclick="closeSheet('addItemSheet')">Cancel</button>
+    </form>
+  </div>
+</div>

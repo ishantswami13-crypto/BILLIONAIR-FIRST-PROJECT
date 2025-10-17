@@ -85,3 +85,31 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); box-sha
 /* Micro animations (Apple-ish) */
 @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 .fadeUp { animation: fadeUp .45s var(--ease) both; }
+
+.sheet {
+  position: fixed;
+  inset: 0;
+  backdrop-filter: blur(12px) saturate(180%);
+  background: rgba(0,0,0,.4);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 999;
+  transition: opacity .3s;
+}
+.sheet.hidden {opacity:0;pointer-events:none;}
+.sheet-content {
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 24px 24px 0 0;
+  width: 100%;
+  max-width: 420px;
+  padding: 24px;
+  box-shadow: 0 -8px 30px rgba(0,0,0,.3);
+  animation: slideUp .3s ease;
+}
+@keyframes slideUp {
+  from {transform: translateY(100px);opacity:0;}
+  to {transform: translateY(0);opacity:1;}
+}
+body.no-scroll {overflow:hidden;}
