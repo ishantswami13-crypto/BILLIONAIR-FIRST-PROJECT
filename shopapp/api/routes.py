@@ -351,7 +351,7 @@ def create_payment_intent():
         provider=provider.name,
         status="pending",
         customer_reference=reference,
-        metadata=None,
+        meta_info=None,
     )
     db.session.add(intent)
     db.session.flush()

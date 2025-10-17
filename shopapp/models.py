@@ -315,7 +315,7 @@ class PaymentIntent(db.Model):
     customer_reference = db.Column(db.String(128))
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    metadata = db.Column(db.Text)
+    meta_info = db.Column('metadata', db.Text)
 
     transactions = db.relationship('PaymentTransaction', backref='intent', lazy=True, cascade='all, delete-orphan')
 
