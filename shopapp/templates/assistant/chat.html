@@ -1,63 +1,107 @@
 {% extends "layout.html" %}
-{% block title %}Assistant{% endblock %}
-{% block head %}
-  {{ super() }}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/muse.css') }}?v={{ app_version or '7.0.0' }}">
-{% endblock %}
+{% block title %}Assistant &middot; ShopApp{% endblock %}
+
 {% block content %}
-<section class="card fadeUp muse-header">
-  <div class="muse-avatar">
-    <img src="{{ url_for('static', filename='svg/muse-avatar.svg') }}" alt="Shop Muse avatar" width="96" height="96" loading="lazy">
-  </div>
+<section class="card" style="display:flex;justify-content:space-between;align-items:end;gap:12px;flex-wrap:wrap;">
   <div>
-    <h1>Shop Muse</h1>
-    <p>Hi, I'm your retail co-pilot. Ask for profit trends, stock alerts, or credit follow-ups.</p>
-    <div class="muse-quick">
-      <button class="btn" onclick="quick('What was our net profit last week?')">Net profit last week</button>
-      <button class="btn" onclick="quick('Which SKUs need reordering?')">Reorder alerts</button>
-      <button class="btn" onclick="quick('List overdue credits by customer')">Overdue credits</button>
-      <button class="btn" onclick="quick('Show daily revenue and expenses for 30 days')">30-day revenue vs expenses</button>
-    </div>
+    <h1><span class="gradient">Assistant.</span> Ask your business, get answers.</h1>
+    <p class="subtle" style="margin-top:6px">Revenue, expenses, inventory, credits - all in plain language.</p>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <button class="btn link" type="button" onclick="quick('What was my revenue this week?')">Weekly revenue</button>
+    <button class="btn link" type="button" onclick="quick('Which items are low in stock?')">Low stock</button>
+    <button class="btn link" type="button" onclick="quick('Who are my top customers this month?')">Top customers</button>
   </div>
 </section>
 
-<section class="card fadeUp muse-chat" style="animation-delay:.08s">
-  <div id="chat" class="muse-thread">
-    {% for m in messages %}
-      <div class="muse-bubble muse-{{ m.role }}">
-        {% if m.role != 'user' %}
-          <div class="muse-pip" aria-hidden="true">
-            <img src="{{ url_for('static', filename='svg/muse-avatar.svg') }}" alt="" width="28" height="28" loading="lazy">
-          </div>
-        {% endif %}
-        <div class="muse-text">
-          <div class="muse-label">{{ 'You' if m.role=='user' else 'Muse' }}</div>
-          <div class="muse-body">{{ m.text }}</div>
+<section class="card" style="padding:0;">
+  <div id="chat" data-session="{{ chat_session.id }}" style="height:480px; overflow:auto; padding:24px; display:flex; flex-direction:column; gap:14px;">
+    {% for message in messages %}
+      <div style="display:flex;gap:12px;align-items:flex-start;">
+        <div style="font-weight:700; color: {{ '#7d00ff' if message.role != 'user' else 'inherit' }};">
+          {{ 'Assistant' if message.role != 'user' else 'You' }}
         </div>
+        <div>{{ message.content }}</div>
       </div>
     {% else %}
-      <div class="muse-empty">
-        <p>Try asking <strong>"Project revenue this month vs last month."</strong></p>
-        <p class="muse-hint">Muse answers using your last 90 days of sales, expenses, inventory, and credit data.</p>
-      </div>
+      <div class="subtle">No messages yet. Ask anything about your shop.</div>
     {% endfor %}
   </div>
-  <form method="post" class="muse-input">
-    <input type="text" name="q" placeholder="Ask anything..." autocomplete="off" required>
-    <button class="btn primary">Send</button>
+
+  <form id="assistant-form" style="border-top:1px solid var(--line); padding:16px; display:flex; gap:10px;">
+    <input class="input" name="message" placeholder="Type a question... (e.g., 'Compare last week vs this week revenue')" autocomplete="off" required />
+    <button class="btn primary" type="submit">Send</button>
   </form>
 </section>
-
 {% endblock %}
+
 {% block scripts %}
 <script>
-  const thread = document.getElementById('chat');
-  if(thread){ thread.scrollTop = thread.scrollHeight; }
-  function quick(t){
-    const inp = document.querySelector('.muse-input input[name="q"]');
-    if(!inp) return;
-    inp.value = t;
-    inp.form.submit();
+  const pane = document.getElementById('chat');
+  const form = document.getElementById('assistant-form');
+  const apiUrl = "{{ url_for('assistant.api_message') }}";
+  const sessionId = pane ? pane.dataset.session : null;
+
+  function appendMessage(role, content) {
+    if (!pane) return;
+    const row = document.createElement('div');
+    row.style.display = 'flex';
+    row.style.gap = '12px';
+    row.style.alignItems = 'flex-start';
+
+    const label = document.createElement('div');
+    label.style.fontWeight = '700';
+    if (role !== 'user') {
+      label.style.color = '#7d00ff';
+      label.textContent = 'Assistant';
+    } else {
+      label.textContent = 'You';
+    }
+
+    const body = document.createElement('div');
+    body.textContent = content;
+
+    row.appendChild(label);
+    row.appendChild(body);
+    pane.appendChild(row);
+    pane.scrollTop = pane.scrollHeight;
   }
+
+  async function sendMessage(text) {
+    if (!sessionId || !text.trim()) return;
+    appendMessage('user', text);
+    form.reset();
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ session_id: sessionId, message: text })
+      });
+      if (!response.ok) throw new Error('Request failed');
+      const payload = await response.json();
+      const messages = payload.messages || [];
+      const assistant = messages.find((m) => m.role === 'assistant');
+      if (assistant) appendMessage('assistant', assistant.content);
+    } catch (error) {
+      appendMessage('assistant', 'Sorry, something went wrong sending that message.');
+    }
+  }
+
+  if (form) {
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const value = form.querySelector('[name="message"]').value;
+      sendMessage(value);
+    });
+  }
+
+  function quick(text) {
+    const input = form ? form.querySelector('[name="message"]') : null;
+    if (!input) return;
+    input.value = text;
+    sendMessage(text);
+  }
+
+  if (pane) pane.scrollTop = pane.scrollHeight;
 </script>
 {% endblock %}
