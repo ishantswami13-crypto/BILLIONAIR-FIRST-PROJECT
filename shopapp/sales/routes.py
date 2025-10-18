@@ -134,10 +134,30 @@ def index():
     if today_rev > 0:
         streak_text = "You’re on a profit streak 🔥"
 
+    recent_sales = (
+        Sale.query.options(joinedload(Sale.customer))
+        .order_by(Sale.date.desc())
+        .limit(10)
+        .all()
+    )
+    recent_sales_rows = [
+        (
+            sale.id,
+            sale.date.strftime('%Y-%m-%d') if sale.date else '',
+            sale.item,
+            int(sale.quantity or 0),
+            float(sale.net_total or sale.total or 0),
+            sale.customer.name if sale.customer else 'Walk-in',
+        )
+        for sale in recent_sales
+    ]
+
+
     return render_template(
         'index.html',
         items=items,
         customers=customers,
+        sales=recent_sales_rows,
         today_count=today_count,
         today_rev=today_rev,
         unpaid_credits=unpaid_credits,
@@ -417,6 +437,50 @@ def export_csv():
     response.headers['Content-Type'] = 'text/csv'
     response.headers['Content-Disposition'] = f"attachment; filename={'_'.join(filename_parts)}.csv"
     return response
+
+
+@sales_bp.route('/restock', methods=['POST'])
+@login_required
+def restock():
+    item_id_raw = request.form.get('item_id', '').strip()
+    quantity_raw = request.form.get('quantity', '').strip()
+
+    try:
+        item_id = int(item_id_raw)
+    except (TypeError, ValueError):
+        flash('Select an item to restock.', 'error')
+        return redirect(url_for('sales.index'))
+
+    try:
+        quantity = int(quantity_raw)
+    except (TypeError, ValueError):
+        flash('Enter a valid quantity.', 'error')
+        return redirect(url_for('sales.index'))
+
+    if quantity <= 0:
+        flash('Quantity must be greater than zero.', 'error')
+        return redirect(url_for('sales.index'))
+
+    item = Item.query.get(item_id)
+    if not item:
+        flash('Item not found.', 'error')
+        return redirect(url_for('sales.index'))
+
+    before_stock = item.current_stock or 0
+    item.current_stock = before_stock + quantity
+    item.updated_at = datetime.utcnow()
+
+    log_event(
+        action='restock',
+        resource_type='item',
+        resource_id=item.id,
+        before={'current_stock': before_stock},
+        after={'current_stock': item.current_stock},
+    )
+
+    db.session.commit()
+    flash(f'Added {quantity} to {item.name} stock.', 'success')
+    return redirect(url_for('sales.index', restocked=1))
 
 
 @sales_bp.route('/sell', methods=['POST'])

@@ -61,6 +61,24 @@
     </form>
   </div>
 
+  <!-- Add stock -->
+  <div class="card fade-in">
+    <h2>Add Stock</h2>
+    <form method="POST" action="{{ url_for('sales.restock') }}" style="display:grid;gap:12px;margin-top:8px">
+      <div>
+        <label>Item</label>
+        <select class="select" name="item_id" required>
+          {% for i in items %}<option value="{{ i[0] }}">{{ i[1] }} ({{ i[3] }} in stock)</option>{% endfor %}
+        </select>
+      </div>
+      <div>
+        <label>Quantity to add</label>
+        <input class="input" type="number" name="quantity" min="1" value="1" required>
+      </div>
+      <button class="btn ghost">Add stock</button>
+    </form>
+  </div>
+
   <!-- Recent sales -->
   <div class="card fade-in" style="grid-column: span 2;">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
