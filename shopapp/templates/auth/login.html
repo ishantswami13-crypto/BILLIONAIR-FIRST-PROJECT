@@ -1,143 +1,229 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>Login &middot; ShopApp</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/apple.css') }}">
-  <style>
-    .center{
-      min-height:100vh;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:22px;
-      padding:28px;
-    }
-    .panel{max-width:420px;width:100%}
-    .trust-banner{
-      max-width:640px;
-      width:100%;
-      background:rgba(255,255,255,.05);
-      border:1px solid var(--hairline);
-      border-radius:20px;
-      padding:20px 22px;
-      box-shadow:0 18px 40px rgba(0,0,0,.4);
-      backdrop-filter:blur(24px) saturate(180%);
-      display:grid;
-      gap:18px;
-    }
-    .trust-header{display:flex;flex-direction:column;gap:8px}
-    .trust-title{
-      font-size:var(--f-lg);
-      font-weight:700;
-      letter-spacing:-.01em;
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
-    .trust-title::before{
-      content:"\2605";
-      color:var(--accent);
-      font-size:var(--f-lg);
-    }
-    .trust-body{color:var(--ink-dim);font-size:var(--f-sm);line-height:1.5}
-    .trust-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-    .trust-actions .cta{
-      padding:8px 14px;
-      border-radius:12px;
-      background:var(--accent);
-      color:#fff;
-      font-weight:600;
-      text-decoration:none;
-      box-shadow:0 8px 24px rgba(10,132,255,.35);
-      transition:transform .18s var(--ease), box-shadow .18s var(--ease);
-    }
-    .trust-actions .cta:hover{
-      transform:translateY(-2px);
-      box-shadow:0 12px 32px rgba(10,132,255,.45);
-    }
-    .trust-actions .caption{color:var(--ink-soft);font-size:var(--f-xs)}
-    .trust-logos{
-      overflow:hidden;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.08);
-      background:rgba(255,255,255,.03);
-      padding:12px;
-    }
-    .logo-track{
-      display:flex;
-      gap:28px;
-      animation:marquee 18s linear infinite;
-      width:max-content;
-      color:var(--ink-soft);
-      font-weight:600;
-      font-size:var(--f-sm);
-      text-transform:uppercase;
-      letter-spacing:.08em;
-    }
-    .logo-track span{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      white-space:nowrap;
-    }
-    .logo-track span::before{
-      content:"\2022";
-      color:var(--accent-mint);
-    }
-    @keyframes marquee{
-      from{transform:translateX(0)}
-      to{transform:translateX(-50%)}
-    }
-    @media (max-width:600px){
-      .trust-banner{padding:18px}
-      .trust-actions{flex-direction:column;align-items:stretch}
-      .trust-actions .cta{width:100%;text-align:center}
-      .trust-actions .caption{text-align:center}
-    }
-  </style>
-</head>
-<body>
-  <div class="center">
-    <div class="card panel fadeUp" style="animation-delay:.05s">
-      <h1 style="font-size:var(--f-xl);font-weight:700;letter-spacing:-.01em;">Welcome back</h1>
-      <p style="color:var(--ink-60)">Sign in to continue.</p>
-      <form method="post" style="margin-top:12px;display:flex;flex-direction:column;gap:12px;">
-        <div><label>Username</label><input name="username" required></div>
-        <div><label>Password</label><input type="password" name="password" required></div>
-        <button class="btn primary" style="width:100%;">Login</button>
-      </form>
-      <p style="color:var(--ink-60);margin-top:10px;">No account? <a href="/register" class="btn" style="padding:6px 10px;">Create one</a></p>
-    </div>
-    <div class="trust-banner fadeUp" style="animation-delay:.12s">
-      <div class="trust-header">
-        <div class="trust-title">Trusted by 500+ businesses</div>
-        <div class="trust-body">Neighbourhood retailers, franchises, and D2C brands close their books nightly with ShopApp Cloud.</div>
-      </div>
-      <div class="trust-actions">
-        <a class="cta" href="{{ url_for('marketing.landing') }}#case-studies">See case studies</a>
-        <span class="caption">Catch live deployments and growth stories from our customers.</span>
-      </div>
-      <div class="trust-logos" aria-label="Customer logos marquee">
-        <div class="logo-track">
-          <span>Urban Mart</span>
-          <span>Cafe Saffron</span>
-          <span>Glow Cosmetics</span>
-          <span>Sharma Electronics</span>
-          <span>Luxe Linen Co.</span>
-          <span>FreshFarm Organics</span>
-          <span>Urban Mart</span>
-          <span>Cafe Saffron</span>
-          <span>Glow Cosmetics</span>
-          <span>Sharma Electronics</span>
-          <span>Luxe Linen Co.</span>
-          <span>FreshFarm Organics</span>
-        </div>
-      </div>
+{% extends "layout.html" %}
+{% block title %}Sign in &middot; ShopApp{% endblock %}
+
+{% block head %}
+<style>
+  /* Page shell */
+  .auth-hero {
+    padding: clamp(48px, 8vw, 96px) 6% 24px;
+    background: radial-gradient(1200px 600px at 10% -10%, #e8f3ff 0%, transparent 60%),
+                radial-gradient(1200px 600px at 90% -10%, #f8e8ff 0%, transparent 60%),
+                #ffffff;
+  }
+  .auth-hero h1 {
+    font-size: clamp(28px, 5vw, 44px);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin: 0 0 8px;
+  }
+  .auth-hero p {
+    margin: 0; color: #5b6470;
+  }
+
+  /* Partner strip */
+  .partner-wrap {
+    margin-top: 28px;
+    display: grid;
+    gap: 12px;
+  }
+  .partner-label { font-size: 12px; color: #7a8494; letter-spacing: .04em; text-transform: uppercase; }
+  .partner-row {
+    display: flex; gap: 28px; align-items: center; overflow: hidden;
+    mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent);
+  }
+  .partner-row img {
+    height: 24px; opacity: .7; filter: grayscale(1); transition: opacity .2s ease;
+  }
+  .partner-row img:hover { opacity: 1; filter: grayscale(0); }
+
+  /* Case studies at top */
+  .case-grid {
+    margin-top: 24px;
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 14px;
+  }
+  .case {
+    grid-column: span 12;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
+    border: 1px solid #edf1f6;
+    padding: 16px 18px;
+  }
+  @media (min-width: 900px) {
+    .case.sm { grid-column: span 4; }
+    .case.lg { grid-column: span 8; display: grid; grid-template-columns: 1.2fr 1fr; align-items: center; }
+  }
+  .case h3 { margin: 0 0 6px; font-size: 16px; }
+  .case p  { margin: 0; color: #616b77; font-size: 14px; }
+
+  /* Login area */
+  .login-section {
+    padding: 28px 6% 72px;
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 18px;
+  }
+  .login-col   { grid-column: span 12; }
+  .benefits-col{ grid-column: span 12; }
+
+  @media (min-width: 960px) {
+    .login-col   { grid-column: 1 / span 5; }
+    .benefits-col{ grid-column: 7 / span 6; }
+  }
+
+  /* Underline inputs (no boxes) */
+  .u-field { display: grid; gap: 8px; }
+  .u-label { color:#5b6470; font-size: 14px; }
+  .u-input {
+    border: 0; border-bottom: 2px solid #e5eaf0; outline: 0;
+    padding: 8px 0; font-size: 16px; width: 100%; background: transparent;
+    transition: border-color .2s, transform .05s ease;
+  }
+  .u-input:focus { border-color: #0071e3; }
+  .u-input:active { transform: scale(0.998); }
+
+  .btn-primary {
+    appearance: none; border:0; cursor:pointer;
+    padding: 12px 16px; border-radius: 12px; width: 100%;
+    background: linear-gradient(180deg, #0077ee, #0062c7);
+    color:#fff; font-weight:600; letter-spacing:.01em;
+    box-shadow: 0 8px 20px rgba(0,113,227,.25);
+    transition: transform .06s ease, box-shadow .15s ease, filter .2s ease;
+  }
+  .btn-primary:hover { filter: saturate(1.05); box-shadow: 0 10px 24px rgba(0,113,227,.32); }
+  .btn-primary:active { transform: translateY(1px); }
+
+  .login-card {
+    border-radius: 18px;
+    padding: 22px 22px 16px;
+    background: #ffffffc7;
+    backdrop-filter: blur(8px);
+    border: 1px solid #edf1f6;
+  }
+
+  /* Benefits list */
+  .benefit {
+    border-radius: 14px;
+    padding: 16px;
+    border: 1px solid #edf1f6;
+    background: #fff;
+    display: grid; gap: 6px;
+  }
+  .benefit h4 { margin: 0; font-size: 16px; }
+  .benefit p  { margin: 0; color:#616b77; font-size:14px; }
+
+  /* micro motion */
+  .fade-in { animation: fade .5s ease both; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px)} to { opacity:1; transform:none } }
+
+  /* error/info toast */
+  .toast {
+    margin-top: 8px; font-size: 13px; text-align:center;
+    padding: 8px 10px; border-radius: 10px;
+  }
+  .toast.err  { background:#ffe8ea; color:#9a1324; border:1px solid #ffd4d8; }
+  .toast.ok   { background:#e9fbea; color:#135c2b; border:1px solid #d1f4d6; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- HERO + PARTNERS + CASE STUDIES AT TOP -->
+<header class="auth-hero fade-in">
+  <h1>Sign in to <span style="color:#0b2239">ShopApp</span></h1>
+  <p>Fast POS. Smart udhaar. Nightly insights. Built for Indian stores.</p>
+
+  <!-- Partners -->
+  <div class="partner-wrap">
+    <div class="partner-label">Trusted by teams partnered with</div>
+    <div class="partner-row">
+      <!-- replace these src with your actual logos in /static/img/partners/... -->
+      <img src="{{ url_for('static', filename='img/partners/razorpay.svg') }}" alt="Razorpay" />
+      <img src="{{ url_for('static', filename='img/partners/whatsapp.svg') }}" alt="WhatsApp" />
+      <img src="{{ url_for('static', filename='img/partners/gst.svg') }}" alt="GST" />
+      <img src="{{ url_for('static', filename='img/partners/clear.svg') }}" alt="Clear" />
+      <img src="{{ url_for('static', filename='img/partners/amazonpay.svg') }}" alt="Amazon Pay" />
+      <img src="{{ url_for('static', filename='img/partners/phonepe.svg') }}" alt="PhonePe" />
     </div>
   </div>
-</body>
-</html>
+
+  <!-- Case studies -->
+  <div class="case-grid">
+    <div class="case lg">
+      <div>
+        <h3>&ldquo;+18% repeat customers in 60 days.&rdquo;</h3>
+        <p>Ramesh General Store used WhatsApp reminders + loyalty to keep buyers coming back.</p>
+      </div>
+      <div style="text-align:right">
+        <a class="btn-primary" href="/marketing/case-ramesh" style="width:auto;padding:10px 14px;background:#0f172a">Read case study</a>
+      </div>
+    </div>
+    <div class="case sm">
+      <h3>GST in 1 click</h3>
+      <p>Export-ready CSV for your CA. No more Sunday-night panic.</p>
+    </div>
+    <div class="case sm">
+      <h3>Smart Reorder</h3>
+      <p>Predict stock-outs from sales velocity. Order <em>before</em> you run out.</p>
+    </div>
+    <div class="case sm">
+      <h3>Offline-first</h3>
+      <p>Keeps selling during outages. Syncs when back online.</p>
+    </div>
+  </div>
+</header>
+
+<!-- LOGIN + BENEFITS -->
+<main class="login-section">
+  <section class="login-col">
+    <div class="login-card fade-in">
+      <form method="post" style="display:grid;gap:16px">
+        <div class="u-field">
+          <label class="u-label" for="username">Username</label>
+          <input class="u-input" id="username" name="username" type="text" placeholder="e.g. ramesh_shop" required>
+        </div>
+
+        <div class="u-field">
+          <label class="u-label" for="password">Password</label>
+          <input class="u-input" id="password" name="password" type="password" placeholder="********" required>
+        </div>
+
+        <button class="btn-primary" type="submit">Sign in</button>
+
+        {% if error %}
+          <div class="toast err">{{ error }}</div>
+        {% endif %}
+        {% if info %}
+          <div class="toast ok">{{ info }}</div>
+        {% endif %}
+
+        <div style="text-align:center;color:#6b7482;font-size:13px">
+          New here? <a href="/register" style="color:#0071e3;text-decoration:none">Create an account</a> &middot;
+          <a href="/forgot" style="color:#0071e3;text-decoration:none">Forgot password</a>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <aside class="benefits-col fade-in" style="display:grid;gap:12px">
+    <div class="benefit">
+      <h4>Daily cash closure</h4>
+      <p>At 10 PM, compare expected vs counted cash. Catch leakage early.</p>
+    </div>
+    <div class="benefit">
+      <h4>Credit (Udhaar) reminders</h4>
+      <p>Polite Hinglish WhatsApp nudges keep dues flowing&mdash;zero awkwardness.</p>
+    </div>
+    <div class="benefit">
+      <h4>Staff Mode</h4>
+      <p>Cashier-friendly screen with limited access. Owner view stays private.</p>
+    </div>
+    <div class="benefit">
+      <h4>Multi-language</h4>
+      <p>Switch UI to Hindi, Marathi, Tamil, Gujarati&mdash;comfort first.</p>
+    </div>
+  </aside>
+</main>
+
+{% endblock %}
