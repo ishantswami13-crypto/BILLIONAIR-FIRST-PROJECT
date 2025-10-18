@@ -1,70 +1,69 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}ShopApp{% endblock %}</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/apple.css') }}">
   {% block head %}{% endblock %}
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
+<body class="{{ body_class|default('') }}">
   {% if not request.path.startswith('/login') and not request.path.startswith('/register') %}
-  <nav class="nav">
-    <a href="/" class="brand">ShopApp</a>
-    <ul class="navlinks">
-      <li><a href="/">Dashboard</a></li>
-      <li><a href="/sales">Sales</a></li>
-      <li><a href="/inventory/reorder">Inventory</a></li>
-      <li><a href="/credits">Credits</a></li>
-      <li><a href="/analytics">Analytics</a></li>
-      <li><a href="/assistant">Assistant</a></li>
-      <li><a href="/customers">Customers</a></li>
-      <li><a href="{{ url_for('settings.overview') }}">Settings</a></li>
-      <li><a href="/payments/intents/dashboard">Payments</a></li>
-    </ul>
-    <div class="navact">
-      <div class="language-switcher">
-        <label for="languageSelect">Language</label>
-        <select id="languageSelect" class="language-select">
-          <option value="en">English</option>
-          <option value="as">অসমীয়া - Assamese</option>
-          <option value="bn">বাংলা - Bengali</option>
-          <option value="gom">कोंकणी - Konkani</option>
-          <option value="gu">ગુજરાતી - Gujarati</option>
-          <option value="hi">हिन्दी - Hindi</option>
-          <option value="kn">ಕನ್ನಡ - Kannada</option>
-          <option value="mai">मैथिली - Maithili</option>
-          <option value="ml">മലയാളം - Malayalam</option>
-          <option value="mni-Mtei">ꯃꯤꯇꯩ ꯂꯣꯟ - Manipuri</option>
-          <option value="mr">मराठी - Marathi</option>
-          <option value="ne">नेपाली - Nepali</option>
-          <option value="or">ଓଡ଼ିଆ - Odia</option>
-          <option value="pa">ਪੰਜਾਬੀ - Punjabi</option>
-          <option value="sa">संस्कृतम् - Sanskrit</option>
-          <option value="sd">سنڌي - Sindhi</option>
-          <option value="ta">தமிழ் - Tamil</option>
-          <option value="te">తెలుగు - Telugu</option>
-          <option value="ur">اردو - Urdu</option>
-          <option value="brx" disabled>Bodo - coming soon</option>
-          <option value="doi" disabled>Dogri - coming soon</option>
-          <option value="ks" disabled>Kashmiri - coming soon</option>
-          <option value="sat" disabled>Santali - coming soon</option>
-        </select>
+    <nav class="nav">
+      <a href="/" class="brand">ShopApp</a>
+      <ul class="navlinks">
+        <li><a href="/">Dashboard</a></li>
+        <li><a href="/sales">Sales</a></li>
+        <li><a href="/inventory/reorder">Inventory</a></li>
+        <li><a href="/credits">Credits</a></li>
+        <li><a href="/analytics">Analytics</a></li>
+        <li><a href="/assistant">Assistant</a></li>
+        <li><a href="/customers">Customers</a></li>
+        <li><a href="{{ url_for('settings.overview') }}">Settings</a></li>
+        <li><a href="/payments/intents/dashboard">Payments</a></li>
+      </ul>
+      <div class="navact">
+        <div class="language-switcher">
+          <label for="languageSelect">Language</label>
+          <select id="languageSelect" class="language-select">
+            <option value="en">English</option>
+            <option value="as">Assamese</option>
+            <option value="bn">Bengali</option>
+            <option value="gom">Konkani</option>
+            <option value="gu">Gujarati</option>
+            <option value="hi">Hindi</option>
+            <option value="kn">Kannada</option>
+            <option value="mai">Maithili</option>
+            <option value="ml">Malayalam</option>
+            <option value="mni-Mtei">Manipuri</option>
+            <option value="mr">Marathi</option>
+            <option value="ne">Nepali</option>
+            <option value="or">Odia</option>
+            <option value="pa">Punjabi</option>
+            <option value="sa">Sanskrit</option>
+            <option value="sd">Sindhi</option>
+            <option value="ta">Tamil</option>
+            <option value="te">Telugu</option>
+            <option value="ur">Urdu</option>
+            <option value="brx" disabled>Bodo - coming soon</option>
+            <option value="doi" disabled>Dogri - coming soon</option>
+            <option value="ks" disabled>Kashmiri - coming soon</option>
+            <option value="sat" disabled>Santali - coming soon</option>
+          </select>
+        </div>
+        {% if session.get('user') %}
+          <a class="btn ghost" href="/logout">Logout</a>
+        {% else %}
+          <a class="btn" href="/login">Login</a>
+        {% endif %}
       </div>
-      {% if session.get('user') %}
-        <a class="btn ghost" href="/logout">Logout</a>
-      {% else %}
-        <a class="btn" href="/login">Login</a>
-      {% endif %}
-    </div>
-  </nav>
+    </nav>
   {% endif %}
 
-  <main>
-    {% block content %}{% endblock %}
-  </main>
+  {% block content %}{% endblock %}
 
   <div id="google_translate_container" class="visually-hidden" aria-hidden="true"></div>
 
@@ -82,8 +81,8 @@
         select.value = 'en';
       }
 
-      const setCookie = (name, value, days=365) => {
-        const expires = new Date(Date.now() + days*864e5).toUTCString();
+      const setCookie = (name, value, days = 365) => {
+        const expires = new Date(Date.now() + days * 864e5).toUTCString();
         document.cookie = `${name}=${value}; expires=${expires}; path=/`;
         const host = window.location.hostname;
         if (host.includes('.')) {
@@ -91,7 +90,7 @@
           document.cookie = `${name}=${value}; expires=${expires}; path=/; domain=.${domain}`;
         }
       };
-      const clearCookie = name => {
+      const clearCookie = (name) => {
         document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
         const host = window.location.hostname;
         if (host.includes('.')) {
@@ -100,7 +99,7 @@
         }
       };
 
-      select.addEventListener('change', event => {
+      select.addEventListener('change', (event) => {
         const lang = event.target.value;
         if (select.options[select.selectedIndex].disabled) return;
         if (lang === 'en') {
@@ -124,7 +123,7 @@
         includedLanguages: 'en,as,bn,gom,gu,hi,kn,mai,ml,mni-Mtei,mr,ne,or,pa,sa,sd,ta,te,ur'
       }, 'google_translate_container');
 
-      window.applyTranslation = function(lang){
+      window.applyTranslation = function(lang) {
         const combo = document.querySelector('.goog-te-combo');
         if (!combo) {
           window.pendingLanguage = lang;

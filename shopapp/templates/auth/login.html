@@ -1,229 +1,104 @@
 {% extends "layout.html" %}
-{% block title %}Sign in &middot; ShopApp{% endblock %}
+{% block title %}Sign in · ShopApp{% endblock %}
 
 {% block head %}
-<style>
-  /* Page shell */
-  .auth-hero {
-    padding: clamp(48px, 8vw, 96px) 6% 24px;
-    background: radial-gradient(1200px 600px at 10% -10%, #e8f3ff 0%, transparent 60%),
-                radial-gradient(1200px 600px at 90% -10%, #f8e8ff 0%, transparent 60%),
-                #ffffff;
-  }
-  .auth-hero h1 {
-    font-size: clamp(28px, 5vw, 44px);
-    line-height: 1.1;
-    letter-spacing: -0.02em;
-    margin: 0 0 8px;
-  }
-  .auth-hero p {
-    margin: 0; color: #5b6470;
-  }
-
-  /* Partner strip */
-  .partner-wrap {
-    margin-top: 28px;
-    display: grid;
-    gap: 12px;
-  }
-  .partner-label { font-size: 12px; color: #7a8494; letter-spacing: .04em; text-transform: uppercase; }
-  .partner-row {
-    display: flex; gap: 28px; align-items: center; overflow: hidden;
-    mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent);
-  }
-  .partner-row img {
-    height: 24px; opacity: .7; filter: grayscale(1); transition: opacity .2s ease;
-  }
-  .partner-row img:hover { opacity: 1; filter: grayscale(0); }
-
-  /* Case studies at top */
-  .case-grid {
-    margin-top: 24px;
-    display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    gap: 14px;
-  }
-  .case {
-    grid-column: span 12;
-    border-radius: 16px;
-    background: linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
-    border: 1px solid #edf1f6;
-    padding: 16px 18px;
-  }
-  @media (min-width: 900px) {
-    .case.sm { grid-column: span 4; }
-    .case.lg { grid-column: span 8; display: grid; grid-template-columns: 1.2fr 1fr; align-items: center; }
-  }
-  .case h3 { margin: 0 0 6px; font-size: 16px; }
-  .case p  { margin: 0; color: #616b77; font-size: 14px; }
-
-  /* Login area */
-  .login-section {
-    padding: 28px 6% 72px;
-    display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    gap: 18px;
-  }
-  .login-col   { grid-column: span 12; }
-  .benefits-col{ grid-column: span 12; }
-
-  @media (min-width: 960px) {
-    .login-col   { grid-column: 1 / span 5; }
-    .benefits-col{ grid-column: 7 / span 6; }
-  }
-
-  /* Underline inputs (no boxes) */
-  .u-field { display: grid; gap: 8px; }
-  .u-label { color:#5b6470; font-size: 14px; }
-  .u-input {
-    border: 0; border-bottom: 2px solid #e5eaf0; outline: 0;
-    padding: 8px 0; font-size: 16px; width: 100%; background: transparent;
-    transition: border-color .2s, transform .05s ease;
-  }
-  .u-input:focus { border-color: #0071e3; }
-  .u-input:active { transform: scale(0.998); }
-
-  .btn-primary {
-    appearance: none; border:0; cursor:pointer;
-    padding: 12px 16px; border-radius: 12px; width: 100%;
-    background: linear-gradient(180deg, #0077ee, #0062c7);
-    color:#fff; font-weight:600; letter-spacing:.01em;
-    box-shadow: 0 8px 20px rgba(0,113,227,.25);
-    transition: transform .06s ease, box-shadow .15s ease, filter .2s ease;
-  }
-  .btn-primary:hover { filter: saturate(1.05); box-shadow: 0 10px 24px rgba(0,113,227,.32); }
-  .btn-primary:active { transform: translateY(1px); }
-
-  .login-card {
-    border-radius: 18px;
-    padding: 22px 22px 16px;
-    background: #ffffffc7;
-    backdrop-filter: blur(8px);
-    border: 1px solid #edf1f6;
-  }
-
-  /* Benefits list */
-  .benefit {
-    border-radius: 14px;
-    padding: 16px;
-    border: 1px solid #edf1f6;
-    background: #fff;
-    display: grid; gap: 6px;
-  }
-  .benefit h4 { margin: 0; font-size: 16px; }
-  .benefit p  { margin: 0; color:#616b77; font-size:14px; }
-
-  /* micro motion */
-  .fade-in { animation: fade .5s ease both; }
-  @keyframes fade { from { opacity: 0; transform: translateY(4px)} to { opacity:1; transform:none } }
-
-  /* error/info toast */
-  .toast {
-    margin-top: 8px; font-size: 13px; text-align:center;
-    padding: 8px 10px; border-radius: 10px;
-  }
-  .toast.err  { background:#ffe8ea; color:#9a1324; border:1px solid #ffd4d8; }
-  .toast.ok   { background:#e9fbea; color:#135c2b; border:1px solid #d1f4d6; }
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
 {% endblock %}
 
 {% block content %}
-
-<!-- HERO + PARTNERS + CASE STUDIES AT TOP -->
-<header class="auth-hero fade-in">
-  <h1>Sign in to <span style="color:#0b2239">ShopApp</span></h1>
-  <p>Fast POS. Smart udhaar. Nightly insights. Built for Indian stores.</p>
+<header class="auth-hero reveal">
+  <div class="ribbon" aria-hidden="true"></div>
+  <h1>
+    <span class="brand">ShopApp</span>
+    <span class="line">Sign in</span>
+  </h1>
+  <p class="tagline" title="नमस्ते 👋">
+    Fast POS. Smart udhaar. Nightly insights. <span class="hi">Built for Indian stores.</span>
+  </p>
 
   <!-- Partners -->
   <div class="partner-wrap">
     <div class="partner-label">Trusted by teams partnered with</div>
     <div class="partner-row">
-      <!-- replace these src with your actual logos in /static/img/partners/... -->
-      <img src="{{ url_for('static', filename='img/partners/razorpay.svg') }}" alt="Razorpay" />
-      <img src="{{ url_for('static', filename='img/partners/whatsapp.svg') }}" alt="WhatsApp" />
-      <img src="{{ url_for('static', filename='img/partners/gst.svg') }}" alt="GST" />
-      <img src="{{ url_for('static', filename='img/partners/clear.svg') }}" alt="Clear" />
-      <img src="{{ url_for('static', filename='img/partners/amazonpay.svg') }}" alt="Amazon Pay" />
-      <img src="{{ url_for('static', filename='img/partners/phonepe.svg') }}" alt="PhonePe" />
+      <img src="{{ url_for('static', filename='img/partners/razorpay.svg') }}" alt="Razorpay">
+      <img src="{{ url_for('static', filename='img/partners/whatsapp.svg') }}" alt="WhatsApp">
+      <img src="{{ url_for('static', filename='img/partners/gst.svg') }}" alt="GST">
+      <img src="{{ url_for('static', filename='img/partners/clear.svg') }}" alt="Clear">
+      <img src="{{ url_for('static', filename='img/partners/amazonpay.svg') }}" alt="Amazon Pay">
+      <img src="{{ url_for('static', filename='img/partners/phonepe.svg') }}" alt="PhonePe">
     </div>
   </div>
 
   <!-- Case studies -->
   <div class="case-grid">
-    <div class="case lg">
+    <article class="case lg reveal">
       <div>
-        <h3>&ldquo;+18% repeat customers in 60 days.&rdquo;</h3>
+        <h3>“+18% repeat customers in 60 days.”</h3>
         <p>Ramesh General Store used WhatsApp reminders + loyalty to keep buyers coming back.</p>
       </div>
-      <div style="text-align:right">
-        <a class="btn-primary" href="/marketing/case-ramesh" style="width:auto;padding:10px 14px;background:#0f172a">Read case study</a>
+      <div class="case-cta">
+        <a class="btn-secondary" href="/marketing/case-ramesh">Read case study</a>
       </div>
-    </div>
-    <div class="case sm">
-      <h3>GST in 1 click</h3>
-      <p>Export-ready CSV for your CA. No more Sunday-night panic.</p>
-    </div>
-    <div class="case sm">
-      <h3>Smart Reorder</h3>
-      <p>Predict stock-outs from sales velocity. Order <em>before</em> you run out.</p>
-    </div>
-    <div class="case sm">
-      <h3>Offline-first</h3>
-      <p>Keeps selling during outages. Syncs when back online.</p>
-    </div>
+    </article>
+    <article class="case sm reveal"><h4>GST in 1 click</h4><p>Export-ready CSV for your CA. No more panic.</p></article>
+    <article class="case sm reveal"><h4>Smart Reorder</h4><p>Predict stock-outs from sales velocity.</p></article>
+    <article class="case sm reveal"><h4>Offline-first</h4><p>Keeps selling during outages, auto-syncs later.</p></article>
   </div>
 </header>
 
-<!-- LOGIN + BENEFITS -->
-<main class="login-section">
-  <section class="login-col">
-    <div class="login-card fade-in">
-      <form method="post" style="display:grid;gap:16px">
-        <div class="u-field">
-          <label class="u-label" for="username">Username</label>
-          <input class="u-input" id="username" name="username" type="text" placeholder="e.g. ramesh_shop" required>
-        </div>
+<main class="login-wrap">
+  <section class="login-card reveal">
+    <form method="post" class="login-form">
+      <div class="u-field">
+        <label class="u-label" for="username">Username</label>
+        <input class="u-input" id="username" name="username" type="text" placeholder="e.g. ramesh_shop" autocomplete="username" required>
+      </div>
 
-        <div class="u-field">
-          <label class="u-label" for="password">Password</label>
-          <input class="u-input" id="password" name="password" type="password" placeholder="********" required>
-        </div>
+      <div class="u-field">
+        <label class="u-label" for="password">Password</label>
+        <input class="u-input" id="password" name="password" type="password" placeholder="••••••••" autocomplete="current-password" required>
+      </div>
 
-        <button class="btn-primary" type="submit">Sign in</button>
+      <button class="btn-primary" type="submit">Sign in</button>
 
-        {% if error %}
-          <div class="toast err">{{ error }}</div>
-        {% endif %}
-        {% if info %}
-          <div class="toast ok">{{ info }}</div>
-        {% endif %}
+      <button class="btn-ghost" type="button" data-open="#otpModal">Sign in with OTP</button>
 
-        <div style="text-align:center;color:#6b7482;font-size:13px">
-          New here? <a href="/register" style="color:#0071e3;text-decoration:none">Create an account</a> &middot;
-          <a href="/forgot" style="color:#0071e3;text-decoration:none">Forgot password</a>
-        </div>
-      </form>
-    </div>
+      {% if error %}<div class="toast err">{{ error }}</div>{% endif %}
+      {% if info  %}<div class="toast ok">{{ info }}</div>{% endif %}
+
+      <div class="tiny">
+        New here? <a href="/register">Create an account</a> ·
+        <a href="/forgot">Forgot password</a>
+      </div>
+    </form>
   </section>
 
-  <aside class="benefits-col fade-in" style="display:grid;gap:12px">
-    <div class="benefit">
-      <h4>Daily cash closure</h4>
-      <p>At 10 PM, compare expected vs counted cash. Catch leakage early.</p>
-    </div>
-    <div class="benefit">
-      <h4>Credit (Udhaar) reminders</h4>
-      <p>Polite Hinglish WhatsApp nudges keep dues flowing&mdash;zero awkwardness.</p>
-    </div>
-    <div class="benefit">
-      <h4>Staff Mode</h4>
-      <p>Cashier-friendly screen with limited access. Owner view stays private.</p>
-    </div>
-    <div class="benefit">
-      <h4>Multi-language</h4>
-      <p>Switch UI to Hindi, Marathi, Tamil, Gujarati&mdash;comfort first.</p>
-    </div>
+  <aside class="benefits reveal">
+    <div class="benefit"><h4>Daily cash closure</h4><p>Expected vs counted cash at 10 PM. Catch leakage early.</p></div>
+    <div class="benefit"><h4>Udhaar reminders</h4><p>Polite WhatsApp nudges in Hinglish. No awkwardness.</p></div>
+    <div class="benefit"><h4>Staff Mode</h4><p>Cashier-friendly screen with limited access.</p></div>
+    <div class="benefit"><h4>Multi-language</h4><p>Hindi, Marathi, Tamil, Gujarati — comfort first.</p></div>
   </aside>
 </main>
 
+<!-- OTP Modal -->
+<div id="otpModal" class="modal">
+  <div class="modal-card reveal">
+    <h3>Sign in with OTP</h3>
+    <form method="post" action="/login/otp" class="otp-form">
+      <div class="u-field">
+        <label class="u-label" for="otp_phone">Phone number</label>
+        <input class="u-input" id="otp_phone" name="phone" type="tel" placeholder="10-digit mobile" pattern="[0-9]{10}" required>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-primary" type="submit">Send OTP</button>
+        <button class="btn-ghost" type="button" data-close="#otpModal">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/login.js') }}"></script>
 {% endblock %}
