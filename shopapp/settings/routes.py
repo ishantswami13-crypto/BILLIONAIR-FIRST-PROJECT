@@ -75,7 +75,7 @@ def overview():
         {
             "title": "Apps & Webhooks",
             "description": "Connect integrations, manage API keys, and watch webhooks.",
-            "endpoint": "settings.connect",
+            "endpoint": "settings.connect_hub",
         },
     ]
 
