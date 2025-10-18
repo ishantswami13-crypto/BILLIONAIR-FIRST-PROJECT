@@ -50,6 +50,43 @@ def _save_upload(file_storage, slug: str) -> str | None:
     return dest.relative_to(Path(current_app.root_path)).as_posix()
 
 
+@settings_bp.route("/")
+@login_required
+@admin_required
+def overview():
+    profile = ShopProfile.query.get(1)
+    active_plan = None
+    if profile and profile.plan_id:
+        active_plan = Plan.query.get(profile.plan_id)
+    elif profile and profile.plan_slug:
+        active_plan = Plan.query.filter_by(slug=profile.plan_slug).first()
+
+    sections = [
+        {
+            "title": "Branding",
+            "description": "Update store details, theme, and invoice visuals.",
+            "endpoint": "settings.branding",
+        },
+        {
+            "title": "Team & Access",
+            "description": "Invite teammates, assign roles, and manage sessions.",
+            "endpoint": "settings.access_dashboard",
+        },
+        {
+            "title": "Apps & Webhooks",
+            "description": "Connect integrations, manage API keys, and watch webhooks.",
+            "endpoint": "settings.connect",
+        },
+    ]
+
+    return render_template(
+        "settings/index.html",
+        profile=profile,
+        active_plan=active_plan,
+        sections=sections,
+    )
+
+
 @settings_bp.route("/branding", methods=["GET", "POST"])
 @login_required
 @admin_required

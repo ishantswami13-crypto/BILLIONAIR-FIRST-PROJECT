@@ -1,0 +1,68 @@
+{% extends "layout.html" %}
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<section class="hero fade-in" style="padding:70px 10% 30px">
+  <h1>Settings</h1>
+  <p>Configure how your store looks, who can access it, and the integrations you rely on.</p>
+</section>
+
+<div class="grid">
+  <div class="card fade-in" style="grid-column: span 2;">
+    <h2>Store snapshot</h2>
+    <p style="margin-top:6px;">
+      {% set shop_name = (profile.shop_name or profile.name) if profile else None %}
+      {% if shop_name %}
+        {{ shop_name }}
+      {% else %}
+        Complete your profile to personalise invoices and communications.
+      {% endif %}
+    </p>
+    <div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:24px;">
+      <div>
+        <small class="text-muted">Plan</small>
+        <div style="font-size:20px;font-weight:600;">
+          {% if active_plan %}
+            {{ active_plan.name or active_plan.slug|upper }}
+          {% elif profile and profile.trial_active %}
+            Trial ({{ profile.trial_days_remaining }} days left)
+          {% else %}
+            Not set
+          {% endif %}
+        </div>
+      </div>
+      <div>
+        <small class="text-muted">Default currency</small>
+        <div style="font-size:20px;font-weight:600;">
+          {% if profile and profile.currency %}
+            {{ profile.currency }}
+          {% else %}
+            INR
+          {% endif %}
+        </div>
+      </div>
+      <div>
+        <small class="text-muted">Timezone</small>
+        <div style="font-size:20px;font-weight:600;">
+          {% if profile and profile.timezone %}
+            {{ profile.timezone }}
+          {% else %}
+            Asia/Kolkata
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% for section in sections %}
+  <a class="card fade-in" href="{{ url_for(section.endpoint) }}" style="text-decoration:none;color:inherit;display:block;">
+    <h3 style="margin-bottom:8px;">{{ section.title }}</h3>
+    <p style="color:var(--ink-60);">{{ section.description }}</p>
+    <span class="text-muted" style="display:inline-flex;align-items:center;gap:6px;margin-top:16px;">
+      Open {{ section.title }}
+      <span aria-hidden="true">→</span>
+    </span>
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}
