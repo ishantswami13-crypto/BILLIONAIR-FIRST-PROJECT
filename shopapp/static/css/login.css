@@ -14,10 +14,72 @@ a{color:var(--brand);text-decoration:none} a:hover{text-decoration:underline}
 .tagline .hi{transition:color .2s ease}
 .tagline:hover .hi{color:#111}
 
-.ribbon{height:18px;border-radius:999px;margin:18px 0;
-background:linear-gradient(90deg,#ffcd8c,#c6a4ff,#8be4cf,#f5a4d7,#c6a4ff,#ffe09b);
-animation:slide 12s linear infinite}
-@keyframes slide{from{transform:translateX(-10%)}to{transform:translateX(10%)}}
+/* ——— Premium “Apple-like” ribbon: static gradient + breathing bloom ——— */
+.ribbon {
+  position: relative;
+  height: 18px;
+  border-radius: 999px;
+  margin: 18px 0;
+  overflow: hidden;
+  /* static multi-stop gradient (subtle) */
+  background: linear-gradient(90deg,
+    #ffd9a8 0%,
+    #d7c5ff 25%,
+    #b6f0e2 50%,
+    #f5c2de 75%,
+    #ffe3a9 100%
+  );
+  /* tone it down */
+  filter: saturate(0.9) contrast(0.98);
+  transform: translateZ(0);
+}
+
+/* bloom layer: very soft glow that breathes in place */
+.ribbon::before {
+  content: "";
+  position: absolute; inset: -30px -20%;
+  background: radial-gradient(60% 100% at 50% 50%,
+              rgba(255,255,255,.65), rgba(255,255,255,0) 60%);
+  filter: blur(12px);
+  opacity: .35;
+  animation: ribbon-breathe 6.2s ease-in-out infinite;
+}
+
+/* ultra-subtle sheen that crawls slowly (almost imperceptible) */
+.ribbon::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: linear-gradient(120deg,
+              transparent 0%,
+              rgba(255,255,255,.25) 12%,
+              transparent 26%,
+              transparent 74%,
+              rgba(255,255,255,.18) 88%,
+              transparent 100%);
+  mix-blend-mode: soft-light;
+  opacity: .35;
+  animation: sheen-drift 18s linear infinite;
+}
+
+@keyframes ribbon-breathe {
+  0%, 100% { opacity: .28; filter: blur(10px); }
+  50%      { opacity: .40; filter: blur(14px); }
+}
+
+@keyframes sheen-drift {
+  0%   { transform: translateX(-6%); }
+  100% { transform: translateX(6%); }
+}
+
+/* tiny parallax on scroll (set by JS) */
+.ribbon--bloom {
+  will-change: transform, filter;
+}
+
+/* respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .ribbon::before, .ribbon::after { animation: none; opacity: .25; }
+}
 
 /* Partners */
 .partner-wrap{margin-top:22px;display:grid;gap:8px}
