@@ -83,7 +83,7 @@
   <div class="card fade-in" style="grid-column: span 2;">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
       <h2>Recent sales</h2>
-      <a class="btn ghost" href="/sales">Open Sales</a>
+      <a class="btn ghost" href="{{ url_for('sales.index') }}">Open Sales</a>
     </div>
     <div class="table-wrap" style="overflow:auto;margin-top:10px">
       <table class="table">

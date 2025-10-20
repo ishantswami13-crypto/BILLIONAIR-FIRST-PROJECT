@@ -83,6 +83,7 @@
   const tableBody = document.getElementById('intentsTableBody');
   const loadBtn = document.getElementById('loadMoreIntents');
   if (!tableBody || !loadBtn) return;
+  const saleDetailBase = {{ url_for('sales.detail', sale_id=0)|tojson }}.replace(/0$/, '');
   const PAGE_SIZE = 50;
   if (tableBody.querySelectorAll('tr:not([data-empty="true"])').length < PAGE_SIZE) {
     loadBtn.textContent = 'No more results';
@@ -103,7 +104,7 @@
   const renderRow = (intent) => {
     const tr = document.createElement('tr');
     const saleLink = intent.sale_id
-      ? `<a href="/sales/${intent.sale_id}" style="color:#0071e3;text-decoration:none">Sale ${intent.sale_id}</a>`
+      ? `<a href="${saleDetailBase}${intent.sale_id}" style="color:#0071e3;text-decoration:none">Sale ${intent.sale_id}</a>`
       : '—';
     tr.innerHTML = `
       <td>${intent.id}</td>
