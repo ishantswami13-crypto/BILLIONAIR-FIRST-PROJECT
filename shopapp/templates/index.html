@@ -1,121 +1,212 @@
 {% extends "layout.html" %}
-{% block title %}Dashboard · ShopApp{% endblock %}
+{% block title %}Dashboard &middot; ShopApp{% endblock %}
 
 {% block content %}
-<section class="hero fade-in">
-  <h1>Run your store with clarity.</h1>
-  <p>Clean insights, quick actions, and a calm workspace you'll actually enjoy using.</p>
-</section>
+<div class="dashboard-shell">
+  <header class="dash-hero">
+    <div class="dash-hero-copy">
+      <span class="dash-kicker">Today</span>
+      <h1>Make every sale feel effortless.</h1>
+      <p>Track progress, rally your team, and keep shelves stocked without the mental load.</p>
+    </div>
+  </header>
 
-<div class="grid">
-  <!-- KPIs -->
-  <div class="card fade-in">
-    <h2>Revenue today</h2>
-    <div style="font-size:42px;font-weight:800;letter-spacing:-.02em;">₹{{ (today_rev or 0)|int }}</div>
-    <small>Compared to yesterday, keep it steady.</small>
-  </div>
-  <div class="card fade-in">
-    <h2>Sales count</h2>
-    <div style="font-size:42px;font-weight:800;letter-spacing:-.02em;">{{ (today_count or 0)|int }}</div>
-    <small>Fast logging via Quick Sale.</small>
-  </div>
-  <div class="card fade-in">
-    <h2>Unpaid credits</h2>
-    <div style="font-size:42px;font-weight:800;letter-spacing:-.02em;">₹{{ (unpaid_credits or 0)|int }}</div>
-    <small>Send reminders from Credits.</small>
-  </div>
-  <div class="card fade-in">
-    <h2>Low stock</h2>
-    <div style="font-size:42px;font-weight:800;letter-spacing:-.02em;">{{ (low_stock_count or 0)|int }}</div>
-    <small>Reorder before it's gone.</small>
-  </div>
-
-  <!-- Chart -->
-  <div class="card fade-in" style="grid-column: span 2;">
-    <h2>Last 7 days</h2>
-    <canvas id="chart7" height="160"></canvas>
-  </div>
-
-  <!-- Quick sale -->
-  <div class="card fade-in">
-    <h2>Quick Sale</h2>
-    <form method="POST" action="/sell" style="display:grid;gap:12px;margin-top:8px">
-      <div>
-        <label>Item</label>
-        <select class="select" name="item_id" required>
-          {% for i in items %}<option value="{{ i[0] }}">{{ i[1] }} (₹{{ i[2] }}, {{ i[3] }} left)</option>{% endfor %}
-        </select>
-      </div>
-      <div>
-        <label>Customer</label>
-        <select class="select" name="customer_id">
-          <option value="">Walk-in</option>
-          {% for c in customers %}<option value="{{ c[0] }}">{{ c[1] }} ({{ c[2] }})</option>{% endfor %}
-        </select>
-      </div>
-      <div>
-        <label>Quantity</label>
-        <input class="input" type="number" name="quantity" min="1" value="1" required>
-      </div>
-      <button class="btn">Add sale</button>
+  <div class="dash-topbar" data-sticky>
+    <button class="topbar-menu" type="button" data-nav-toggle aria-label="Toggle navigation" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <form class="topbar-search" role="search" action="{{ url_for('sales.history') }}" method="get">
+      <label class="visually-hidden" for="globalSearch">Search</label>
+      <input id="globalSearch" name="q" type="search" placeholder="Search sales, items, customers..." aria-label="Search ShopApp">
     </form>
+    <div class="topbar-actions">
+      <a class="btn ghost" href="{{ url_for('sales.history') }}">All activity</a>
+      <a class="btn" href="{{ url_for('sales.index') }}?celebrate=1">Start quick sale</a>
+    </div>
   </div>
 
-  <!-- Add stock -->
-  <div class="card fade-in">
-    <h2>Add Stock</h2>
-    <form method="POST" action="{{ url_for('sales.restock') }}" style="display:grid;gap:12px;margin-top:8px">
-      <div>
-        <label>Item</label>
-        <select class="select" name="item_id" required>
-          {% for i in items %}<option value="{{ i[0] }}">{{ i[1] }} ({{ i[3] }} in stock)</option>{% endfor %}
-        </select>
-      </div>
-      <div>
-        <label>Quantity to add</label>
-        <input class="input" type="number" name="quantity" min="1" value="1" required>
-      </div>
-      <button class="btn ghost">Add stock</button>
-    </form>
-  </div>
+  <section class="dash-section">
+    <div class="section-heading">
+      <h2>Today at a glance</h2>
+    </div>
+    <div class="metric-grid">
+      <article class="card metric-card">
+        <h3>Revenue today</h3>
+        <div class="metric-value" data-count="{{ (today_rev or 0)|round(0, 'floor')|int }}" data-format="money">&#8377;0</div>
+        <p>Compared to yesterday, keep it steady.</p>
+      </article>
+      <article class="card metric-card">
+        <h3>Sales count</h3>
+        <div class="metric-value" data-count="{{ (today_count or 0)|int }}">0</div>
+        <p>Log each sale in seconds with Quick Sale.</p>
+      </article>
+      <article class="card metric-card">
+        <h3>Unpaid credits</h3>
+        <div class="metric-value" data-count="{{ (unpaid_credits or 0)|round(0, 'floor')|int }}" data-format="money">&#8377;0</div>
+        <p>Send gentle nudges from Credits to close dues.</p>
+      </article>
+      <article class="card metric-card">
+        <h3>Low stock</h3>
+        <div class="metric-value" data-count="{{ (low_stock_count or 0)|int }}">0</div>
+        <p>Reorder before essentials run out.</p>
+      </article>
+    </div>
+  </section>
 
-  <!-- Recent sales -->
-  <div class="card fade-in" style="grid-column: span 2;">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+  <section class="dash-section">
+    <div class="section-heading">
+      <h2>Performance pulse</h2>
+    </div>
+    <div class="card chart-card">
+      <div class="chart-meta">
+        <span class="chart-caption">Revenue vs expenses &middot; last 7 days</span>
+        <div class="micro-spinner" aria-hidden="true"></div>
+      </div>
+      <canvas id="chart7" height="180"></canvas>
+    </div>
+  </section>
+
+  <section class="dash-section">
+    <div class="section-heading">
+      <h2>Quick actions</h2>
+    </div>
+    <div class="action-grid">
+      <article class="card action-card">
+        <h3>Quick sale</h3>
+        <form method="post" action="/sell" class="action-form">
+          <label for="quick_item">Item</label>
+          <select id="quick_item" name="item_id" required>
+            {% for i in items %}
+              <option value="{{ i[0] }}">{{ i[1] }} (&#8377;{{ '%.0f'|format(i[2]) }}, {{ i[3] }} left)</option>
+            {% endfor %}
+          </select>
+
+          <label for="quick_customer">Customer</label>
+          <select id="quick_customer" name="customer_id">
+            <option value="">Walk-in</option>
+            {% for c in customers %}
+              <option value="{{ c[0] }}">{{ c[1] }} ({{ c[2] }})</option>
+            {% endfor %}
+          </select>
+
+          <label for="quick_quantity">Quantity</label>
+          <input id="quick_quantity" type="number" name="quantity" min="1" value="1" required>
+
+          <button class="btn" type="submit">Add sale</button>
+        </form>
+      </article>
+
+      <article class="card action-card">
+        <h3>Add stock</h3>
+        <form method="post" action="{{ url_for('sales.restock') }}" class="action-form">
+          <label for="restock_item">Item</label>
+          <select id="restock_item" name="item_id" required>
+            {% for i in items %}
+              <option value="{{ i[0] }}">{{ i[1] }} ({{ i[3] }} in stock)</option>
+            {% endfor %}
+          </select>
+
+          <label for="restock_quantity">Quantity to add</label>
+          <input id="restock_quantity" type="number" name="quantity" min="1" value="1" required>
+
+          <button class="btn ghost" type="submit">Add stock</button>
+        </form>
+      </article>
+    </div>
+  </section>
+
+  <section class="dash-section">
+    <div class="section-heading">
       <h2>Recent sales</h2>
-      <a class="btn ghost" href="{{ url_for('sales.index') }}">Open Sales</a>
     </div>
-    <div class="table-wrap" style="overflow:auto;margin-top:10px">
-      <table class="table">
-        <thead><tr><th>#</th><th>Date</th><th>Item</th><th>Qty</th><th>Total</th><th>Customer</th></tr></thead>
-        <tbody>
-        {% for s in sales %}
-          <tr><td>{{ s[0] }}</td><td>{{ s[1] }}</td><td>{{ s[2] }}</td><td>{{ s[3] }}</td><td>₹{{ '%.0f'|format(s[4]) }}</td><td>{{ s[5] or 'Walk-in' }}</td></tr>
-        {% else %}
-          <tr><td colspan="6"><small>No sales yet - try Quick Sale.</small></td></tr>
-        {% endfor %}
-        </tbody>
-      </table>
+    <div class="card table-card">
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Date</th>
+              <th>Item</th>
+              <th>Qty</th>
+              <th>Total</th>
+              <th>Customer</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in sales %}
+              <tr>
+                <td>{{ s[0] }}</td>
+                <td>{{ s[1] }}</td>
+                <td>{{ s[2] }}</td>
+                <td>{{ s[3] }}</td>
+                <td>&#8377;{{ '%.0f'|format(s[4]) }}</td>
+                <td>{{ s[5] or 'Walk-in' }}</td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="6"><small>No sales yet &mdash; try Quick Sale to get started.</small></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
-  </div>
+  </section>
 </div>
 {% endblock %}
 
 {% block scripts %}
 {{ super() }}
 <script>
-const d={{ chart_data or [] | tojson }}, ctx=document.getElementById('chart7');
-if(ctx&&d.length){
-  new Chart(ctx,{type:'line',data:{labels:d.map(r=>r.t),datasets:[
-    {label:'Revenue',data:d.map(r=>r.rev),borderColor:'#0071e3',backgroundColor:'rgba(0,113,227,.15)',tension:.35,fill:true},
-    {label:'Expenses',data:d.map(r=>r.exp||0),borderColor:'#8e8e93',backgroundColor:'rgba(142,142,147,.15)',tension:.35,fill:true}
-  ]},options:{plugins:{legend:{labels:{color:'#333'}}},scales:{x:{grid:{color:'rgba(0,0,0,.06)'}},y:{grid:{color:'rgba(0,0,0,.06)'}}}}});
-}
-
-// smooth on-scroll reveal (apple-like)
-const obs = new IntersectionObserver(es=>es.forEach(e=>{
-  if(e.isIntersecting){ e.target.classList.add('fade-in'); obs.unobserve(e.target); }
-}),{threshold:.12});
-document.querySelectorAll('.card, .hero').forEach(el=>obs.observe(el));
+  const chartData = {{ chart_data or [] | tojson }};
+  const chartCanvas = document.getElementById('chart7');
+  if (chartCanvas && chartData.length) {
+    new Chart(chartCanvas, {
+      type: 'line',
+      data: {
+        labels: chartData.map(point => point.t),
+        datasets: [
+          {
+            label: 'Revenue',
+            data: chartData.map(point => point.rev),
+            borderColor: '#0071E3',
+            backgroundColor: 'rgba(0, 113, 227, 0.12)',
+            fill: true,
+            tension: 0.35
+          },
+          {
+            label: 'Expenses',
+            data: chartData.map(point => point.exp || 0),
+            borderColor: '#A5B4FC',
+            backgroundColor: 'rgba(165, 180, 252, 0.12)',
+            fill: true,
+            tension: 0.35
+          }
+        ]
+      },
+      options: {
+        plugins: {
+          legend: {
+            labels: {
+              color: '#1f2937',
+              font: { family: 'Inter, "SF Pro Display", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif' }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(15, 23, 42, 0.05)' },
+            ticks: { color: 'rgba(15, 23, 42, 0.55)' }
+          },
+          y: {
+            grid: { color: 'rgba(15, 23, 42, 0.05)' },
+            ticks: { color: 'rgba(15, 23, 42, 0.55)' }
+          }
+        }
+      }
+    });
+  }
 </script>
 {% endblock %}

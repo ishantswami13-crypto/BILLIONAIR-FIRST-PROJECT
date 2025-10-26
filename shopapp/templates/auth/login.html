@@ -1,94 +1,73 @@
 {% extends "layout.html" %}
-{% block title %}Sign in · ShopApp{% endblock %}
+{% block title %}Welcome back &middot; ShopApp{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
 {% endblock %}
 
 {% block content %}
-<header class="auth-hero reveal">
-  <div class="ribbon ribbon--bloom" aria-hidden="true"></div>
-  <h1>
-    <span class="brand">ShopApp</span>
-    <span class="line">Sign in</span>
-  </h1>
-  <p class="tagline" title="नमस्ते 👋">
-    Fast POS. Smart udhaar. Nightly insights. <span class="hi">Built for Indian stores.</span>
-  </p>
+<div class="login-screen">
+  <div class="ambient ambient--one" aria-hidden="true"></div>
+  <div class="ambient ambient--two" aria-hidden="true"></div>
 
-  <!-- Partners -->
-  <div class="partner-wrap">
-    <div class="partner-label">Trusted by teams partnered with</div>
-    <div class="partner-row">
-      <img src="{{ url_for('static', filename='img/partners/razorpay.svg') }}" alt="Razorpay">
-      <img src="{{ url_for('static', filename='img/partners/whatsapp.svg') }}" alt="WhatsApp">
-      <img src="{{ url_for('static', filename='img/partners/gst.svg') }}" alt="GST">
-      <img src="{{ url_for('static', filename='img/partners/clear.svg') }}" alt="Clear">
-      <img src="{{ url_for('static', filename='img/partners/amazonpay.svg') }}" alt="Amazon Pay">
-      <img src="{{ url_for('static', filename='img/partners/phonepe.svg') }}" alt="PhonePe">
-    </div>
+  <div class="login-grid">
+    <section class="login-intro">
+      <a class="login-logo" href="/">ShopApp</a>
+      <h1>Welcome Back</h1>
+      <p class="login-subtext">Let's make today's sales smarter.</p>
+      <ul class="login-highlights">
+        <li>Instant POS with nightly insights.</li>
+        <li>Whisper-quiet analytics tailored for Indian retail.</li>
+        <li>Staff roles, GST-ready exports, and clever nudges.</li>
+      </ul>
+    </section>
+
+    <section class="login-panel">
+      <form method="post" class="auth-form">
+        <div class="field">
+          <label class="field-label" for="username">Username</label>
+          <input id="username" name="username" type="text" placeholder="e.g. ramesh_shop" autocomplete="username" required>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="password">Password</label>
+          <input id="password" name="password" type="password" placeholder="********" autocomplete="current-password" required>
+        </div>
+
+        <button class="btn-primary" type="submit">Sign in</button>
+
+        <button class="btn-ghost" type="button" data-open="#otpModal">Use OTP instead</button>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="toast err">
+              {% for message in messages %}
+                <span>{{ message }}</span>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+        {% if info %}
+          <div class="toast ok">{{ info }}</div>
+        {% endif %}
+
+        <p class="login-meta">
+          New to ShopApp? <a href="{{ url_for('auth.register') }}">Create an account</a>
+          <span aria-hidden="true">&middot;</span>
+          <a href="{{ url_for('auth.forgot') }}">Forgot password</a>
+        </p>
+      </form>
+    </section>
   </div>
+</div>
 
-  <!-- Case studies -->
-  <div class="case-grid">
-    <article class="case lg reveal">
-      <div>
-        <h3>“+18% repeat customers in 60 days.”</h3>
-        <p>Ramesh General Store used WhatsApp reminders + loyalty to keep buyers coming back.</p>
-      </div>
-      <div class="case-cta">
-        <a class="btn-secondary" href="/marketing/case-ramesh">Read case study</a>
-      </div>
-    </article>
-    <article class="case sm reveal"><h4>GST in 1 click</h4><p>Export-ready CSV for your CA. No more panic.</p></article>
-    <article class="case sm reveal"><h4>Smart Reorder</h4><p>Predict stock-outs from sales velocity.</p></article>
-    <article class="case sm reveal"><h4>Offline-first</h4><p>Keeps selling during outages, auto-syncs later.</p></article>
-  </div>
-</header>
-
-<main class="login-wrap">
-  <section class="login-card reveal">
-    <form method="post" class="login-form">
-      <div class="u-field">
-        <label class="u-label" for="username">Username</label>
-        <input class="u-input" id="username" name="username" type="text" placeholder="e.g. ramesh_shop" autocomplete="username" required>
-      </div>
-
-      <div class="u-field">
-        <label class="u-label" for="password">Password</label>
-        <input class="u-input" id="password" name="password" type="password" placeholder="••••••••" autocomplete="current-password" required>
-      </div>
-
-      <button class="btn-primary" type="submit">Sign in</button>
-
-      <button class="btn-ghost" type="button" data-open="#otpModal">Sign in with OTP</button>
-
-      {% if error %}<div class="toast err">{{ error }}</div>{% endif %}
-      {% if info  %}<div class="toast ok">{{ info }}</div>{% endif %}
-
-      <div class="tiny">
-        New here? <a href="/register">Create an account</a> ·
-        <a href="/forgot">Forgot password</a>
-      </div>
-    </form>
-  </section>
-
-  <aside class="benefits reveal">
-    <div class="benefit"><h4>Daily cash closure</h4><p>Expected vs counted cash at 10 PM. Catch leakage early.</p></div>
-    <div class="benefit"><h4>Udhaar reminders</h4><p>Polite WhatsApp nudges in Hinglish. No awkwardness.</p></div>
-    <div class="benefit"><h4>Staff Mode</h4><p>Cashier-friendly screen with limited access.</p></div>
-    <div class="benefit"><h4>Multi-language</h4><p>Hindi, Marathi, Tamil, Gujarati — comfort first.</p></div>
-  </aside>
-</main>
-
-<!-- OTP Modal -->
-<div id="otpModal" class="modal">
-  <div class="modal-card reveal">
-    <h3>Sign in with OTP</h3>
+<div id="otpModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="otpModalTitle">
+  <div class="modal-card">
+    <h2 id="otpModalTitle">Sign in with OTP</h2>
     <form method="post" action="/login/otp" class="otp-form">
-      <div class="u-field">
-        <label class="u-label" for="otp_phone">Phone number</label>
-        <input class="u-input" id="otp_phone" name="phone" type="tel" placeholder="10-digit mobile" pattern="[0-9]{10}" required>
+      <div class="field">
+        <label class="field-label" for="otp_phone">Phone number</label>
+        <input id="otp_phone" name="phone" type="tel" placeholder="10-digit mobile" pattern="[0-9]{10}" required>
       </div>
       <div class="modal-actions">
         <button class="btn-primary" type="submit">Send OTP</button>
