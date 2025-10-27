@@ -31,6 +31,44 @@ def items():
     rows = Item.query.order_by(Item.name).all()
     return render_template('inventory/items.html', items=rows)
 
+@inventory_bp.route('/inventory/add_stock', methods=['POST'])
+@login_required
+def add_stock():
+    item_id_raw = request.form.get('item_id')
+    quantity_raw = request.form.get('quantity')
+
+    if not item_id_raw:
+        flash('Select an item to update.', 'warning')
+        return redirect(url_for('inventory.items'))
+
+    try:
+        item_id = int(item_id_raw)
+    except (TypeError, ValueError):
+        flash('Select a valid item.', 'warning')
+        return redirect(url_for('inventory.items'))
+
+    try:
+        quantity = int(quantity_raw or '')
+    except (TypeError, ValueError):
+        flash('Provide a valid quantity.', 'warning')
+        return redirect(url_for('inventory.items'))
+
+    if quantity <= 0:
+        flash('Quantity must be greater than zero.', 'warning')
+        return redirect(url_for('inventory.items'))
+
+    item = Item.query.get(item_id)
+    if not item:
+        flash('Item not found.', 'warning')
+        return redirect(url_for('inventory.items'))
+
+    item.current_stock = (item.current_stock or 0) + quantity
+    item.updated_at = datetime.utcnow()
+    db.session.add(item)
+    db.session.commit()
+    flash(f'Added {quantity} units to {item.name}.', 'success')
+    return redirect(url_for('inventory.items'))
+
 
 @inventory_bp.route('/inventory/reorder', methods=['GET', 'POST'])
 @login_required

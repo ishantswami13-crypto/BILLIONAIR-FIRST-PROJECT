@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from datetime import datetime, timedelta
 from typing import Any, Dict, List
@@ -103,7 +103,7 @@ def build_email(summary: Dict[str, Any]) -> str:
                 f"({_format_currency(credit['total'])}) on {credit['date']}"
             )
     else:
-        lines.append("- None 🎉")
+        lines.append("- None.")
 
     return "\n".join(lines)
 
@@ -150,6 +150,17 @@ def send_daily_report() -> None:
     summary = generate_summary()
     body = build_email(summary)
     recipient = current_app.config.get("DAILY_REPORT_EMAIL") or current_app.config.get("DEFAULT_ADMIN_EMAIL")
-    if recipient:
-        send_mail(recipient, f"Daily Report – {summary['date']}", body)
+    if not recipient:
+        current_app.logger.warning(
+            "Daily report email skipped: configure DAILY_REPORT_EMAIL or DEFAULT_ADMIN_EMAIL."
+        )
+        lock_sales_for_today()
+        return
+
+    subject = f"Daily Report – {summary['date']}"
+    sent = send_mail(recipient, subject, body)
+    if sent:
+        current_app.logger.info("Daily report email sent to %s", recipient)
+    else:
+        current_app.logger.error("Daily report email failed to send to %s", recipient)
     lock_sales_for_today()
