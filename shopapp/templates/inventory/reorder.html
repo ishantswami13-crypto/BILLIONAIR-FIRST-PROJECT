@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
-{% block title %}Reorder Planner · ShopApp{% endblock %}
+{% block title %}Reorder Planner &middot; ShopApp{% endblock %}
 
 {% block content %}
 <section class="hero fade-in" style="padding:70px 10% 30px">
@@ -87,4 +87,45 @@
     </div>
   </section>
 {% endif %}
+
+<section class="grid" style="max-width:1120px;margin-top:42px;">
+  <div class="card fade-in" style="grid-column:1/-1">
+    <h2>Quick stock top-up</h2>
+    <p style="margin-top:6px;font-size:14px;color:#555">Update on-hand quantities instantly without waiting for a purchase order.</p>
+    {% if inventory_items %}
+      <div class="table-wrap" style="overflow:auto;margin-top:12px">
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="min-width:180px">Item</th>
+              <th>Current stock</th>
+              <th>Reorder level</th>
+              <th>Add quantity</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in inventory_items %}
+            <tr>
+              <td>{{ item.name }}</td>
+              <td>{{ item.current_stock or 0 }}</td>
+              <td>{{ item.reorder_level or 0 }}</td>
+              <td>
+                <form method="post" action="{{ url_for('inventory.add_stock') }}" style="display:flex;gap:10px;align-items:center;">
+                  <input type="hidden" name="item_id" value="{{ item.id }}">
+                  <input class="input" type="number" name="quantity" min="1" placeholder="Qty" style="max-width:120px">
+                  <button class="btn ghost" type="submit" style="padding:10px 18px;">Add</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div style="margin-top:12px;padding:16px;border-radius:12px;border:1px solid rgba(0,0,0,0.05);background:#f8f9fb;">
+        <small>No items found yet. Add your first product on the <a href="{{ url_for('inventory.items') }}">items page</a>.</small>
+      </div>
+    {% endif %}
+  </div>
+</section>
 {% endblock %}

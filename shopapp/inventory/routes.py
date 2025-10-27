@@ -159,6 +159,7 @@ def reorder():
         low_stock=low_stock,
         suppliers=suppliers,
         recommended_total=recommended_total,
+        inventory_items=items,
     )
 
 
