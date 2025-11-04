@@ -1,212 +1,110 @@
 {% extends "layout.html" %}
-{% block title %}Dashboard &middot; Evara{% endblock %}
+{% block title %}Dashboard · Evara{% endblock %}
 
 {% block content %}
-<div class="dashboard-shell">
-  <header class="dash-hero">
-    <div class="dash-hero-copy">
-      <span class="dash-kicker">Today</span>
-      <h1>Make every sale feel effortless.</h1>
-      <p>Track progress, rally your team, and keep shelves stocked without the mental load.</p>
-    </div>
-  </header>
-
-  <div class="dash-topbar" data-sticky>
-    <button class="topbar-menu" type="button" data-nav-toggle aria-label="Toggle navigation" aria-expanded="false">
-      <span></span>
-      <span></span>
-      <span></span>
-    </button>
-    <form class="topbar-search" role="search" action="{{ url_for('sales.history') }}" method="get">
-      <label class="visually-hidden" for="globalSearch">Search</label>
-      <input id="globalSearch" name="q" type="search" placeholder="Search sales, items, customers..." aria-label="Search Evara">
-    </form>
-    <div class="topbar-actions">
-      <a class="btn ghost" href="{{ url_for('sales.history') }}">All activity</a>
-      <a class="btn" href="{{ url_for('sales.index') }}?celebrate=1">Start quick sale</a>
+<section class="ev-hero">
+  <div class="ev-hero__left">
+    <h1>Run your world with <span class="ink">Evara</span></h1>
+    <p class="subtitle">Sales, credits, inventory & insights — beautifully simple.</p>
+    <div class="cta-row">
+      <a href="{{ url_for('add_item') }}" class="ev-btn ev-btn--primary">Start quick sale</a>
+      <a href="{{ url_for('reports.analytics') }}" class="ev-btn ev-btn--soft">View analytics</a>
     </div>
   </div>
-
-  <section class="dash-section">
-    <div class="section-heading">
-      <h2>Today at a glance</h2>
+  <div class="ev-hero__right">
+    <div class="ev-kpi">
+      <div class="ev-kpi__label">Today’s revenue</div>
+      <div class="ev-kpi__value">₹{{ '%.2f'|format(todays_revenue or 0) }}</div>
+      <div class="ev-kpi__spark" id="spark1"></div>
     </div>
-    <div class="metric-grid">
-      <article class="card metric-card">
-        <h3>Revenue today</h3>
-        <div class="metric-value" data-count="{{ (today_rev or 0)|round(0, 'floor')|int }}" data-format="money">&#8377;0</div>
-        <p>Compared to yesterday, keep it steady.</p>
-      </article>
-      <article class="card metric-card">
-        <h3>Sales count</h3>
-        <div class="metric-value" data-count="{{ (today_count or 0)|int }}">0</div>
-        <p>Log each sale in seconds with Quick Sale.</p>
-      </article>
-      <article class="card metric-card">
-        <h3>Unpaid credits</h3>
-        <div class="metric-value" data-count="{{ (unpaid_credits or 0)|round(0, 'floor')|int }}" data-format="money">&#8377;0</div>
-        <p>Send gentle nudges from Credits to close dues.</p>
-      </article>
-      <article class="card metric-card">
-        <h3>Low stock</h3>
-        <div class="metric-value" data-count="{{ (low_stock_count or 0)|int }}">0</div>
-        <p>Reorder before essentials run out.</p>
-      </article>
+    <div class="ev-kpi">
+      <div class="ev-kpi__label">Outstanding credit</div>
+      <div class="ev-kpi__value">₹{{ '%.2f'|format(outstanding_credit or 0) }}</div>
+      <div class="ev-kpi__spark" id="spark2"></div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section class="dash-section">
-    <div class="section-heading">
-      <h2>Performance pulse</h2>
-    </div>
-    <div class="card chart-card">
-      <div class="chart-meta">
-        <span class="chart-caption">Revenue vs expenses &middot; last 7 days</span>
-        <div class="micro-spinner" aria-hidden="true"></div>
-      </div>
-      <canvas id="chart7" height="180"></canvas>
-    </div>
-  </section>
+<section class="grid-3">
+  <article class="ev-card">
+    <h3 class="ev-card__title">Sales</h3>
+    <p class="muted">Last 7 days</p>
+    <canvas id="salesChart" height="120"></canvas>
+  </article>
+  <article class="ev-card">
+    <h3 class="ev-card__title">Expenses</h3>
+    <p class="muted">This month</p>
+    <canvas id="expenseChart" height="120"></canvas>
+  </article>
+  <article class="ev-card">
+    <h3 class="ev-card__title">Low stock</h3>
+    <ul class="ev-list">
+      {% for name, stock in (low_stock or [])[:6] %}
+        <li><span>{{ name }}</span><span class="badge badge--warn">{{ stock }}</span></li>
+      {% else %}
+        <li class="muted">All good ✅</li>
+      {% endfor %}
+    </ul>
+  </article>
+</section>
 
-  <section class="dash-section">
-    <div class="section-heading">
-      <h2>Quick actions</h2>
-    </div>
-    <div class="action-grid">
-      <article class="card action-card">
-        <h3>Quick sale</h3>
-        <form method="post" action="/sell" class="action-form">
-          <label for="quick_item">Item</label>
-          <select id="quick_item" name="item_id" required>
-            {% for i in items %}
-              <option value="{{ i[0] }}">{{ i[1] }} (&#8377;{{ '%.0f'|format(i[2]) }}, {{ i[3] }} left)</option>
-            {% endfor %}
-          </select>
-
-          <label for="quick_customer">Customer</label>
-          <select id="quick_customer" name="customer_id">
-            <option value="">Walk-in</option>
-            {% for c in customers %}
-              <option value="{{ c[0] }}">{{ c[1] }} ({{ c[2] }})</option>
-            {% endfor %}
-          </select>
-
-          <label for="quick_quantity">Quantity</label>
-          <input id="quick_quantity" type="number" name="quantity" min="1" value="1" required>
-
-          <button class="btn" type="submit">Add sale</button>
-        </form>
-      </article>
-
-      <article class="card action-card">
-        <h3>Add stock</h3>
-        <form method="post" action="{{ url_for('sales.restock') }}" class="action-form">
-          <label for="restock_item">Item</label>
-          <select id="restock_item" name="item_id" required>
-            {% for i in items %}
-              <option value="{{ i[0] }}">{{ i[1] }} ({{ i[3] }} in stock)</option>
-            {% endfor %}
-          </select>
-
-          <label for="restock_quantity">Quantity to add</label>
-          <input id="restock_quantity" type="number" name="quantity" min="1" value="1" required>
-
-          <button class="btn ghost" type="submit">Add stock</button>
-        </form>
-      </article>
-    </div>
-  </section>
-
-  <section class="dash-section">
-    <div class="section-heading">
-      <h2>Recent sales</h2>
-    </div>
-    <div class="card table-card">
-      <div class="table-wrap">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Date</th>
-              <th>Item</th>
-              <th>Qty</th>
-              <th>Total</th>
-              <th>Customer</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for s in sales %}
-              <tr>
-                <td>{{ s[0] }}</td>
-                <td>{{ s[1] }}</td>
-                <td>{{ s[2] }}</td>
-                <td>{{ s[3] }}</td>
-                <td>&#8377;{{ '%.0f'|format(s[4]) }}</td>
-                <td>{{ s[5] or 'Walk-in' }}</td>
-              </tr>
-            {% else %}
-              <tr>
-                <td colspan="6"><small>No sales yet &mdash; try Quick Sale to get started.</small></td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-</div>
+<section class="ev-slab">
+  <h3 class="ev-slab__title">Recent activity</h3>
+  <table class="ev-table">
+    <thead><tr><th>Date</th><th>Item</th><th>Qty</th><th>Total</th></tr></thead>
+    <tbody>
+      {% for s in (sales or [])[:8] %}
+        <tr>
+          <td>{{ s[1] }}</td>
+          <td>{{ s[2] }}</td>
+          <td>{{ s[3] }}</td>
+          <td>₹{{ '%.2f'|format(s[4]) }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="4" class="muted">No sales yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
 {% endblock %}
 
 {% block scripts %}
 {{ super() }}
 <script>
-  const chartData = {{ chart_data or [] | tojson }};
-  const chartCanvas = document.getElementById('chart7');
-  if (chartCanvas && chartData.length) {
-    new Chart(chartCanvas, {
-      type: 'line',
-      data: {
-        labels: chartData.map(point => point.t),
-        datasets: [
-          {
-            label: 'Revenue',
-            data: chartData.map(point => point.rev),
-            borderColor: '#0071E3',
-            backgroundColor: 'rgba(0, 113, 227, 0.12)',
-            fill: true,
-            tension: 0.35
-          },
-          {
-            label: 'Expenses',
-            data: chartData.map(point => point.exp || 0),
-            borderColor: '#A5B4FC',
-            backgroundColor: 'rgba(165, 180, 252, 0.12)',
-            fill: true,
-            tension: 0.35
-          }
-        ]
-      },
-      options: {
-        plugins: {
-          legend: {
-            labels: {
-              color: '#1f2937',
-              font: { family: 'Inter, "SF Pro Display", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif' }
-            }
-          }
-        },
-        scales: {
-          x: {
-            grid: { color: 'rgba(15, 23, 42, 0.05)' },
-            ticks: { color: 'rgba(15, 23, 42, 0.55)' }
-          },
-          y: {
-            grid: { color: 'rgba(15, 23, 42, 0.05)' },
-            ticks: { color: 'rgba(15, 23, 42, 0.55)' }
-          }
-        }
-      }
-    });
+  // Simple sparkline + charts (vanilla) — replace with Chart.js later if you want.
+  const lerp = (a,b,t)=>a+(b-a)*t;
+
+  function spark(id, points=32){
+    const el = document.getElementById(id);
+    if(!el) return;
+    const max = 40; const h = 36; const path = [];
+    for (let i=0;i<points;i++){
+      const y = Math.sin(i*.45)+Math.cos(i*.23)*.6 + Math.random()*.5;
+      path.push(Math.round(lerp(h*1.2, h*.2, (y+2)/4)));
+    }
+    el.innerHTML = `<svg viewBox="0 0 ${points*6} ${h}" preserveAspectRatio="none">
+      <polyline fill="none" stroke="var(--ev-mint-600)" stroke-width="2"
+        points="${path.map((y,i)=>`${i*6},${y}`).join(' ')}" />
+    </svg>`;
   }
+  spark('spark1'); spark('spark2');
+
+  function miniBar(canvasId){
+    const c = document.getElementById(canvasId);
+    if(!c) return;
+    const ctx = c.getContext('2d');
+    const w = c.width = c.offsetWidth; const h = c.height = c.offsetHeight;
+    const bars = 20; const bw = (w/(bars*1.5));
+    ctx.clearRect(0,0,w,h);
+    for(let i=0;i<bars;i++){
+      const val = 0.2 + Math.random()*0.75;
+      const barH = val*h;
+      const x = i*(bw*1.5);
+      const y = h - barH;
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--ev-mint-500');
+      ctx.fillRect(x, y, bw, barH);
+    }
+  }
+  miniBar('salesChart'); miniBar('expenseChart');
 </script>
 {% endblock %}

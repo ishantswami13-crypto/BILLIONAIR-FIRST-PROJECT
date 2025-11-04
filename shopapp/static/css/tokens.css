@@ -1,43 +1,27 @@
-:root {
-  /* Surfaces (dark neutral) */
-  --bg: #0B0C0F;                       /* matte graphite */
-  --layer: rgba(255,255,255,.06);      /* frosted glass */
-  --layer-2: rgba(255,255,255,.08);
-  --line: rgba(255,255,255,.10);       /* hairline */
+:root{
+  --ev-bg: #FAFAFA;
+  --ev-surface: #FFFFFF;
+  --ev-text: #0f172a;
+  --ev-soft: #64748b;
 
-  /* Ink */
-  --ink: #FFFFFF;                      /* primary text */
-  --ink-80: rgba(255,255,255,.80);
-  --ink-60: rgba(255,255,255,.60);
-  --ink-40: rgba(255,255,255,.40);
+  --ev-mint-400:#7FFFD4;
+  --ev-mint-500:#4FFFB0;
+  --ev-mint-600:#1FE595;
 
-  /* Accents (mint + sky) */
-  --accent: #82FFC3;
-  --accent-weak: rgba(130,255,195,.15);
-  --accent-grad: linear-gradient(135deg, #82FFC3 0%, #9EE9FF 100%);
+  --ev-blue-500:#007AFF;
+  --ev-warn:#FFB020;
+  --ev-danger:#FF6B6B;
 
-  /* Status */
-  --ok: #00C48C;
-  --warn: #FFD36E;
-  --err: #FF6B81;
-
-  /* Radii + shadow */
-  --r: 16px;
-  --r-xl: 28px;
-  --shadow-soft: 0 10px 40px rgba(0,0,0,.35);
-  --shadow-glow: 0 0 28px rgba(130,255,195,.35);
-
-  /* Type scale (SF Pro feel via system stack) */
-  --f-xs: 12px;
-  --f-sm: 14px;
-  --f-md: 16px;
-  --f-lg: 20px;
-  --f-xl: 28px;
-  --f-2xl: 40px;
-  --f-3xl: 60px;
-
-  /* Motion */
-  --ease: cubic-bezier(.22,.61,.36,1);
-  --t-quick: .18s var(--ease);
-  --t-slow: .35s var(--ease);
+  --radius-xl: 18px;
+  --radius-lg: 14px;
+  --radius-md: 12px;
+  --shadow-1: 0 8px 30px rgba(0,0,0,.06);
+  --glass: rgba(255,255,255,.65);
+}
+.is-dark{
+  --ev-bg:#0b1220;
+  --ev-surface:#0f1629;
+  --ev-text:#ecf2ff;
+  --ev-soft:#9db2ce;
+  --glass: rgba(15,22,41,.55);
 }

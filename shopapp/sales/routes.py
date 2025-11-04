@@ -89,6 +89,17 @@ def index():
         .filter(Item.current_stock <= func.coalesce(Item.reorder_level, 5))
         .scalar() or 0
     )
+    low_stock_items = (
+        Item.query
+        .filter(Item.current_stock <= func.coalesce(Item.reorder_level, 5))
+        .order_by(Item.current_stock.asc(), Item.name.asc())
+        .limit(12)
+        .all()
+    )
+    low_stock = [
+        (item.name, int(item.current_stock or 0))
+        for item in low_stock_items
+    ]
 
     window_end = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
     window_start = window_end - timedelta(days=6)
@@ -162,6 +173,9 @@ def index():
         today_rev=today_rev,
         unpaid_credits=unpaid_credits,
         low_stock_count=low_stock_count,
+        low_stock=low_stock,
+        todays_revenue=today_rev,
+        outstanding_credit=unpaid_credits,
         tiny_chart=mini,
         chart_data=mini,
         streak_text=streak_text,

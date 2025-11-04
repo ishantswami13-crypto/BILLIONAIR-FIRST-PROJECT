@@ -1,154 +1,63 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>{% block title %}Evara{% endblock %}</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+
+  <!-- Brand CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/apple.css') }}">
+
   {% block head %}{% endblock %}
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="{{ body_class|default('') }}">
-  {% if not request.path.startswith('/login') and not request.path.startswith('/register') %}
-    <nav class="nav is-expanded">
-      <a href="/" class="brand">Evara</a>
-      <ul class="navlinks">
-        <li><a href="/">Dashboard</a></li>
-        <li><a href="{{ url_for('sales.index') }}">Sales</a></li>
-        <li><a href="/inventory/reorder">Inventory</a></li>
-        <li><a href="/credits">Credits</a></li>
-        <li><a href="/analytics">Analytics</a></li>
-        <li><a href="/assistant">Assistant</a></li>
-        <li><a href="/customers">Customers</a></li>
-        <li><a href="{{ url_for('settings.overview') }}">Settings</a></li>
-        <li><a href="/payments/intents/dashboard">Payments</a></li>
-      </ul>
-      <div class="navact">
-        <div class="language-switcher">
-          <label for="languageSelect">Language</label>
-          <select id="languageSelect" class="language-select">
-            <option value="en">English</option>
-            <option value="as">Assamese</option>
-            <option value="bn">Bengali</option>
-            <option value="gom">Konkani</option>
-            <option value="gu">Gujarati</option>
-            <option value="hi">Hindi</option>
-            <option value="kn">Kannada</option>
-            <option value="mai">Maithili</option>
-            <option value="ml">Malayalam</option>
-            <option value="mni-Mtei">Manipuri</option>
-            <option value="mr">Marathi</option>
-            <option value="ne">Nepali</option>
-            <option value="or">Odia</option>
-            <option value="pa">Punjabi</option>
-            <option value="sa">Sanskrit</option>
-            <option value="sd">Sindhi</option>
-            <option value="ta">Tamil</option>
-            <option value="te">Telugu</option>
-            <option value="ur">Urdu</option>
-            <option value="brx" disabled>Bodo - coming soon</option>
-            <option value="doi" disabled>Dogri - coming soon</option>
-            <option value="ks" disabled>Kashmiri - coming soon</option>
-            <option value="sat" disabled>Santali - coming soon</option>
-          </select>
-        </div>
-        {% if session.get('user') %}
-          <a class="btn ghost" href="/logout">Logout</a>
-        {% else %}
-          <a class="btn" href="/login">Login</a>
-        {% endif %}
+<body class="evara {% if dark_mode %}is-dark{% endif %}">
+  <!-- Glass Navigation -->
+  <header class="ev-nav">
+    <div class="ev-nav__inner container">
+      <a class="ev-brand" href="{{ url_for('index') }}">
+        <span class="ev-logo" aria-hidden="true"></span>
+        <span class="ev-wordmark">Evara</span>
+      </a>
+
+      <nav class="ev-links">
+        <a href="{{ url_for('index') }}" class="ev-link {% if request.path=='/' %}is-active{% endif %}">Dashboard</a>
+        <a href="{{ url_for('reports.analytics') }}" class="ev-link">Analytics</a>
+        <a href="{{ url_for('credits') }}" class="ev-link">Credits</a>
+        <a href="{{ url_for('add_item') }}" class="ev-link">Inventory</a>
+        <a href="{{ url_for('settings.branding') }}" class="ev-link">Settings</a>
+      </nav>
+
+      <div class="ev-actions">
+        <button class="ev-btn ev-btn--ghost" id="themeToggle" aria-label="Toggle theme">🌙</button>
+        <a class="ev-btn ev-btn--primary" href="{{ url_for('login') }}">Sign in</a>
       </div>
-    </nav>
-  {% endif %}
+    </div>
+  </header>
 
-  {% block content %}{% endblock %}
+  <!-- Ambient background -->
+  <div class="ev-ambient" aria-hidden="true">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+  </div>
 
-  <div id="google_translate_container" class="visually-hidden" aria-hidden="true"></div>
+  <!-- Page -->
+  <main class="container ev-main">
+    {% block content %}{% endblock %}
+  </main>
 
-  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
-  <script>
-    (function(){
-      const select = document.getElementById('languageSelect');
-      if (!select) return;
+  <footer class="ev-footer container">
+    <span>© {{ copyright_year or 2025 }} Evara • Ever simple. Ever powerful.</span>
+    <span class="muted">v{{ app_version or '1.0.0' }}</span>
+  </footer>
 
-      const cookieMatch = document.cookie.match(/(?:^|;\s*)googtrans=\/[^/]+\/([^;]+)/);
-      const initial = cookieMatch ? cookieMatch[1] : 'en';
-      if ([...select.options].some(opt => opt.value === initial)) {
-        select.value = initial;
-      } else {
-        select.value = 'en';
-      }
-
-      const setCookie = (name, value, days = 365) => {
-        const expires = new Date(Date.now() + days * 864e5).toUTCString();
-        document.cookie = `${name}=${value}; expires=${expires}; path=/`;
-        const host = window.location.hostname;
-        if (host.includes('.')) {
-          const domain = host.replace(/^www\./, '');
-          document.cookie = `${name}=${value}; expires=${expires}; path=/; domain=.${domain}`;
-        }
-      };
-      const clearCookie = (name) => {
-        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
-        const host = window.location.hostname;
-        if (host.includes('.')) {
-          const domain = host.replace(/^www\./, '');
-          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=.${domain}`;
-        }
-      };
-
-      select.addEventListener('change', (event) => {
-        const lang = event.target.value;
-        if (select.options[select.selectedIndex].disabled) return;
-        if (lang === 'en') {
-          clearCookie('googtrans');
-          window.location.reload();
-          return;
-        }
-        const cookieVal = `/en/${lang}`;
-        setCookie('googtrans', cookieVal);
-        if (typeof window.applyTranslation === 'function') {
-          window.applyTranslation(lang);
-        } else {
-          window.pendingLanguage = lang;
-        }
-      });
-    })();
-
-    function googleTranslateElementInit() {
-      window._gt = new google.translate.TranslateElement({
-        pageLanguage: 'en',
-        includedLanguages: 'en,as,bn,gom,gu,hi,kn,mai,ml,mni-Mtei,mr,ne,or,pa,sa,sd,ta,te,ur'
-      }, 'google_translate_container');
-
-      window.applyTranslation = function(lang) {
-        const combo = document.querySelector('.goog-te-combo');
-        if (!combo) {
-          window.pendingLanguage = lang;
-          return;
-        }
-        if (combo.value !== lang) {
-          combo.value = lang;
-        }
-        combo.dispatchEvent(new Event('change'));
-      };
-
-      const cookieMatch = document.cookie.match(/(?:^|;\s*)googtrans=\/[^/]+\/([^;]+)/);
-      const currentLang = cookieMatch ? cookieMatch[1] : null;
-      if (currentLang && currentLang !== 'en') {
-        window.applyTranslation(currentLang);
-      } else if (window.pendingLanguage) {
-        window.applyTranslation(window.pendingLanguage);
-        window.pendingLanguage = null;
-      }
-    }
-  </script>
-  <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+  <script defer src="{{ url_for('static', filename='js/app.js') }}"></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>
