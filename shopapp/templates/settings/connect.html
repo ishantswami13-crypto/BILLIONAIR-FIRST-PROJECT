@@ -14,7 +14,7 @@
       <div class="bo-card__header">
         <div>
           <h2 class="bo-card__title mb-1">Webhook Endpoint</h2>
-          <p class="bo-soft small mb-0">Share this URL with Stripe, Razorpay, or UPI partners. Use the generated secret to sign requests via `X-Shopapp-Secret`.</p>
+          <p class="bo-soft small mb-0">Share this URL with Stripe, Razorpay, or UPI partners. Use the generated secret to sign requests via `X-Evara-Secret`.</p>
         </div>
       </div>
       <div class="bo-code-block">
@@ -134,11 +134,11 @@
   <form method="POST" action="{{ url_for('settings.connect_qr') }}" class="row g-3">
     <div class="col-md-6">
       <label class="form-label small text-uppercase">Payment link</label>
-      <input class="form-control" name="payment_url" placeholder="https://razorpay.me/shopapp" value="{{ qr_preview.payment_url if qr_preview else '' }}">
+      <input class="form-control" name="payment_url" placeholder="https://razorpay.me/evara" value="{{ qr_preview.payment_url if qr_preview else '' }}">
     </div>
     <div class="col-md-6">
       <label class="form-label small text-uppercase">Review / feedback link</label>
-      <input class="form-control" name="review_url" placeholder="https://g.page/r/shopapp/review" value="{{ qr_preview.review_url if qr_preview else '' }}">
+      <input class="form-control" name="review_url" placeholder="https://g.page/r/evara/review" value="{{ qr_preview.review_url if qr_preview else '' }}">
     </div>
     <div class="col-12 d-flex gap-2">
       <button class="btn btn-outline-primary" name="mode" value="preview" type="submit">Preview QR</button>

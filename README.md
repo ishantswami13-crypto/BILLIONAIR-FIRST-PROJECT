@@ -1,4 +1,4 @@
-﻿# ShopApp SaaS
+﻿# Evara SaaS
 
 End-to-end shop management suite (billing, inventory, customers, credits/udhar, reports) built with Flask. The project ships with a Docker/Postgres production stack and a lightweight SQLite-based developer setup.
 
@@ -142,7 +142,7 @@ Feel free to extend the SQLAlchemy models and create Alembic migrations if you n
   - `PAYMENT_LINK` **or** `STRIPE_CHECKOUT_URL` / `RAZORPAY_PAYMENT_LINK`
   - `WAITLIST_URL`
 - To embed a Google Form waitlist, share the public form URL (`.../viewform`) and drop it into `WAITLIST_URL`. The app automatically switches to the embeddable `?embedded=true` version. Notion or other tools still open in a new tab.
-- The landing page now highlights plan tiers (Free / Pro / Enterprise), testimonials, and the ShopApp Cloud trust badge with encryption notice.
+- The landing page now highlights plan tiers (Free / Pro / Enterprise), testimonials, and the Evara Cloud trust badge with encryption notice.
 
 ### Configure Stripe or Razorpay buttons
 

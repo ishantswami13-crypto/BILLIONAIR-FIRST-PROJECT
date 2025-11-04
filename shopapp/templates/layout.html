@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}ShopApp{% endblock %}</title>
+  <title>{% block title %}Evara{% endblock %}</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,7 +16,7 @@
 <body class="{{ body_class|default('') }}">
   {% if not request.path.startswith('/login') and not request.path.startswith('/register') %}
     <nav class="nav is-expanded">
-      <a href="/" class="brand">ShopApp</a>
+      <a href="/" class="brand">Evara</a>
       <ul class="navlinks">
         <li><a href="/">Dashboard</a></li>
         <li><a href="{{ url_for('sales.index') }}">Sales</a></li>

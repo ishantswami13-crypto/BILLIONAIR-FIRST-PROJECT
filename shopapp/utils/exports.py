@@ -219,7 +219,7 @@ def generate_ca_bundle(days: int = 30) -> tuple[bytes, str]:
         archive.writestr("manifest.json", json.dumps(manifest, indent=2).encode("utf-8"))
 
     bundle.seek(0)
-    filename = f"shopapp_ca_bundle_{end:%Y%m%d_%H%M%S}.zip"
+    filename = f"evara_ca_bundle_{end:%Y%m%d_%H%M%S}.zip"
     return bundle.getvalue(), filename
 
 

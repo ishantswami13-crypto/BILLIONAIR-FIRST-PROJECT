@@ -1,4 +1,4 @@
-# ShopApp Pro Roadmap
+# Evara Pro Roadmap
 
 This roadmap breaks the requested upgrades into manageable phases and documents the implementation detail required for each.
 
@@ -117,12 +117,12 @@ This roadmap breaks the requested upgrades into manageable phases and documents 
 - Side navigation and glassmorphism redesign with shimmer loaders, responsive breakpoints, and keyboard/focus states.
 - Animated dashboards using Chart.js/Recharts with skeleton loaders, saved filters, and printable layouts.
 - Subscription plan metadata (Free / Pro / Enterprise) with feature gating, upsell modals, and trial handling.
-- Compliance cues: "Verified by ShopApp Cloud", AES-256 notice, SOC-readiness badge across app and landing experiences.
+- Compliance cues: "Verified by Evara Cloud", AES-256 notice, SOC-readiness badge across app and landing experiences.
 
 ## Phase 6 - Social Proof & Authority
 - Login banner "Trusted by 500+ businesses" with rotating client logos and CTA to case studies.
 - Landing page testimonials and case studies section (cards, embedded videos, CTA buttons).
-- Dashboard footer "Powered by ShopApp Cloud • v1.x" with support, terms, and privacy links.
+- Dashboard footer "Powered by Evara Cloud • v1.x" with support, terms, and privacy links.
 
 ## Phase 7 - Audit & Security Enhancements
 - Comprehensive activity log export and "Data export to CA" bundle with bulk PDF/CSV generation.

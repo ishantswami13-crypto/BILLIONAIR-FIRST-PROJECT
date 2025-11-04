@@ -55,7 +55,7 @@ def landing():
             waitlist_embed = waitlist_url
 
     context = {
-        "product_name": cfg.get("PRODUCT_NAME", "ShopApp SaaS"),
+        "product_name": cfg.get("PRODUCT_NAME", "Evara SaaS"),
         "tagline": cfg.get("PRODUCT_TAGLINE", "Retail OS for high-velocity stores"),
         "demo_gif": cfg.get("DEMO_GIF_URL"),
         "payment_url": payment_url,

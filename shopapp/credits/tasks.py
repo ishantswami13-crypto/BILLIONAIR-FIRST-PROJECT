@@ -45,7 +45,7 @@ def _resolve_phone(credit: Credit) -> Optional[str]:
 
 
 def _message_for_credit(credit: Credit) -> str:
-    shop_name = current_app.config.get('PRODUCT_NAME', 'ShopApp Store')
+    shop_name = current_app.config.get('PRODUCT_NAME', 'Evara Store')
     amount = f'Rs {credit.total:,.2f}'
     date_str = credit.date.strftime('%d %b %Y')
 

@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
-{% block title %}Dashboard &middot; ShopApp{% endblock %}
+{% block title %}Dashboard &middot; Evara{% endblock %}
 
 {% block content %}
 <div class="dashboard-shell">
@@ -19,7 +19,7 @@
     </button>
     <form class="topbar-search" role="search" action="{{ url_for('sales.history') }}" method="get">
       <label class="visually-hidden" for="globalSearch">Search</label>
-      <input id="globalSearch" name="q" type="search" placeholder="Search sales, items, customers..." aria-label="Search ShopApp">
+      <input id="globalSearch" name="q" type="search" placeholder="Search sales, items, customers..." aria-label="Search Evara">
     </form>
     <div class="topbar-actions">
       <a class="btn ghost" href="{{ url_for('sales.history') }}">All activity</a>

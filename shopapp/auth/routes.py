@@ -20,7 +20,7 @@ def _reset_serializer() -> URLSafeTimedSerializer:
     secret = current_app.config.get("SECRET_KEY") or current_app.secret_key
     if not secret:
         raise RuntimeError("SECRET_KEY must be configured to use password reset.")
-    return URLSafeTimedSerializer(secret, salt="shopapp-password-reset")
+    return URLSafeTimedSerializer(secret, salt="evara-password-reset")
 
 
 def make_reset_token(username: str) -> str:

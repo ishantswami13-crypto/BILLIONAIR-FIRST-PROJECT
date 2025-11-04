@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
-{% block title %}Welcome back &middot; ShopApp{% endblock %}
+{% block title %}Welcome back &middot; Evara{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
@@ -12,7 +12,7 @@
 
   <div class="login-grid">
     <section class="login-intro">
-      <a class="login-logo" href="/">ShopApp</a>
+      <a class="login-logo" href="/">Evara</a>
       <h1>Welcome Back</h1>
       <p class="login-subtext">Let's make today's sales smarter.</p>
       <ul class="login-highlights">
@@ -52,7 +52,7 @@
         {% endif %}
 
         <p class="login-meta">
-          New to ShopApp? <a href="{{ url_for('auth.register') }}">Create an account</a>
+          New to Evara? <a href="{{ url_for('auth.register') }}">Create an account</a>
           <span aria-hidden="true">&middot;</span>
           <a href="{{ url_for('auth.forgot') }}">Forgot password</a>
         </p>

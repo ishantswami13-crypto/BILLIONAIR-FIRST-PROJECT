@@ -1,6 +1,6 @@
 # Offline-Ready Architecture Notes
 
-This document captures the planning notes for taking ShopApp into an offline-friendly, hybrid mode. The goal is to let store staff continue operating the POS, inventory, and credits modules on flaky or fully offline connections, then synchronise safely when connectivity returns.
+This document captures the planning notes for taking Evara into an offline-friendly, hybrid mode. The goal is to let store staff continue operating the POS, inventory, and credits modules on flaky or fully offline connections, then synchronise safely when connectivity returns.
 
 ## Objectives
 - Keep the POS flow, expense logging, and credits ledger usable on mobile/tablet devices when the network drops.
@@ -22,7 +22,7 @@ This document captures the planning notes for taking ShopApp into an offline-fri
 - Evict cache entries older than 24 hours on service worker activate to prevent unbounded growth.
 
 ## Background sync queue
-- Store queued mutations in IndexedDB (`shopapp_sync_queue`) with shape:
+- Store queued mutations in IndexedDB (`evara_sync_queue`) with shape:
   ```json
   {
     "id": "uuid",
@@ -34,7 +34,7 @@ This document captures the planning notes for taking ShopApp into an offline-fri
   }
   ```
 - When offline, POST/PUT requests return a synthetic response (`202 Accepted`) so the UI can proceed while logging audit breadcrumbs locally.
-- Register a `sync` event (`navigator.serviceWorker.ready.then(sw => sw.sync.register('shopapp-sync'))`) that flushes the queue:
+- Register a `sync` event (`navigator.serviceWorker.ready.then(sw => sw.sync.register('evara-sync'))`) that flushes the queue:
   1. Replay each request with exponential backoff (retry after 5, 15, 30 minutes).
   2. Persist server response metadata alongside the queued item for reconciliation UI (success vs. failure details).
 - If the SyncManager API is unavailable, fall back to a `setInterval` ping managed from the page once network becomes reachable.

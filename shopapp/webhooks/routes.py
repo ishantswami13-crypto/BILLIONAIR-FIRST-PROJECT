@@ -73,7 +73,7 @@ def ingest_webhook(provider: str, event: str):
         )
         return jsonify({"status": "ignored"}), 404
 
-    secret_header = request.headers.get("X-Shopapp-Secret") or request.headers.get("X-Webhook-Secret")
+    secret_header = request.headers.get("X-Evara-Secret") or request.headers.get("X-Webhook-Secret")
     raw_payload = request.get_json(silent=True)
     if raw_payload is None:
         raw_payload = request.form.to_dict(flat=True) or {}

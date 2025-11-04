@@ -179,7 +179,7 @@ def backup_to_drive(retain: int = 7) -> bool:
     media = MediaFileUpload(str(archive_path), mimetype="application/zip")  # type: ignore[call-arg]
     metadata = {
         "name": archive_path.name,
-        "description": f"ShopApp backup {now_utc:%Y-%m-%d}",
+        "description": f"Evara backup {now_utc:%Y-%m-%d}",
     }
 
     uploaded = False
@@ -202,7 +202,7 @@ def backup_to_drive(retain: int = 7) -> bool:
 
 
 def main(argv: Optional[list[str]] = None) -> int:
-    parser = argparse.ArgumentParser(description="ShopApp Google Drive backup helper.")
+    parser = argparse.ArgumentParser(description="Evara Google Drive backup helper.")
     parser.add_argument("command", nargs="?", choices=["purge"], help="only purge local archives without uploading")
     parser.add_argument("--limit", type=int, default=7, help="number of archives to retain (default: 7)")
     args = parser.parse_args(argv)

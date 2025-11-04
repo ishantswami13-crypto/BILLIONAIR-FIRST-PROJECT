@@ -759,5 +759,5 @@ def download_profile_data():
         json.dumps(payload, default=str, indent=2),
         mimetype="application/json",
     )
-    response.headers["Content-Disposition"] = f"attachment; filename=shopapp-data-{username}.json"
+    response.headers["Content-Disposition"] = f"attachment; filename=evara-data-{username}.json"
     return response

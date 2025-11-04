@@ -32,7 +32,7 @@ class BaseConfig:
     )
     WAITLIST_URL = os.getenv('WAITLIST_URL')
     DEMO_GIF_URL = os.getenv('DEMO_GIF_URL', 'https://media.giphy.com/media/tXL4FHPSnVJ0A/giphy.gif')
-    PRODUCT_NAME = os.getenv('PRODUCT_NAME', 'ShopApp SaaS')
+    PRODUCT_NAME = os.getenv('PRODUCT_NAME', 'Evara SaaS')
     PRODUCT_TAGLINE = os.getenv('PRODUCT_TAGLINE', 'Retail OS for high-velocity stores')
 
     GA_MEASUREMENT_ID = os.getenv('GA_MEASUREMENT_ID')
