@@ -1,83 +1,48 @@
 {% extends "layout.html" %}
-{% block title %}Welcome back &middot; Evara{% endblock %}
-
-{% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
-{% endblock %}
-
+{% block title %}Welcome Back · Evara{% endblock %}
 {% block content %}
-<div class="login-screen">
-  <div class="ambient ambient--one" aria-hidden="true"></div>
-  <div class="ambient ambient--two" aria-hidden="true"></div>
 
-  <div class="login-grid">
-    <section class="login-intro">
-      <a class="login-logo" href="/">Evara</a>
-      <h1>Welcome Back</h1>
-      <p class="login-subtext">Let's make today's sales smarter.</p>
-      <ul class="login-highlights">
-        <li>Instant POS with nightly insights.</li>
-        <li>Whisper-quiet analytics tailored for Indian retail.</li>
-        <li>Staff roles, GST-ready exports, and clever nudges.</li>
-      </ul>
-    </section>
+<section class="login-hero">
+  <div class="login-bg"></div>
+  
+  <div class="login-card">
+    <h1 class="brand">Evara</h1>
+    <h2 class="welcome">Welcome Back</h2>
+    <p class="login-sub">Powerful, simple, and built for modern Indian stores.</p>
 
-    <section class="login-panel">
-      <form method="post" class="auth-form">
-        <div class="field">
-          <label class="field-label" for="username">Username</label>
-          <input id="username" name="username" type="text" placeholder="e.g. ramesh_shop" autocomplete="username" required>
-        </div>
+    <form method="POST" action="{{ url_for('auth.login') }}" class="login-form">
+      <div class="input-group">
+        <label>Username</label>
+        <input type="text" name="username" autocomplete="username" required>
+      </div>
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" name="password" autocomplete="current-password" required>
+      </div>
 
-        <div class="field">
-          <label class="field-label" for="password">Password</label>
-          <input id="password" name="password" type="password" placeholder="********" autocomplete="current-password" required>
-        </div>
-
-        <button class="btn-primary" type="submit">Sign in</button>
-
-        <button class="btn-ghost" type="button" data-open="#otpModal">Use OTP instead</button>
-
-        {% with messages = get_flashed_messages() %}
-          {% if messages %}
-            <div class="toast err">
-              {% for message in messages %}
-                <span>{{ message }}</span>
-              {% endfor %}
-            </div>
-          {% endif %}
-        {% endwith %}
-        {% if info %}
-          <div class="toast ok">{{ info }}</div>
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="login-alert">
+            {% for message in messages %}
+              <span>{{ message }}</span>
+            {% endfor %}
+          </div>
         {% endif %}
+      {% endwith %}
+      {% if info %}
+        <div class="login-alert ok">{{ info }}</div>
+      {% endif %}
 
-        <p class="login-meta">
-          New to Evara? <a href="{{ url_for('auth.register') }}">Create an account</a>
-          <span aria-hidden="true">&middot;</span>
-          <a href="{{ url_for('auth.forgot') }}">Forgot password</a>
-        </p>
-      </form>
-    </section>
-  </div>
-</div>
-
-<div id="otpModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="otpModalTitle">
-  <div class="modal-card">
-    <h2 id="otpModalTitle">Sign in with OTP</h2>
-    <form method="post" action="/login/otp" class="otp-form">
-      <div class="field">
-        <label class="field-label" for="otp_phone">Phone number</label>
-        <input id="otp_phone" name="phone" type="tel" placeholder="10-digit mobile" pattern="[0-9]{10}" required>
-      </div>
-      <div class="modal-actions">
-        <button class="btn-primary" type="submit">Send OTP</button>
-        <button class="btn-ghost" type="button" data-close="#otpModal">Cancel</button>
-      </div>
+      <button class="login-btn" type="submit">Sign In</button>
+      <a class="otp-link" href="{{ url_for('auth.verify_otp_route') }}">Use OTP instead</a>
     </form>
-  </div>
-</div>
-{% endblock %}
 
-{% block scripts %}
-<script src="{{ url_for('static', filename='js/login.js') }}"></script>
+    <p class="login-footer">
+      <a href="{{ url_for('auth.forgot') }}">Forgot password?</a>
+      <span aria-hidden="true">·</span>
+      <a href="{{ url_for('auth.register') }}">Create account</a>
+    </p>
+  </div>
+</section>
+
 {% endblock %}

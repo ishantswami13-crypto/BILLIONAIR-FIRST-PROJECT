@@ -92,3 +92,148 @@ body.ev-body{
   .ev-grid{grid-template-columns: 1fr}
   .ev-links{display:none}
 }
+
+/* Evara Login */
+.login-hero{
+  position:relative;
+  height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:radial-gradient(circle at 20% 20%, #14171f, #090a0f 70%);
+  overflow:hidden;
+  animation:fadeIn 1s ease forwards;
+}
+.login-bg{
+  position:absolute;
+  inset:0;
+  z-index:1;
+}
+.login-bg::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(120deg, #007aff33, #21c99733, #ff77e933);
+  background-size:300% 300%;
+  animation:gradientFlow 10s ease infinite;
+  filter:blur(60px);
+  opacity:.5;
+}
+.login-card{
+  position:relative;
+  z-index:2;
+  backdrop-filter:blur(20px);
+  background:rgba(255, 255, 255, .05);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:20px;
+  padding:50px 60px;
+  text-align:center;
+  box-shadow:0 0 80px rgba(0, 122, 255, .15);
+  max-width:420px;
+  width:100%;
+  color:#fff;
+  transform:translateY(20px);
+  animation:slideUp .8s ease forwards;
+}
+.brand{
+  font-size:34px;
+  background:linear-gradient(90deg, #21c997, #007aff);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  margin:0 0 10px;
+}
+.welcome{
+  margin:0;
+  font-size:26px;
+  font-weight:700;
+}
+.login-sub{
+  color:#9aa3b2;
+  font-size:14px;
+  margin-bottom:24px;
+}
+.login-form{
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+.input-group{
+  text-align:left;
+}
+.input-group label{
+  font-size:13px;
+  color:#ccc;
+  display:block;
+  margin-bottom:6px;
+}
+.input-group input{
+  width:100%;
+  padding:12px 14px;
+  border-radius:12px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.1);
+  color:#fff;
+  outline:none;
+}
+.login-alert{
+  background:rgba(255, 119, 233, .1);
+  border:1px solid rgba(255, 119, 233, .25);
+  color:#ffc4f5;
+  padding:12px;
+  border-radius:12px;
+  font-size:13px;
+  text-align:left;
+}
+.login-alert span{display:block}
+.login-alert.ok{
+  background:rgba(33, 201, 151, .12);
+  border-color:rgba(33, 201, 151, .3);
+  color:#b2f2e4;
+}
+.login-btn{
+  background:linear-gradient(90deg, #007aff, #21c997);
+  border:none;
+  padding:12px;
+  font-weight:700;
+  border-radius:12px;
+  cursor:pointer;
+  color:white;
+  transition:transform .2s ease;
+}
+.login-btn:hover{
+  transform:translateY(-2px);
+}
+.otp-link{
+  display:block;
+  margin-top:14px;
+  font-size:13px;
+  color:#9aa3b2;
+  text-decoration:none;
+}
+.otp-link:hover{color:#fff;}
+.login-footer{
+  margin-top:24px;
+  font-size:13px;
+  color:#9aa3b2;
+  display:flex;
+  gap:6px;
+  justify-content:center;
+}
+.login-footer a{
+  color:#fff;
+  text-decoration:none;
+}
+.login-footer a:hover{text-decoration:underline;}
+@keyframes gradientFlow{
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+@keyframes slideUp{
+  from{opacity:0; transform:translateY(40px);}
+  to{opacity:1; transform:translateY(0);}
+}
+@keyframes fadeIn{
+  from{opacity:0;}
+  to{opacity:1;}
+}
