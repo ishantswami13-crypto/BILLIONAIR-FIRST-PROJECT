@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Evara &mdash; Make every sale feel effortless</title>
+  <meta name="description" content="Evara is the modern retail OS for Indian stores. Bill fast, see insights, export GST, and get daily WhatsApp reports." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" href="favicon.png" />
+  <style>
+    :root{
+      --bg:#0d0d0f;
+      --panel:#121217;
+      --muted:#9da3ae;
+      --text:#eef2f6;
+      --white:#ffffff;
+      --blue:#007aff;
+      --mint:#00ffd1;
+      --outline:#23242a;
+      --card:#111318;
+      --shadow: 0 10px 40px rgba(0,0,0,.35);
+      --brand-grad: linear-gradient(90deg, var(--blue), var(--mint));
+      --brand-grad-45: linear-gradient(45deg, var(--blue), var(--mint));
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+      color:var(--text);
+      background: radial-gradient(1200px 600px at 70% -20%, rgba(0,122,255,.18), transparent 60%),
+                  radial-gradient(900px 500px at 10% -10%, rgba(0,255,209,.12), transparent 50%),
+                  var(--bg);
+      line-height:1.55;
+    }
+
+    .nav{
+      position:sticky; top:0; z-index:20;
+      background:rgba(13,13,15,.72);
+      backdrop-filter:saturate(150%) blur(12px);
+      border-bottom:1px solid #15161b;
+    }
+    .container{max-width:1140px; margin:0 auto; padding:0 20px}
+    .row{display:flex; align-items:center; justify-content:space-between}
+
+    .brand{
+      display:flex; gap:12px; align-items:center; padding:18px 0;
+      font-weight:700; letter-spacing:.2px; font-size:18px;
+    }
+    .dot{
+      width:14px; height:14px; border-radius:999px;
+      background: var(--brand-grad-45);
+      box-shadow:0 0 24px rgba(0,255,209,.35), 0 0 12px rgba(0,122,255,.35) inset;
+    }
+    .navlinks{display:flex; gap:22px}
+    .navlinks a{
+      color:var(--muted); text-decoration:none; font-weight:500; font-size:14px;
+      padding:12px 0; transition:color .2s ease;
+    }
+    .navlinks a:hover{color:var(--text)}
+
+    .cta{display:flex; gap:12px}
+    .btn{
+      appearance:none; border:1px solid #1e2026; background:#14161c;
+      color:var(--text); padding:10px 14px; border-radius:12px; font-weight:600;
+      transition:transform .12s ease, border-color .2s ease, box-shadow .2s ease;
+    }
+    .btn:hover{transform:translateY(-1px); border-color:#2a2c34}
+    .btn.primary{
+      background:var(--brand-grad);
+      border:none; color:#031016; box-shadow: 0 8px 28px rgba(0, 170, 220, .25);
+    }
+    .btn.primary:hover{transform:translateY(-1px); box-shadow: 0 10px 36px rgba(0, 170, 220, .35)}
+
+    .hero{padding:96px 0 40px}
+    .glowline{
+      height:10px; border-radius:999px; background:var(--brand-grad);
+      filter:saturate(160%) blur(.2px);
+      box-shadow:0 0 28px rgba(0,255,209,.35), 0 0 24px rgba(0,122,255,.30);
+      width:min(820px, 90%); margin:0 auto 40px; opacity:.9;
+      position:relative; overflow:hidden;
+    }
+    .glowline:after{
+      content:""; position:absolute; inset:0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.25), transparent);
+      width:40%; transform:skewX(-20deg) translateX(-120%);
+      animation: sweep 3.8s cubic-bezier(.22,.61,.36,1) infinite;
+    }
+    @keyframes sweep{to{transform:skewX(-20deg) translateX(220%)}}
+
+    .hero-grid{display:grid; gap:36px; grid-template-columns: 1.1fr .9fr; align-items:center}
+    .h1{
+      font-size: clamp(36px, 4.5vw, 56px);
+      line-height:1.05; letter-spacing:-.4px; font-weight:800;
+      margin:6px 0 14px;
+    }
+    .sub{color:var(--muted); font-size:18px; max-width:620px; margin-bottom:26px}
+    .pillrow{display:flex; gap:12px; flex-wrap:wrap; margin-top:6px}
+    .pill{
+      border:1px solid #1f222a; color:#b9bfc8; font-size:13px;
+      padding:8px 12px; border-radius:999px; background:#12141a;
+    }
+
+    .card{
+      background: radial-gradient(200px 160px at 85% 0%, rgba(0,122,255,.12), transparent 60%),
+                  radial-gradient(220px 200px at 0% 100%, rgba(0,255,209,.10), transparent 60%),
+                  #0f1116;
+      border:1px solid #1c1e25; border-radius:18px; padding:22px; box-shadow: var(--shadow);
+    }
+    .mock{
+      height:390px; border-radius:18px; border:1px solid #1b1d23; overflow:hidden;
+      background: linear-gradient(180deg, #12141a, #0e1014 60%);
+      position:relative;
+    }
+    .mock:before{
+      content:""; position:absolute; inset:-20% -20% 40% -20%;
+      background: radial-gradient(600px 260px at 50% 0%, rgba(0,255,209,.25), transparent 60%),
+                  radial-gradient(400px 200px at 50% 0%, rgba(0,122,255,.25), transparent 60%);
+      filter: blur(30px); opacity:.55;
+      animation: float 10s ease-in-out infinite alternate;
+    }
+    @keyframes float{to{transform:translateY(10px)}}
+
+    .badge{
+      display:inline-flex; align-items:center; gap:8px;
+      font-size:12px; letter-spacing:.3px; text-transform:uppercase;
+      padding:8px 12px; border-radius:999px; color:#061017;
+      background:var(--brand-grad);
+      width:max-content; margin-bottom:10px;
+    }
+
+    section{padding:72px 0; border-top:1px solid #15161b}
+    .s-head{display:flex; justify-content:space-between; align-items:flex-end; gap:20px; margin-bottom:26px}
+    .s-title{font-size:24px; font-weight:800; letter-spacing:-.2px}
+    .s-muted{color:var(--muted)}
+
+    .grid-3{display:grid; gap:18px; grid-template-columns:repeat(3, 1fr)}
+    .box{
+      background:var(--card); border:1px solid #1c1e25; border-radius:16px; padding:18px;
+      transition: transform .15s ease, border-color .2s ease, box-shadow .2s ease;
+    }
+    .box:hover{transform:translateY(-2px); border-color:#252833; box-shadow:0 14px 32px rgba(0,0,0,.28)}
+    .icon{font-size:18px; padding:8px; border-radius:12px; width:36px; height:36px; display:grid; place-items:center; background:#10131a; border:1px solid #1f222a}
+    .box h4{margin:12px 0 6px}
+    .box p{margin:0; color:var(--muted)}
+
+    .pricing{display:grid; gap:18px; grid-template-columns: repeat(3, 1fr)}
+    .plan{background:var(--card); border:1px solid #1c1e25; border-radius:18px; padding:22px; position:relative}
+    .plan.popular{border-color:#273043; box-shadow:0 0 0 1px rgba(0,122,255,.25) inset}
+    .price{font-size:40px; font-weight:800; margin:4px 0}
+    .small{color:var(--muted); font-size:14px}
+    .features{display:grid; gap:10px; margin:14px 0}
+    .features li{list-style:none; color:#cbd2da}
+    .features li:before{content:"\2714"; color:var(--mint); margin-right:10px}
+
+    .logos{
+      display:grid; grid-auto-flow:column; gap:28px; align-items:center; opacity:.7;
+      overflow:auto; padding-bottom:8px;
+    }
+    .logos img{height:28px; filter:grayscale(100%) contrast(110%); opacity:.9}
+
+    footer{padding:38px 0; border-top:1px solid #15161b; color:var(--muted)}
+    .footgrid{display:grid; gap:18px; grid-template-columns:1.2fr .8fr}
+
+    @media (max-width: 960px){
+      .hero-grid{grid-template-columns:1fr}
+      .grid-3, .pricing{grid-template-columns:1fr}
+      .navlinks{display:none}
+      .cta .btn:nth-child(1){display:none;}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <header class="nav">
+    <div class="container row">
+      <div class="brand">
+        <span class="dot"></span><span>Evara</span>
+      </div>
+      <nav class="navlinks">
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#proof">Customers</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <div class="cta">
+        <a class="btn" href="https://shopapp-vjli.onrender.com/login">Login</a>
+        <a class="btn primary" href="#signup">Get started</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container">
+      <div class="glowline"></div>
+      <div class="hero-grid">
+        <div>
+          <span class="badge">Retail OS for India</span>
+          <h1 class="h1">Make every sale feel effortless.</h1>
+          <p class="sub">Billing, insights, and growth in one clean dashboard. Export GST in a tap and get nightly WhatsApp summaries so your shop runs calm and clear.</p>
+          <div class="pillrow">
+            <a class="btn primary" href="#signup">Start free trial</a>
+            <a class="btn" href="https://shopapp-vjli.onrender.com/app/">Open live demo</a>
+            <span class="pill">GST-ready</span>
+            <span class="pill">Offline-first</span>
+            <span class="pill">WhatsApp reports</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="mock">
+            <img src="hero.png" alt="Evara dashboard preview" style="position:absolute; inset:14px; border-radius:14px; border:1px solid #1a1d24; width:calc(100% - 28px); height:calc(100% - 28px); object-fit:cover; opacity:.96;">
+          </div>
+          <p class="small" style="margin-top:10px">Live data from the Evara app. UI shown: Dashboard, performance pulse, quick actions.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOCIAL PROOF -->
+  <section id="proof">
+    <div class="container">
+      <div class="s-head">
+        <h3 class="s-title">Trusted partners</h3>
+        <span class="s-muted">Payments &bull; Tax &bull; Logistics &bull; Messaging</span>
+      </div>
+      <div class="logos">
+        <img src="logo-razorpay.svg" alt="Razorpay">
+        <img src="logo-gst.svg" alt="GST">
+        <img src="logo-amazonpay.svg" alt="Amazon Pay">
+        <img src="logo-phonepe.svg" alt="PhonePe">
+        <img src="logo-whatsapp.svg" alt="WhatsApp">
+        <img src="logo-clear.svg" alt="Clear">
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features">
+    <div class="container">
+      <div class="s-head">
+        <h3 class="s-title">What you get</h3>
+        <span class="s-muted">Built for speed, peace, and scale.</span>
+      </div>
+
+      <div class="grid-3">
+        <div class="box">
+          <div class="icon">&#128202;</div>
+          <h4>Smart analytics</h4>
+          <p>Revenue, expenses, profit, and trends all in clean visuals without the noise.</p>
+        </div>
+        <div class="box">
+          <div class="icon">&#129534;</div>
+          <h4>GST in one click</h4>
+          <p>Create export-ready CSVs for your CA. No more Sunday-night panic.</p>
+        </div>
+        <div class="box">
+          <div class="icon">&#128172;</div>
+          <h4>WhatsApp reports</h4>
+          <p>Get nightly store summaries and polite credit reminders automatically.</p>
+        </div>
+        <div class="box">
+          <div class="icon">&#9889;</div>
+          <h4>Fast POS</h4>
+          <p>Log sales in seconds with Quick Sale. Works even when the net drops.</p>
+        </div>
+        <div class="box">
+          <div class="icon">&#129309;</div>
+          <h4>Credits &amp; nudges</h4>
+          <p>Track udhaar, send reminders, and close dues on time without stress.</p>
+        </div>
+        <div class="box">
+          <div class="icon">&#128737;</div>
+          <h4>Secure &amp; private</h4>
+          <p>Data encryption, staff roles, and audit logs keep your shop in control.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CASE STUDY SHORT -->
+  <section>
+    <div class="container">
+      <div class="s-head">
+        <h3 class="s-title">+18% repeat customers in 60 days</h3>
+        <a class="btn" href="#stories">Read case study</a>
+      </div>
+      <div class="box" style="display:grid; gap:10px;">
+        <p style="margin:0; color:#dbe2ea">
+          &ldquo;We send gentle WhatsApp reminders to regulars, and Evara shows us who to nudge. Sales feel smooth and predictable now.&rdquo;
+        </p>
+        <p class="small" style="margin:0">&mdash; Ramesh General Store, Ahmedabad</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section id="pricing">
+    <div class="container">
+      <div class="s-head">
+        <h3 class="s-title">Simple pricing</h3>
+        <span class="s-muted">30-day free trial &bull; No card needed</span>
+      </div>
+      <div class="pricing">
+        <div class="plan">
+          <h4>Free</h4>
+          <p class="small">For trying Evara</p>
+          <div class="price">&#8377;0</div>
+          <ul class="features">
+            <li>30 bills per month</li>
+            <li>Dashboard and reports</li>
+            <li>Sample WhatsApp summary</li>
+          </ul>
+          <a class="btn" href="#signup">Get started</a>
+        </div>
+        <div class="plan popular">
+          <h4>Pro</h4>
+          <p class="small">Best for most shops</p>
+          <div class="price">&#8377;199<span class="small">/mo</span></div>
+          <ul class="features">
+            <li>Unlimited billing</li>
+            <li>WhatsApp summaries</li>
+            <li>GST exports</li>
+            <li>Smart credits and nudges</li>
+          </ul>
+          <a class="btn primary" href="#signup">Start free trial</a>
+        </div>
+        <div class="plan">
+          <h4>Elite</h4>
+          <p class="small">Growing businesses</p>
+          <div class="price">&#8377;499<span class="small">/mo</span></div>
+          <ul class="features">
+            <li>Multi-store sync</li>
+            <li>Staff roles and audit</li>
+            <li>Priority support</li>
+            <li>AI predictions</li>
+          </ul>
+          <a class="btn" href="#contact">Talk to us</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq">
+    <div class="container">
+      <div class="s-head">
+        <h3 class="s-title">FAQs</h3>
+        <span class="s-muted">Short, clear, no jargon.</span>
+      </div>
+      <div class="grid-3">
+        <div class="box">
+          <h4>Does it work offline?</h4>
+          <p>Yes. Keep billing during outages and it auto-syncs when back online.</p>
+        </div>
+        <div class="box">
+          <h4>Can I export for GST?</h4>
+          <p>One click CSVs ready for your CA. Monthly and quarterly views.</p>
+        </div>
+        <div class="box">
+          <h4>How do I start?</h4>
+          <p>Click <strong>Start free trial</strong>, create your store, and add your first item.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer id="signup">
+    <div class="container footgrid">
+      <div>
+        <div class="brand" style="padding:0 0 8px 0"><span class="dot"></span><span>Evara</span></div>
+        <p class="s-muted">Evara makes business effortless: POS, insights, GST, and WhatsApp reports built for Indian retail.</p>
+      </div>
+      <div style="display:grid; gap:10px; justify-items:end">
+        <a class="btn primary" href="https://shopapp-vjli.onrender.com/register">Create my store</a>
+        <a class="btn" href="https://shopapp-vjli.onrender.com/login">I already have an account</a>
+      </div>
+    </div>
+    <div class="container" style="margin-top:22px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap">
+      <span>&copy; 2025 Evara Technologies Pvt. Ltd.</span>
+      <span class="s-muted">Privacy &bull; Terms &bull; support@evara.in</span>
+    </div>
+  </footer>
+
+  <script>
+    // Smooth scroll for internal links
+    document.querySelectorAll('a[href^="#"]').forEach(function(anchor){
+      anchor.addEventListener('click', function(e){
+        var id = anchor.getAttribute('href');
+        if(id.length > 1){
+          e.preventDefault();
+          var target = document.querySelector(id);
+          if(target){
+            target.scrollIntoView({behavior:'smooth', block:'start'});
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>
