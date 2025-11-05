@@ -1,60 +1,64 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Evara{% endblock %}</title>
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap">
 
-  <!-- Brand CSS -->
+  <!-- Core styles -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
 
   {% block head %}{% endblock %}
 </head>
-<body class="evara {% if dark_mode %}is-dark{% endif %}">
-  <!-- Glass Navigation -->
+<body class="evara {{ body_class|default('') }}">
+  <!-- Glass Nav -->
   <header class="ev-nav">
-    <div class="ev-nav__inner container">
+    <div class="ev-nav__wrap">
       <a class="ev-brand" href="{{ url_for('index') }}">
         <span class="ev-logo" aria-hidden="true"></span>
         <span class="ev-wordmark">Evara</span>
       </a>
 
       <nav class="ev-links">
-        <a href="{{ url_for('index') }}" class="ev-link {% if request.path=='/' %}is-active{% endif %}">Dashboard</a>
-        <a href="{{ url_for('reports.analytics') }}" class="ev-link">Analytics</a>
-        <a href="{{ url_for('credits') }}" class="ev-link">Credits</a>
-        <a href="{{ url_for('add_item') }}" class="ev-link">Inventory</a>
-        <a href="{{ url_for('settings.branding') }}" class="ev-link">Settings</a>
+        <a href="{{ url_for('index') }}" class="ev-link">Dashboard</a>
+        <a href="/analytics" class="ev-link">Analytics</a>
+        <a href="/inventory" class="ev-link">Inventory</a>
+        <a href="/assistant" class="ev-link">Assistant</a>
+        <a href="/settings" class="ev-link">Settings</a>
       </nav>
 
       <div class="ev-actions">
-        <button class="ev-btn ev-btn--ghost" id="themeToggle" aria-label="Toggle theme">🌙</button>
-        <a class="ev-btn ev-btn--primary" href="{{ url_for('login') }}">Sign in</a>
+        {% if session.get('user') %}
+          <span class="ev-pill">Hi, {{ session['user'] }}</span>
+          <a class="ev-btn ev-btn--primary" href="/logout">Logout</a>
+        {% else %}
+          <a class="ev-btn" href="/login">Login</a>
+          <a class="ev-btn ev-btn--primary" href="/register">Get Started</a>
+        {% endif %}
+        <button class="ev-hamburger" id="navToggle" aria-label="Menu">
+          <span></span><span></span><span></span>
+        </button>
       </div>
     </div>
   </header>
 
-  <!-- Ambient background -->
-  <div class="ev-ambient" aria-hidden="true">
-    <div class="blob b1"></div>
-    <div class="blob b2"></div>
-    <div class="blob b3"></div>
-  </div>
-
   <!-- Page -->
-  <main class="container ev-main">
+  <main class="ev-container">
     {% block content %}{% endblock %}
   </main>
 
-  <footer class="ev-footer container">
-    <span>© {{ copyright_year or 2025 }} Evara • Ever simple. Ever powerful.</span>
-    <span class="muted">v{{ app_version or '1.0.0' }}</span>
+  <!-- Footer -->
+  <footer class="ev-footer">
+    <div class="ev-footer__wrap">
+      <span>© {{ copyright_year|default(2025) }} Evara</span>
+      <span class="ev-soft">Ever simple. Ever powerful.</span>
+    </div>
   </footer>
 
   <script defer src="{{ url_for('static', filename='js/app.js') }}"></script>
