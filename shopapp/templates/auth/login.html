@@ -1,52 +1,45 @@
 {% extends "layout.html" %}
-{% block title %}Welcome Back &middot; Evara{% endblock %}
-
+{% block body_class %}theme-dark page-hero{% endblock %}
 {% block content %}
-<section class="evara-auth">
-  <div class="ea-ambient"></div>
-  <div class="ea-spot"></div>
+<section class="login-wrap">
+  <div class="tag"><span class="dot"></span> Evara</div>
+  <h1 class="login-title">Welcome Back</h1>
+  <p class="login-sub">Powerful, simple, and built for modern Indian stores.</p>
 
-  <div class="ea-shell">
-    <h1 class="ea-brand">Evara</h1>
-    <h2 class="ea-title">Welcome Back</h2>
-    <p class="ea-sub">Powerful, simple, and built for modern Indian stores.</p>
-
-    <form method="POST" action="{{ url_for('auth.login') }}" class="ea-form">
-      <label class="ea-field">
-        <span>Username</span>
-        <input type="text" name="username" required autocomplete="username">
-      </label>
-
-      <label class="ea-field">
-        <span>Password</span>
-        <input type="password" name="password" required autocomplete="current-password">
-      </label>
-
-      {% with messages = get_flashed_messages() %}
-        {% if messages %}
-          <div class="ea-msg">
-            {% for message in messages %}
-              <span>{{ message }}</span>
-            {% endfor %}
-          </div>
-        {% endif %}
-      {% endwith %}
-      {% if error %}
-        <div class="ea-msg">{{ error }}</div>
-      {% endif %}
-      {% if info %}
-        <div class="ea-msg ea-msg--ok">{{ info }}</div>
-      {% endif %}
-
-      <button type="submit" class="ea-btn">Sign In</button>
-      <a class="ea-link" href="{{ url_for('auth.verify_otp_route') }}">Use OTP instead</a>
-    </form>
-
-    <div class="ea-sub-links">
-      <a href="{{ url_for('auth.forgot') }}">Forgot password?</a>
-      <span aria-hidden="true">&middot;</span>
-      <a href="{{ url_for('auth.register') }}">Create account</a>
+  <form method="post" action="{{ url_for('auth.login') }}" class="login-form">
+    <div class="form-line">
+      <label>Username</label>
+      <input name="username" class="input" placeholder="admin" autocomplete="username" required>
     </div>
-  </div>
+    <div class="form-line">
+      <label>Password</label>
+      <input type="password" name="password" class="input" placeholder="••••••••" autocomplete="current-password" required>
+    </div>
+    {% if error %}
+      <div class="tag" style="border-color:rgba(255,45,85,.35); color:#ffb3c2">
+        ⚠️ {{ error }}
+      </div>
+    {% endif %}
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="tag" style="border-color:rgba(255,45,85,.35); color:#ffb3c2">
+          {% for message in messages %}
+            ⚠️ {{ message }}
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="login-actions">
+      <button class="btn btn-primary" type="submit" style="flex:1">Sign in</button>
+      <a class="btn btn-ghost" href="{{ url_for('auth.verify_otp_route') }}">Use OTP</a>
+    </div>
+
+    <div style="display:flex; gap:12px; margin-top:14px; color:var(--muted); font-size:14px;">
+      <a href="{{ url_for('auth.forgot') }}" style="color:var(--text); opacity:.8;">Forgot password?</a>
+      <span class="hr" style="flex:1; align-self:center; opacity:.4;"></span>
+      <a href="{{ url_for('auth.register') }}" style="color:var(--text); opacity:.8;">Create account</a>
+    </div>
+  </form>
 </section>
 {% endblock %}

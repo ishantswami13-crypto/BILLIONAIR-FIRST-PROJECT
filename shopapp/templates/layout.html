@@ -5,71 +5,57 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Evara &mdash; Ever simple. Ever powerful.{% endblock %}</title>
 
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
 
-  <!-- Brand tokens + app styles -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
 
   {% block head %}{% endblock %}
 </head>
-<body class="ev-body">
-  <!-- Glass Nav -->
-  <header class="ev-nav">
-    <div class="ev-nav__inner container">
-      <a href="{{ url_for('sales.index') }}" class="ev-brand">
-        <!-- Minimal "E" monogram as inline SVG -->
-        <svg width="28" height="28" viewBox="0 0 64 64" class="ev-logo" aria-hidden="true">
-          <defs>
-            <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
-              <stop offset="0%" stop-color="var(--mint)"/>
-              <stop offset="100%" stop-color="var(--blue)"/>
-            </linearGradient>
-          </defs>
-          <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#g)" opacity=".16"/>
-          <path d="M18 22h26M18 32h18M18 42h22" stroke="url(#g)" stroke-width="4" stroke-linecap="round"/>
-        </svg>
-        <span class="ev-wordmark">Evara</span>
-      </a>
-
-      <nav class="ev-links">
-        <a href="{{ url_for('sales.index') }}" class="ev-link {% if request.path.startswith('/app') %}active{% endif %}">Dashboard</a>
-        <a href="{{ url_for('reports.analytics_view') }}" class="ev-link {% if request.path.startswith('/analytics') %}active{% endif %}">Analytics</a>
-        <a href="{{ url_for('credits.list_credits') }}" class="ev-link {% if request.path.startswith('/credits') %}active{% endif %}">Credits</a>
-        <a href="{{ url_for('inventory.items') }}" class="ev-link {% if request.path.startswith('/items') %}active{% endif %}">Inventory</a>
-        <a href="{{ url_for('reports.zreport_view') }}" class="ev-link {% if request.path.startswith('/zreport') %}active{% endif %}">Reports</a>
-        <a href="{{ url_for('settings.branding') }}" class="ev-link {% if request.path.startswith('/settings') %}active{% endif %}">Settings</a>
-      </nav>
-
-      <div class="ev-actions">
+<body class="{% block body_class %}{{ body_class|default('') }}{% endblock %}">
+  {% set current_path = request.path %}
+  <header class="navbar">
+    <nav class="container" style="max-width:1180px; margin:0 auto; padding:14px 18px; display:flex; align-items:center; gap:14px;">
+      <div class="brand">Evara</div>
+      <div style="display:flex; gap:6px; margin-left:8px;">
+        <a href="{{ url_for('sales.index') }}" class="{% if current_path in ['/', '/app', '/app/'] %}active{% endif %}">Dashboard</a>
+        <a href="{{ url_for('sales.history') }}" class="{% if current_path.startswith('/app/sales') %}active{% endif %}">Sales</a>
+        <a href="{{ url_for('inventory.items') }}" class="{% if current_path.startswith('/inventory') %}active{% endif %}">Inventory</a>
+        <a href="{{ url_for('credits.list_credits') }}" class="{% if current_path.startswith('/credits') %}active{% endif %}">Credits</a>
+        <a href="{{ url_for('reports.analytics_view') }}" class="{% if current_path.startswith('/analytics') %}active{% endif %}">Analytics</a>
+        <a href="{{ url_for('reports.zreport_view') }}" class="{% if current_path.startswith('/reports') or current_path.startswith('/zreport') %}active{% endif %}">Reports</a>
+      </div>
+      <div style="margin-left:auto; display:flex; gap:10px;">
         {% if session.get('user') %}
-          <span class="ev-pill">Hi, {{ session['user'] }}</span>
-          <a class="ev-btn ev-btn--ghost" href="{{ url_for('auth.logout') }}">Logout</a>
+          <a class="btn btn-ghost" href="{{ url_for('settings.index') }}">Settings</a>
+          <a class="btn btn-primary" href="{{ url_for('auth.logout') }}">Logout</a>
         {% else %}
-          <a class="ev-btn ev-btn--ghost" href="{{ url_for('auth.login') }}">Login</a>
-          <a class="ev-btn" href="{{ url_for('auth.register') }}">Get started</a>
+          <a class="btn btn-ghost" href="{{ url_for('auth.login') }}">Login</a>
+          <a class="btn btn-primary" href="{{ url_for('auth.register') }}">Get started</a>
         {% endif %}
       </div>
-    </div>
+    </nav>
   </header>
 
-  <!-- Page content -->
-  <main class="ev-main container">
+  <main class="container" style="max-width:1180px; margin: 28px auto; padding: 0 18px;">
     {% block content %}{% endblock %}
   </main>
 
-  <!-- Footer -->
-  <footer class="ev-footer container">
-    <div class="ev-foot__inner">
-      <span class="muted">&copy; {{ config.get('COPYRIGHT_YEAR', 2025) }} Evara</span>
-      <span class="muted">v{{ config.get('APP_VERSION','1.0') }}</span>
-    </div>
+  <footer class="container" style="max-width:1180px; margin: 40px auto; padding: 0 18px 40px; color:var(--muted); font-size:13px; display:flex; justify-content:space-between;">
+    <span>&copy; {{ config.get('COPYRIGHT_YEAR', 2025) }} Evara</span>
+    <span>v{{ config.get('APP_VERSION','1.0') }}</span>
   </footer>
 
   <script defer src="{{ url_for('static', filename='js/app.js') }}"></script>
   {% block scripts %}{% endblock %}
+  <script>
+    (function(){
+      const p = new URLSearchParams(location.search).get('theme');
+      if (p === 'light') document.body.classList.add('theme-light');
+      else if (p === 'dark') document.body.classList.add('theme-dark');
+    })();
+  </script>
 </body>
 </html>

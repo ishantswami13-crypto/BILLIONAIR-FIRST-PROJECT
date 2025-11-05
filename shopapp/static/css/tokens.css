@@ -1,25 +1,48 @@
 :root{
-  --bg: #fafafa;
-  --ink: #111317;
-  --muted: #6b7280;
-  --card: #ffffff;
-  --line: rgba(0,0,0,.08);
+  /* Neutrals (Apple-ish contrast) */
+  --bg: #0b0f14;
+  --bg-elev: #11161d;
+  --surface: #0f141a;
+  --text: #e8eef6;
+  --muted: #98a2ad;
+  --hairline: rgba(255,255,255,.08);
 
-  --mint: #21c997;     /* Evara Mint (primary) */
-  --blue: #007aff;     /* Apple Blue (secondary) */
-  --charcoal:#1C1C1E;
+  /* Accents */
+  --accent: #0A84FF;
+  --accent-2: #34C759;
+  --accent-3: #FF2D55;
+  --accent-4: #FFD60A;
 
-  --rad: 16px;
-  --shadow: 0 12px 28px rgba(0,0,0,.08);
+  /* Radiance for gradients */
+  --glow-1: 0,132,255;
+  --glow-2: 52,199,89;
+  --glow-3: 255,45,85;
+
+  /* Typography */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+  --h1: 48px;
+  --h2: 34px;
+  --h3: 24px;
+  --body: 16px;
+
+  /* Radii + shadows */
+  --r-lg: 22px;
+  --r-md: 14px;
+  --ring: 0 0 0 3px rgba(10,132,255,.18);
+  --shadow-1: 0 10px 30px rgba(0,0,0,.35), 0 1px 0 rgba(255,255,255,.03) inset;
 }
 
-@media (prefers-color-scheme: dark){
+@media (prefers-color-scheme: light){
   :root{
-    --bg: #0b0d12;
-    --ink: #e9eef7;
-    --muted: #9aa3b2;
-    --card: #12151d;
-    --line: rgba(255,255,255,.08);
-    --shadow: 0 16px 36px rgba(0,0,0,.55);
+    --bg:#fbfbfd;
+    --bg-elev:#ffffff;
+    --surface:#ffffff;
+    --text:#0b0f14;
+    --muted:#566070;
+    --hairline:rgba(0,0,0,.08);
+    --shadow-1: 0 10px 30px rgba(0,0,0,.08), 0 1px 0 rgba(0,0,0,.04) inset;
   }
 }
+
+.theme-light{ color-scheme: light; }
+.theme-dark{ color-scheme: dark; }
