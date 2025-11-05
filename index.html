@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Evara — Make every sale feel effortless</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0D0D0F" />
+  <meta name="description" content="Evara is the modern retail OS for Indian stores — billing, insights, GST exports, WhatsApp alerts and offline-first POS." />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <meta property="og:title" content="Evara — Make every sale feel effortless" />
+  <meta property="og:description" content="Billing, insights, GST exports, and growth — built for Indian businesses." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://dummyimage.com/1200x630/0d0d0f/ffffff&text=Evara" />
+  <style>
+    :root{
+      /* Brand tokens */
+      --bg:#0D0D0F;
+      --surface:#121317;
+      --card:#15171C;
+      --muted:#C7CCD1;
+      --text:#F5F7FA;
+      --primary:#007AFF; /* Evara Blue */
+      --accent:#00FFD1;  /* Mint Glow */
+      --ring:rgba(0,122,255,.35);
+      --radius:16px;
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --shadow-soft:0 12px 40px rgba(0,0,0,.25);
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:Inter,system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+      color:var(--text);
+      background: radial-gradient(1200px 600px at 80% -10%, rgba(0,255,209,.12), transparent 60%),
+                  radial-gradient(900px 500px at 10% -20%, rgba(0,122,255,.18), transparent 60%),
+                  var(--bg);
+      letter-spacing:-0.01em;
+    }
+
+    /* ---------- utility ---------- */
+    .container{max-width:1150px;margin:auto;padding:0 24px}
+    .row{display:grid;gap:28px}
+    .row.cols-2{grid-template-columns:repeat(2, minmax(0,1fr))}
+    .row.cols-3{grid-template-columns:repeat(3, minmax(0,1fr))}
+    @media (max-width:980px){ .row.cols-2,.row.cols-3{grid-template-columns:1fr} }
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(10px)}
+    .muted{color:var(--muted)}
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:24px;
+    }
+    .glass{
+      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+      border:1px solid rgba(255,255,255,.10);
+      backdrop-filter: blur(14px);
+    }
+    .btn{
+      --h:50px;
+      height:var(--h);
+      padding:0 22px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.08);
+      background:linear-gradient(90deg, var(--primary), var(--accent));
+      color:#0a0a0a;
+      font-weight:700;
+      display:inline-flex;align-items:center;justify-content:center;
+      cursor:pointer;text-decoration:none;
+      box-shadow:0 8px 24px rgba(0,255,209,.18), 0 10px 26px rgba(0,122,255,.22);
+      transition:transform .18s ease, box-shadow .18s ease, filter .18s ease;
+    }
+    .btn:hover{transform:translateY(-1px); filter:saturate(1.05); box-shadow:0 12px 32px rgba(0,255,209,.22), 0 16px 36px rgba(0,122,255,.28)}
+    .btn.ghost{
+      background:transparent;color:var(--text);
+      border:1px solid rgba(255,255,255,.16);
+      box-shadow:none
+    }
+    .btn.ghost:hover{background:rgba(255,255,255,.06)}
+    .link{color:var(--primary);text-decoration:none;font-weight:600}
+    .link:hover{text-decoration:underline}
+
+    /* ---------- nav ---------- */
+    .nav{
+      position:sticky;top:0;z-index:50;
+      background:rgba(10,12,14,.6);
+      backdrop-filter: blur(12px);
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;height:72px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{
+      width:36px;height:36px;border-radius:10px;
+      background:conic-gradient(from 180deg, var(--primary), var(--accent), var(--primary));
+      filter: drop-shadow(0 10px 24px rgba(0,255,209,.25));
+    }
+    .brand h1{font-size:18px;margin:0;font-weight:800;letter-spacing:.1px}
+    .nav a{color:var(--text);text-decoration:none;opacity:.9}
+    .nav-links{display:flex;gap:22px;align-items:center}
+    .nav-cta{display:flex;gap:14px;align-items:center}
+
+    /* ---------- hero ---------- */
+    .hero{position:relative;padding:72px 0 36px}
+    .bar{
+      height:10px;border-radius:999px;
+      background:linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+      filter: blur(0.2px);
+      opacity:.9; margin:0 auto 28px; width:min(940px, 92%);
+      position:relative; overflow:hidden;
+    }
+    .bar:before{
+      content:""; position:absolute; inset:0;
+      background:linear-gradient(90deg, transparent, rgba(255,255,255,.25), transparent);
+      animation:shine 4.2s ease-in-out infinite;
+    }
+    @keyframes shine { 0%{transform:translateX(-100%)} 50%{transform:translateX(20%)} 100%{transform:translateX(120%)} }
+
+    .hero h2{font-size:56px;line-height:1.02;margin:12px 0 14px;letter-spacing:-.02em}
+    .hero p{font-size:18px; color:var(--muted);margin:0 0 22px}
+    .hero .actions{display:flex;gap:14px;flex-wrap:wrap}
+    .hero-visual{
+      min-height:360px;border-radius:22px;margin-top:26px;
+      background:
+        radial-gradient(350px 160px at 15% 20%, rgba(0,255,209,.14), transparent 70%),
+        radial-gradient(420px 180px at 85% 25%, rgba(0,122,255,.18), transparent 70%),
+        linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:var(--shadow-soft);
+      overflow:clip;
+      position:relative;
+    }
+    .macbar{height:44px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:8px;padding:0 14px}
+    .dot{width:10px;height:10px;border-radius:999px}
+    .dot.red{background:#ff5f56}.dot.yellow{background:#ffbd2e}.dot.green{background:#27c93f}
+    .screenshot{
+      height:calc(100% - 44px);display:grid;place-items:center;color:var(--muted);font-size:15px
+    }
+
+    /* ---------- sections ---------- */
+    section{padding:56px 0}
+    .section-title{font-size:28px;margin:0 0 8px}
+    .section-sub{margin:0 0 24px;color:var(--muted)}
+    .feature{display:flex;gap:14px}
+    .feature i{
+      width:36px;height:36px;border-radius:10px;
+      background:linear-gradient(180deg, var(--primary), var(--accent));
+      box-shadow:0 8px 22px rgba(0,255,209,.22);
+    }
+    .feature h4{margin:0 0 6px}
+    .logos{display:flex;gap:26px;flex-wrap:wrap;opacity:.8}
+    .logos span{padding:8px 12px;border:1px solid rgba(255,255,255,.08);border-radius:10px}
+
+    /* ---------- pricing ---------- */
+    .pricing .plan{position:relative;padding:26px;border-radius:18px;border:1px solid rgba(255,255,255,.1);background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03))}
+    .pricing h3{margin:0 0 6px}
+    .price{font-size:34px;font-weight:800;letter-spacing:-.02em;margin:4px 0 14px}
+    .pricing ul{list-style:none;padding:0;margin:0 0 16px}
+    .pricing li{display:flex;gap:10px;align-items:flex-start;margin:10px 0;color:var(--muted)}
+    .tick{width:18px;height:18px;flex:0 0 18px;border-radius:4px;background:linear-gradient(180deg, var(--primary), var(--accent))}
+    .plan.recommended{outline:2px solid rgba(0,255,209,.25);box-shadow:0 18px 50px rgba(0,255,209,.18)}
+    .badge{position:absolute;top:-10px;right:16px;font-size:12px;font-weight:700;padding:6px 10px;border-radius:999px;background:linear-gradient(90deg, var(--primary), var(--accent));color:#0d0d0f}
+
+    /* ---------- footer ---------- */
+    footer{padding:36px 0;border-top:1px solid rgba(255,255,255,.08);color:var(--muted)}
+    .foot{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+
+    /* ---------- micro-interactions ---------- */
+    .reveal{opacity:0; transform:translateY(12px); transition:opacity .5s ease, transform .5s ease}
+    .reveal.in{opacity:1; transform:translateY(0)}
+    a.skip{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
+    a.skip:focus{left:16px;top:16px;width:auto;height:auto;z-index:1000;background:#000;color:#fff;padding:8px 10px;border-radius:8px}
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="container nav-inner">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <h1>Evara</h1>
+      </div>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#stories">Customers</a>
+        <a href="#faq">FAQ</a>
+      </div>
+      <div class="nav-cta">
+        <a class="btn ghost" href="/login">Sign in</a>
+        <a class="btn" href="/signup">Get started</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero container" id="main">
+    <div class="bar" aria-hidden="true"></div>
+    <div class="row cols-2">
+      <div>
+        <span class="pill">Made in India • Built for retail</span>
+        <h2>Every sale, smarter.</h2>
+        <p>Billing, insights and GST exports — <strong>without the mental load</strong>. Nightly WhatsApp reports keep you calm, every day.</p>
+        <div class="actions">
+          <a class="btn" href="/signup">Start free trial</a>
+          <a class="btn ghost" href="#demo">Watch demo</a>
+        </div>
+        <div style="margin-top:18px" class="muted">Trusted by teams partnered with
+          <span class="logos" style="margin-top:10px;display:flex">
+            <span>Razorpay</span><span>WhatsApp</span><span>GST</span><span>Clear</span><span>Amazon Pay</span><span>PhonePe</span>
+          </span>
+        </div>
+      </div>
+      <div class="hero-visual reveal" id="demo" role="img" aria-label="Evara dashboard preview">
+        <div class="macbar"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+        <div class="screenshot">
+          <!-- Replace this with a real screenshot of /app -->
+          <img src="https://dummyimage.com/900x480/14161b/ffffff&text=Evara+Dashboard+Preview" alt="Evara dashboard screenshot" style="width:92%;border-radius:12px;border:1px solid rgba(255,255,255,.08);box-shadow:var(--shadow-soft)">
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- FEATURES -->
+  <section id="features">
+    <div class="container">
+      <h3 class="section-title">Quietly powerful features</h3>
+      <p class="section-sub">Everything you need to run your store like a pro.</p>
+      <div class="row cols-3">
+        <div class="card feature reveal"><i></i><div><h4>Smart Analytics</h4><p class="muted">Revenue, expenses, profit & trends — one calm dashboard.</p></div></div>
+        <div class="card feature reveal"><i></i><div><h4>GST in 1 click</h4><p class="muted">Export-ready CSVs for your CA. No Sunday panic.</p></div></div>
+        <div class="card feature reveal"><i></i><div><h4>WhatsApp Alerts</h4><p class="muted">Nightly summaries that keep you in control, effortlessly.</p></div></div>
+        <div class="card feature reveal"><i></i><div><h4>Offline-first</h4><p class="muted">Keep selling during outages. Auto-sync when back online.</p></div></div>
+        <div class="card feature reveal"><i></i><div><h4>Smart Reorder</h4><p class="muted">Predict stock-outs from sales velocity and top-up fast.</p></div></div>
+        <div class="card feature reveal"><i></i><div><h4>Staff Roles</h4><p class="muted">Control permissions. Keep your data clean and safe.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOCIAL PROOF -->
+  <section id="stories">
+    <div class="container">
+      <div class="row cols-2">
+        <div class="card glass reveal">
+          <span class="pill">Case study</span>
+          <h3 style="margin:10px 0 8px">“+18% repeat customers in 60 days.”</h3>
+          <p class="muted">Ramesh General Store used Evara’s WhatsApp reminders and loyalty nudges to bring buyers back.</p>
+          <a class="link" href="#">Read the story →</a>
+        </div>
+        <div class="card glass reveal">
+          <span class="pill">For Indian retail</span>
+          <h3 style="margin:10px 0 8px">Built for speed. Designed for calm.</h3>
+          <p class="muted">From kiranas to boutiques, Evara reduces chaos and gives you quiet confidence at close.</p>
+          <div class="logos"><span>Razorpay</span><span>Amazon Pay</span><span>PhonePe</span><span>Clear</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section id="pricing" class="pricing">
+    <div class="container">
+      <h3 class="section-title">Simple pricing</h3>
+      <p class="section-sub">Start free. Upgrade when you’re ready.</p>
+      <div class="row cols-3">
+        <div class="plan reveal">
+          <h3>Free</h3>
+          <div class="price">₹0</div>
+          <ul>
+            <li><span class="tick"></span>30 invoices / month</li>
+            <li><span class="tick"></span>Dashboard & daily email</li>
+            <li><span class="tick"></span>Basic exports</li>
+          </ul>
+          <a class="btn ghost" href="/signup">Get started</a>
+        </div>
+        <div class="plan recommended reveal">
+          <span class="badge">Most Popular</span>
+          <h3>Pro</h3>
+          <div class="price">₹199<span class="muted" style="font-size:16px"> / month</span></div>
+          <ul>
+            <li><span class="tick"></span>Unlimited billing</li>
+            <li><span class="tick"></span>WhatsApp summaries</li>
+            <li><span class="tick"></span>GST exports</li>
+          </ul>
+          <a class="btn" href="/subscribe/pro">Start Pro</a>
+        </div>
+        <div class="plan reveal">
+          <h3>Elite</h3>
+          <div class="price">₹499<span class="muted" style="font-size:16px"> / month</span></div>
+          <ul>
+            <li><span class="tick"></span>Multi-store sync</li>
+            <li><span class="tick"></span>Staff roles & audit</li>
+            <li><span class="tick"></span>AI predictions</li>
+          </ul>
+          <a class="btn ghost" href="/subscribe/elite">Go Elite</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq">
+    <div class="container">
+      <h3 class="section-title">Questions, answered</h3>
+      <div class="row cols-2">
+        <div class="card reveal">
+          <h4>Is Evara offline-first?</h4>
+          <p class="muted">Yes. You can keep billing during outages. Data auto-syncs when you’re back online.</p>
+        </div>
+        <div class="card reveal">
+          <h4>GST exports?</h4>
+          <p class="muted">One-click CSVs for your CA: sales, returns, expenses and tax breakdowns.</p>
+        </div>
+        <div class="card reveal">
+          <h4>Can I cancel anytime?</h4>
+          <p class="muted">Absolutely. No lock-in, no hidden fees.</p>
+        </div>
+        <div class="card reveal">
+          <h4>WhatsApp summaries?</h4>
+          <p class="muted">Get nightly messages with revenue, dues and low-stock. You choose the time.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section>
+    <div class="container card glass reveal" style="display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap">
+      <div>
+        <h3 style="margin:0 0 6px">Make every sale feel effortless.</h3>
+        <p class="muted" style="margin:0">Start free today. Be fully set up in under 5 minutes.</p>
+      </div>
+      <div style="display:flex;gap:12px">
+        <a class="btn" href="/signup">Get started free</a>
+        <a class="btn ghost" href="/login">Sign in</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container foot">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="logo" style="width:22px;height:22px"></div>
+        <span>© 2025 Evara Technologies Pvt. Ltd.</span>
+      </div>
+      <div style="display:flex;gap:18px">
+        <a class="muted" href="#">Privacy</a>
+        <a class="muted" href="#">Terms</a>
+        <a class="muted" href="mailto:support@evara.in">support@evara.in</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // subtle reveal on scroll
+    const io = new IntersectionObserver(entries=>{
+      entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('in'); });
+    }, {threshold:.12});
+    document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+  </script>
+</body>
+</html>
