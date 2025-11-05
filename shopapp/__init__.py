@@ -27,7 +27,7 @@ from .utils.subscription import get_subscription_context
 from .onboarding import onboarding_bp
 from .compliance import compliance_bp
 from .api import api_bp
-from .payments import payments_bp
+from .payments import payments_bp, payments_api_bp
 from .security import can_access, get_current_role
 import daily_report
 from .credits.tasks import send_credit_reminders
@@ -421,6 +421,7 @@ def create_app(config_object: type[Config] | None = None) -> Flask:
     app.register_blueprint(onboarding_bp)
     app.register_blueprint(compliance_bp)
     app.register_blueprint(api_bp)
+    app.register_blueprint(payments_api_bp)
     app.register_blueprint(payments_bp)
     app.register_blueprint(sales_bp, url_prefix='/app')
 

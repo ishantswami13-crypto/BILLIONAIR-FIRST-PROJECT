@@ -12,6 +12,10 @@
   <meta property="og:description" content="Billing, insights, GST exports, and growth — built for Indian businesses." />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="https://dummyimage.com/1200x630/0d0d0f/ffffff&text=Evara" />
+  <link rel="icon" href="/public/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/public/evara-logo.svg">
+  <link rel="manifest" href="/public/site.webmanifest">
+  <script src="/public/checkout.js" defer></script>
   <style>
     :root{
       /* Brand tokens */
@@ -280,23 +284,23 @@
         <div class="plan recommended reveal">
           <span class="badge">Most Popular</span>
           <h3>Pro</h3>
-          <div class="price">₹199<span class="muted" style="font-size:16px"> / month</span></div>
+          <div class="price">&#8377;199<span class="muted" style="font-size:16px"> / month</span></div>
           <ul>
             <li><span class="tick"></span>Unlimited billing</li>
             <li><span class="tick"></span>WhatsApp summaries</li>
             <li><span class="tick"></span>GST exports</li>
           </ul>
-          <a class="btn" href="https://shopapp-vjli.onrender.com/register?plan=pro&campaign=landing-pricing">Start Pro</a>
+          <button class="btn" type="button" onclick="openCheckout('pro')">Start Pro &mdash; &#8377;199/mo</button>
         </div>
         <div class="plan reveal">
           <h3>Elite</h3>
-          <div class="price">₹499<span class="muted" style="font-size:16px"> / month</span></div>
+          <div class="price">&#8377;499<span class="muted" style="font-size:16px"> / month</span></div>
           <ul>
             <li><span class="tick"></span>Multi-store sync</li>
             <li><span class="tick"></span>Staff roles & audit</li>
             <li><span class="tick"></span>AI predictions</li>
           </ul>
-          <a class="btn ghost" href="https://shopapp-vjli.onrender.com/register?plan=elite&campaign=landing-pricing">Go Elite</a>
+          <button class="btn ghost" type="button" onclick="openCheckout('elite')">Go Elite &mdash; &#8377;499/mo</button>
         </div>
       </div>
     </div>

@@ -1,0 +1,15 @@
+{
+  "name": "Evara",
+  "short_name": "Evara",
+  "theme_color": "#0D0D0F",
+  "background_color": "#0D0D0F",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "/public/evara-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
