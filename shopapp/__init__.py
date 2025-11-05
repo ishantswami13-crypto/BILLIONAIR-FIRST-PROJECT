@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from flask import Flask, url_for
+from flask import Flask, redirect, url_for
 
 from .config import Config
 from .extensions import db, migrate, scheduler
@@ -423,7 +423,10 @@ def create_app(config_object: type[Config] | None = None) -> Flask:
     app.register_blueprint(api_bp)
     app.register_blueprint(payments_bp)
     app.register_blueprint(sales_bp, url_prefix='/app')
-    app.add_url_rule('/app/', endpoint='index', view_func=sales_bp.view_functions['index'])
+
+    @app.route('/app/')
+    def app_root():
+        return redirect(url_for('sales.index'))
     app.register_blueprint(reports_bp)
     app.register_blueprint(inventory_bp)
     app.register_blueprint(credits_bp)
