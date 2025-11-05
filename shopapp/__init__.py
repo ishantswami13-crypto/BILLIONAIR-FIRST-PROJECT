@@ -424,7 +424,13 @@ def create_app(config_object: type[Config] | None = None) -> Flask:
     app.register_blueprint(payments_bp)
     app.register_blueprint(sales_bp, url_prefix='/app')
 
-    @app.route('/app/')
+    # Home page alias (brand link, etc.)
+    @app.route('/', endpoint='index')
+    def index_alias():
+        return redirect(url_for('sales.index'))
+
+    # Old /app/ alias (if anything still uses it)
+    @app.route('/app/', endpoint='app_root')
     def app_root():
         return redirect(url_for('sales.index'))
     app.register_blueprint(reports_bp)
