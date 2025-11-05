@@ -93,147 +93,138 @@ body.ev-body{
   .ev-links{display:none}
 }
 
-/* Evara Login */
-.login-hero{
+/* ===== Evara Auth (no box, premium glass) ===== */
+
+.evara-auth{
   position:relative;
-  height:100vh;
+  min-height:calc(100vh - 64px);
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  background: radial-gradient(1200px 600px at 20% 10%, #101621 0%, #0a0d13 45%, #080a10 100%);
+}
+
+.ea-ambient{
+  position:absolute; inset:-20%;
+  background: conic-gradient(from 180deg at 50% 50%, #21c99722, #007aff22, #9b5cff22, #21c99722);
+  filter: blur(80px);
+  animation: eaFlow 18s ease-in-out infinite;
+  opacity:.65;
+}
+
+.ea-spot{
+  position:absolute; width:60vw; height:60vh; max-width:980px; max-height:620px;
+  border-radius:48%;
+  background: radial-gradient(closest-side, #ffffff12 0%, #ffffff03 50%, transparent 80%);
+  filter: blur(16px);
+  transform: translateY(-2vh);
+}
+
+.ea-shell{
+  position:relative; z-index:2;
+  width:min(96vw, 520px);
+  text-align:center;
+  padding:24px 0 8px;
+  box-shadow: 0 0 120px 20px rgba(0,122,255,.08);
+}
+
+.ea-brand{
+  margin:0 0 6px 0;
+  font-size:34px; font-weight:800; letter-spacing:0.2px;
+  background: linear-gradient(90deg, #21c997, #007aff);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+
+.ea-title{ margin:0; font-size:28px; font-weight:800; color:#f4f7ff; }
+.ea-sub{ margin:10px 0 22px; color:#a9b3c6; font-size:14px; }
+
+.ea-form{
+  display:grid; gap:14px;
+  margin-inline:auto; width:100%;
+}
+.ea-field{ display:grid; gap:6px; text-align:left; }
+.ea-field span{ color:#cbd3e0; font-size:13px; }
+.ea-field input{
+  width:100%;
+  -webkit-appearance:none; appearance:none;
+  border:none;
+  border-radius:14px;
+  padding:12px 14px;
+  color:#eef3ff;
+  background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.06));
+  outline:1px solid rgba(255,255,255,.08);
+  transition: box-shadow .2s ease, outline-color .2s ease, background .2s ease;
+  backdrop-filter: blur(8px);
+}
+.ea-field input::placeholder{ color:#aab3c3; }
+.ea-field input:focus{
+  outline-color:#3b82f6;
+  background: linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.07));
+  box-shadow: 0 0 0 4px rgba(59,130,246,.15);
+}
+
+.ea-msg{
+  margin-top:4px;
+  background: linear-gradient(180deg, #4a1d63, #2b1637);
+  border:1px solid rgba(255,255,255,.08);
+  color:#f2d8ff;
+  padding:10px 12px;
+  border-radius:12px;
+  font-size:13px;
+}
+.ea-msg span{display:block;}
+.ea-msg.ea-msg--ok{
+  background: linear-gradient(180deg, #1f513f, #16332a);
+  border-color:rgba(33,201,151,.28);
+  color:#c8f7e9;
+}
+
+.ea-btn{
+  margin-top:6px;
+  border:none; cursor:pointer;
+  width:100%;
+  color:white; font-weight:700; letter-spacing:.2px;
+  padding:12px 14px; border-radius:14px;
+  background: linear-gradient(90deg, #007aff, #21c997);
+  box-shadow: 0 8px 24px rgba(0,122,255,.25);
+  transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+}
+.ea-btn:hover{ transform: translateY(-1px); box-shadow: 0 10px 28px rgba(0,122,255,.32); }
+.ea-btn:active{ transform: translateY(0); box-shadow: 0 6px 18px rgba(0,122,255,.22); }
+
+.ea-link{
+  display:inline-block; margin-top:10px;
+  font-size:13px; color:#a9b3c6; text-decoration:none;
+}
+.ea-link:hover{ color:#d8e0f0; }
+
+.ea-sub-links{
+  margin-top:18px;
+  font-size:13px;
+  color:#a9b3c6;
   display:flex;
   align-items:center;
   justify-content:center;
-  background:radial-gradient(circle at 20% 20%, #14171f, #090a0f 70%);
-  overflow:hidden;
-  animation:fadeIn 1s ease forwards;
-}
-.login-bg{
-  position:absolute;
-  inset:0;
-  z-index:1;
-}
-.login-bg::before{
-  content:'';
-  position:absolute;
-  inset:0;
-  background:linear-gradient(120deg, #007aff33, #21c99733, #ff77e933);
-  background-size:300% 300%;
-  animation:gradientFlow 10s ease infinite;
-  filter:blur(60px);
-  opacity:.5;
-}
-.login-card{
-  position:relative;
-  z-index:2;
-  backdrop-filter:blur(20px);
-  background:rgba(255, 255, 255, .05);
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:20px;
-  padding:50px 60px;
-  text-align:center;
-  box-shadow:0 0 80px rgba(0, 122, 255, .15);
-  max-width:420px;
-  width:100%;
-  color:#fff;
-  transform:translateY(20px);
-  animation:slideUp .8s ease forwards;
-}
-.brand{
-  font-size:34px;
-  background:linear-gradient(90deg, #21c997, #007aff);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-  margin:0 0 10px;
-}
-.welcome{
-  margin:0;
-  font-size:26px;
-  font-weight:700;
-}
-.login-sub{
-  color:#9aa3b2;
-  font-size:14px;
-  margin-bottom:24px;
-}
-.login-form{
-  display:flex;
-  flex-direction:column;
-  gap:16px;
-}
-.input-group{
-  text-align:left;
-}
-.input-group label{
-  font-size:13px;
-  color:#ccc;
-  display:block;
-  margin-bottom:6px;
-}
-.input-group input{
-  width:100%;
-  padding:12px 14px;
-  border-radius:12px;
-  background:rgba(255,255,255,.08);
-  border:1px solid rgba(255,255,255,.1);
-  color:#fff;
-  outline:none;
-}
-.login-alert{
-  background:rgba(255, 119, 233, .1);
-  border:1px solid rgba(255, 119, 233, .25);
-  color:#ffc4f5;
-  padding:12px;
-  border-radius:12px;
-  font-size:13px;
-  text-align:left;
-}
-.login-alert span{display:block}
-.login-alert.ok{
-  background:rgba(33, 201, 151, .12);
-  border-color:rgba(33, 201, 151, .3);
-  color:#b2f2e4;
-}
-.login-btn{
-  background:linear-gradient(90deg, #007aff, #21c997);
-  border:none;
-  padding:12px;
-  font-weight:700;
-  border-radius:12px;
-  cursor:pointer;
-  color:white;
-  transition:transform .2s ease;
-}
-.login-btn:hover{
-  transform:translateY(-2px);
-}
-.otp-link{
-  display:block;
-  margin-top:14px;
-  font-size:13px;
-  color:#9aa3b2;
-  text-decoration:none;
-}
-.otp-link:hover{color:#fff;}
-.login-footer{
-  margin-top:24px;
-  font-size:13px;
-  color:#9aa3b2;
-  display:flex;
   gap:6px;
-  justify-content:center;
 }
-.login-footer a{
-  color:#fff;
+.ea-sub-links a{
+  color:#d8e0f0;
   text-decoration:none;
 }
-.login-footer a:hover{text-decoration:underline;}
-@keyframes gradientFlow{
-  0%{background-position:0% 50%;}
-  50%{background-position:100% 50%;}
-  100%{background-position:0% 50%;}
+.ea-sub-links a:hover{text-decoration:underline;}
+
+@keyframes eaFlow{
+  0%{ transform: rotate(0deg) scale(1); }
+  50%{ transform: rotate(180deg) scale(1.04); }
+  100%{ transform: rotate(360deg) scale(1); }
 }
-@keyframes slideUp{
-  from{opacity:0; transform:translateY(40px);}
-  to{opacity:1; transform:translateY(0);}
-}
-@keyframes fadeIn{
-  from{opacity:0;}
-  to{opacity:1;}
+
+.evara-auth .card,
+.evara-auth .panel,
+.evara-auth .bo-card,
+.evara-auth .box,
+.evara-auth .auth-card{
+  background: transparent !important;
+  border:0 !important;
+  box-shadow:none !important;
 }
