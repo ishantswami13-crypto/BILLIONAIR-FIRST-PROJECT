@@ -3,61 +3,69 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Evara{% endblock %}</title>
+  <title>{% block title %}Evara &mdash; Ever simple. Ever powerful.{% endblock %}</title>
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
 
-  <!-- Core styles -->
+  <!-- Brand tokens + app styles -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
 
   {% block head %}{% endblock %}
 </head>
-<body class="evara {{ body_class|default('') }}">
+<body class="ev-body">
   <!-- Glass Nav -->
   <header class="ev-nav">
-    <div class="ev-nav__wrap">
-      <a class="ev-brand" href="{{ url_for('index') }}">
-        <span class="ev-logo" aria-hidden="true"></span>
+    <div class="ev-nav__inner container">
+      <a href="{{ url_for('index') }}" class="ev-brand">
+        <!-- Minimal "E" monogram as inline SVG -->
+        <svg width="28" height="28" viewBox="0 0 64 64" class="ev-logo" aria-hidden="true">
+          <defs>
+            <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stop-color="var(--mint)"/>
+              <stop offset="100%" stop-color="var(--blue)"/>
+            </linearGradient>
+          </defs>
+          <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#g)" opacity=".16"/>
+          <path d="M18 22h26M18 32h18M18 42h22" stroke="url(#g)" stroke-width="4" stroke-linecap="round"/>
+        </svg>
         <span class="ev-wordmark">Evara</span>
       </a>
 
       <nav class="ev-links">
-        <a href="{{ url_for('index') }}" class="ev-link">Dashboard</a>
-        <a href="/analytics" class="ev-link">Analytics</a>
-        <a href="/inventory" class="ev-link">Inventory</a>
-        <a href="/assistant" class="ev-link">Assistant</a>
-        <a href="/settings" class="ev-link">Settings</a>
+        <a href="{{ url_for('index') }}" class="ev-link {% if request.path=='/' %}active{% endif %}">Dashboard</a>
+        <a href="{{ url_for('reports.analytics') if 'reports' in g.get('blueprints', []) else '#' }}" class="ev-link">Analytics</a>
+        <a href="{{ url_for('credits') if 'credits' in g.get('blueprints', []) else '#' }}" class="ev-link">Credits</a>
+        <a href="{{ url_for('add_item') if 'add_item' in globals() else '#' }}" class="ev-link">Inventory</a>
+        <a href="{{ url_for('report') if 'report' in globals() else '#' }}" class="ev-link">Reports</a>
+        <a href="{{ url_for('settings_branding') if 'settings_branding' in globals() else '#' }}" class="ev-link">Settings</a>
       </nav>
 
       <div class="ev-actions">
         {% if session.get('user') %}
           <span class="ev-pill">Hi, {{ session['user'] }}</span>
-          <a class="ev-btn ev-btn--primary" href="/logout">Logout</a>
+          <a class="ev-btn ev-btn--ghost" href="{{ url_for('logout') }}">Logout</a>
         {% else %}
-          <a class="ev-btn" href="/login">Login</a>
-          <a class="ev-btn ev-btn--primary" href="/register">Get Started</a>
+          <a class="ev-btn ev-btn--ghost" href="{{ url_for('login') }}">Login</a>
+          <a class="ev-btn" href="{{ url_for('register') }}">Get started</a>
         {% endif %}
-        <button class="ev-hamburger" id="navToggle" aria-label="Menu">
-          <span></span><span></span><span></span>
-        </button>
       </div>
     </div>
   </header>
 
-  <!-- Page -->
-  <main class="ev-container">
+  <!-- Page content -->
+  <main class="ev-main container">
     {% block content %}{% endblock %}
   </main>
 
   <!-- Footer -->
-  <footer class="ev-footer">
-    <div class="ev-footer__wrap">
-      <span>© {{ copyright_year|default(2025) }} Evara</span>
-      <span class="ev-soft">Ever simple. Ever powerful.</span>
+  <footer class="ev-footer container">
+    <div class="ev-foot__inner">
+      <span class="muted">&copy; {{ config.get('COPYRIGHT_YEAR', 2025) }} Evara</span>
+      <span class="muted">v{{ config.get('APP_VERSION','1.0') }}</span>
     </div>
   </footer>
 

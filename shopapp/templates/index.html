@@ -1,61 +1,96 @@
 {% extends "layout.html" %}
-{% block title %}Dashboard · Evara{% endblock %}
+{% block title %}Dashboard &middot; Evara{% endblock %}
 
 {% block content %}
 <section class="ev-hero">
-  <div class="ev-hero__bg">
-    <span class="orb o1"></span>
-    <span class="orb o2"></span>
-    <span class="orb o3"></span>
-  </div>
-  <div class="ev-hero__inner">
+  <div class="ev-hero__copy">
     <h1>Make every sale feel effortless</h1>
-    <p class="ev-soft">Clean billing, smart udhaar, AI insights—beautifully simple.</p>
-    <div class="ev-cta">
-      <a class="ev-btn ev-btn--primary" href="/sell">Start quick sale</a>
-      <a class="ev-btn ev-btn--ghost" href="/analytics">View analytics</a>
+    <p class="sub">Clear numbers. Calm design. Nightly WhatsApp & email reports on autopilot.</p>
+    <div class="cta-row">
+      <a href="{{ url_for('add_item') if 'add_item' in globals() else '#' }}" class="ev-btn">Start quick sale</a>
+      <a href="{{ url_for('report') if 'report' in globals() else '#' }}" class="ev-btn ev-btn--ghost">All activity</a>
     </div>
+  </div>
+  <div class="ev-hero__ambient" aria-hidden="true">
+    <span class="blob b1"></span>
+    <span class="blob b2"></span>
+    <span class="blob b3"></span>
   </div>
 </section>
 
 <section class="ev-grid">
   <article class="ev-card kpi">
-    <div class="kpi__label">Today’s Revenue</div>
-    <div class="kpi__value" data-countup="{{ total_revenue or 0 }}">₹0</div>
-    <div class="kpi__hint ev-soft">7-day trend available in Analytics</div>
+    <h3>Today's revenue</h3>
+    <div class="kpi-val">&#8377;{{ '%.2f'|format(todays_revenue or 0) }}</div>
+    <div class="kpi-sub">Updated just now</div>
   </article>
-
   <article class="ev-card kpi">
-    <div class="kpi__label">Invoices</div>
-    <div class="kpi__value" data-countup="{{ total_sales or 0 }}">0</div>
-    <div class="kpi__hint ev-soft">Auto-WhatsApp receipts enabled</div>
+    <h3>Today's orders</h3>
+    <div class="kpi-val">{{ todays_orders or 0 }}</div>
+    <div class="kpi-sub">Across all items</div>
   </article>
-
   <article class="ev-card kpi">
-    <div class="kpi__label">Low Stock</div>
-    <div class="kpi__value">{{ low_stock|length if low_stock is defined else 0 }}</div>
-    <div class="kpi__hint ev-soft"><a href="/inventory">Reorder planner</a></div>
+    <h3>Low stock</h3>
+    <div class="kpi-val">{{ low_stock_count or 0 }}</div>
+    <div class="kpi-sub"><a href="{{ url_for('add_item') if 'add_item' in globals() else '#' }}">Review inventory</a></div>
   </article>
 </section>
 
-<section class="ev-slab">
-  <div class="ev-slab__head">
-    <h2>Recent activity</h2>
-    <a class="ev-link" href="/sales">All activity →</a>
-  </div>
-  <div class="ev-list">
-    {% if sales %}
-      {% for s in sales[:6] %}
-      <div class="ev-row">
-        <span class="ev-dot"></span>
-        <span class="ev-row__title">{{ s[2] }} × {{ s[3] }}</span>
-        <span class="ev-row__meta ev-soft">{{ s[1] }}</span>
-        <span class="ev-row__amt">₹{{ '%.2f'|format(s[4]) }}</span>
-      </div>
+<section class="ev-panels">
+  <article class="ev-card chart">
+    <div class="card-head">
+      <h3>Last 7 days</h3>
+      <span class="muted">Revenue &middot; Orders</span>
+    </div>
+    <canvas id="evChart" height="140"></canvas>
+  </article>
+
+  <article class="ev-card list">
+    <div class="card-head">
+      <h3>Recent sales</h3>
+      <a class="ev-link small" href="{{ url_for('report') if 'report' in globals() else '#' }}">View all</a>
+    </div>
+    <ul class="ev-list">
+      {% for s in sales[:8] if sales %}
+        <li>
+          <span class="item">{{ s[2] }}</span>
+          <span class="meta">x{{ s[3] }}</span>
+          <span class="amt">&#8377;{{ '%.2f'|format(s[4]) }}</span>
+        </li>
+      {% else %}
+        <li class="muted">No sales yet. Create your first sale.</li>
       {% endfor %}
-    {% else %}
-      <div class="ev-empty">No sales yet. Create your first invoice to see activity here.</div>
-    {% endif %}
-  </div>
+    </ul>
+  </article>
 </section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  const labels = {{ (last7_labels or [])|tojson }};
+  const revenue = {{ (last7_revenue or [])|tojson }};
+  const orders  = {{ (last7_orders  or [])|tojson }};
+
+  const ctx = document.getElementById('evChart');
+  if (ctx && labels.length) {
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Revenue', data: revenue, borderColor: '#21c997', fill: true, backgroundColor: 'rgba(33,201,151,.12)', tension:.35 },
+          { label: 'Orders',  data: orders,  borderColor: '#007aff', fill: false, tension:.35 },
+        ]
+      },
+      options: {
+        plugins: { legend: { labels: { color: '#5c6270' } } },
+        scales: {
+          x: { ticks: { color: '#7a8091' }, grid: { color: 'rgba(0,0,0,.05)' } },
+          y: { ticks: { color: '#7a8091' }, grid: { color: 'rgba(0,0,0,.05)' } }
+        }
+      }
+    });
+  }
+</script>
 {% endblock %}
