@@ -29,7 +29,7 @@
       </div>
       <div style="margin-left:auto; display:flex; gap:10px;">
         {% if session.get('user') %}
-          <a class="btn btn-ghost" href="{{ url_for('settings.index') }}">Settings</a>
+          <a class="btn btn-ghost" href="{{ url_for('settings.overview') }}">Settings</a>
           <a class="btn btn-primary" href="{{ url_for('auth.logout') }}">Logout</a>
         {% else %}
           <a class="btn btn-ghost" href="{{ url_for('auth.login') }}">Login</a>
