@@ -7,8 +7,8 @@
     <h1>Make every sale feel effortless</h1>
     <p class="sub">Clear numbers. Calm design. Nightly WhatsApp & email reports on autopilot.</p>
     <div class="cta-row">
-      <a href="{{ url_for('add_item') if 'add_item' in globals() else '#' }}" class="ev-btn">Start quick sale</a>
-      <a href="{{ url_for('report') if 'report' in globals() else '#' }}" class="ev-btn ev-btn--ghost">All activity</a>
+      <a href="{{ url_for('sales.index') }}" class="ev-btn">Start quick sale</a>
+      <a href="{{ url_for('reports.zreport_view') }}" class="ev-btn ev-btn--ghost">All activity</a>
     </div>
   </div>
   <div class="ev-hero__ambient" aria-hidden="true">
@@ -32,7 +32,7 @@
   <article class="ev-card kpi">
     <h3>Low stock</h3>
     <div class="kpi-val">{{ low_stock_count or 0 }}</div>
-    <div class="kpi-sub"><a href="{{ url_for('add_item') if 'add_item' in globals() else '#' }}">Review inventory</a></div>
+    <div class="kpi-sub"><a href="{{ url_for('inventory.items') }}">Review inventory</a></div>
   </article>
 </section>
 
@@ -48,7 +48,7 @@
   <article class="ev-card list">
     <div class="card-head">
       <h3>Recent sales</h3>
-      <a class="ev-link small" href="{{ url_for('report') if 'report' in globals() else '#' }}">View all</a>
+      <a class="ev-link small" href="{{ url_for('sales.history') }}">View all</a>
     </div>
     <ul class="ev-list">
       {% for s in sales[:8] if sales %}
