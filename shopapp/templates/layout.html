@@ -20,7 +20,7 @@
   <!-- Glass Nav -->
   <header class="ev-nav">
     <div class="ev-nav__inner container">
-      <a href="{{ url_for('index') }}" class="ev-brand">
+      <a href="{{ url_for('sales.index') }}" class="ev-brand">
         <!-- Minimal "E" monogram as inline SVG -->
         <svg width="28" height="28" viewBox="0 0 64 64" class="ev-logo" aria-hidden="true">
           <defs>
@@ -36,21 +36,21 @@
       </a>
 
       <nav class="ev-links">
-        <a href="{{ url_for('index') }}" class="ev-link {% if request.path=='/' %}active{% endif %}">Dashboard</a>
-        <a href="{{ url_for('reports.analytics') if 'reports' in g.get('blueprints', []) else '#' }}" class="ev-link">Analytics</a>
-        <a href="{{ url_for('credits') if 'credits' in g.get('blueprints', []) else '#' }}" class="ev-link">Credits</a>
-        <a href="{{ url_for('add_item') if 'add_item' in globals() else '#' }}" class="ev-link">Inventory</a>
-        <a href="{{ url_for('report') if 'report' in globals() else '#' }}" class="ev-link">Reports</a>
-        <a href="{{ url_for('settings_branding') if 'settings_branding' in globals() else '#' }}" class="ev-link">Settings</a>
+        <a href="{{ url_for('sales.index') }}" class="ev-link {% if request.path.startswith('/app') %}active{% endif %}">Dashboard</a>
+        <a href="{{ url_for('reports.analytics_view') }}" class="ev-link {% if request.path.startswith('/analytics') %}active{% endif %}">Analytics</a>
+        <a href="{{ url_for('credits.list_credits') }}" class="ev-link {% if request.path.startswith('/credits') %}active{% endif %}">Credits</a>
+        <a href="{{ url_for('inventory.items') }}" class="ev-link {% if request.path.startswith('/items') %}active{% endif %}">Inventory</a>
+        <a href="{{ url_for('reports.zreport_view') }}" class="ev-link {% if request.path.startswith('/zreport') %}active{% endif %}">Reports</a>
+        <a href="{{ url_for('settings.branding') }}" class="ev-link {% if request.path.startswith('/settings') %}active{% endif %}">Settings</a>
       </nav>
 
       <div class="ev-actions">
         {% if session.get('user') %}
           <span class="ev-pill">Hi, {{ session['user'] }}</span>
-          <a class="ev-btn ev-btn--ghost" href="{{ url_for('logout') }}">Logout</a>
+          <a class="ev-btn ev-btn--ghost" href="{{ url_for('auth.logout') }}">Logout</a>
         {% else %}
-          <a class="ev-btn ev-btn--ghost" href="{{ url_for('login') }}">Login</a>
-          <a class="ev-btn" href="{{ url_for('register') }}">Get started</a>
+          <a class="ev-btn ev-btn--ghost" href="{{ url_for('auth.login') }}">Login</a>
+          <a class="ev-btn" href="{{ url_for('auth.register') }}">Get started</a>
         {% endif %}
       </div>
     </div>
