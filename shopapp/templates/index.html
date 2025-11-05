@@ -18,22 +18,22 @@
   </div>
 </section>
 
-<section class="ev-grid">
-  <article class="ev-card kpi">
-    <h3>Today's revenue</h3>
-    <div class="kpi-val">&#8377;{{ '%.2f'|format(todays_revenue or 0) }}</div>
-    <div class="kpi-sub">Updated just now</div>
-  </article>
-  <article class="ev-card kpi">
-    <h3>Today's orders</h3>
-    <div class="kpi-val">{{ todays_orders or 0 }}</div>
-    <div class="kpi-sub">Across all items</div>
-  </article>
-  <article class="ev-card kpi">
-    <h3>Low stock</h3>
-    <div class="kpi-val">{{ low_stock_count or 0 }}</div>
-    <div class="kpi-sub"><a href="{{ url_for('inventory.items') }}">Review inventory</a></div>
-  </article>
+<section class="dashboard-stats">
+  <div class="stat-box">
+    <h3>Today's Revenue</h3>
+    <p class="value">₹{{ '%.2f'|format(todays_revenue or 0) }}</p>
+    <span class="sub">Updated just now</span>
+  </div>
+  <div class="stat-box">
+    <h3>Today's Orders</h3>
+    <p class="value">{{ todays_orders or 0 }}</p>
+    <span class="sub">Across all items</span>
+  </div>
+  <div class="stat-box">
+    <h3>Low Stock</h3>
+    <p class="value">{{ low_stock_count or 0 }}</p>
+    <span class="sub">Items running low</span>
+  </div>
 </section>
 
 <section class="ev-panels">

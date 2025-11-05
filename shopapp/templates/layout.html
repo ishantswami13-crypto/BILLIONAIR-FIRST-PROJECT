@@ -11,6 +11,7 @@
 
   <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/loader.css') }}">
 
   {% block head %}{% endblock %}
 </head>
@@ -43,10 +44,13 @@
     {% block content %}{% endblock %}
   </main>
 
-  <footer class="container" style="max-width:1180px; margin: 40px auto; padding: 0 18px 40px; color:var(--muted); font-size:13px; display:flex; justify-content:space-between;">
-    <span>&copy; {{ config.get('COPYRIGHT_YEAR', 2025) }} Evara</span>
-    <span>v{{ config.get('APP_VERSION','1.0') }}</span>
+  <footer class="footer">
+    © {{ config.get('COPYRIGHT_YEAR', 2025) }} <strong>Evara Technologies Pvt. Ltd.</strong> | Built for Indian Retail 🇮🇳
   </footer>
+
+  <div id="page-loader">
+    <div class="spinner"></div>
+  </div>
 
   <script defer src="{{ url_for('static', filename='js/app.js') }}"></script>
   {% block scripts %}{% endblock %}
@@ -56,6 +60,11 @@
       if (p === 'light') document.body.classList.add('theme-light');
       else if (p === 'dark') document.body.classList.add('theme-dark');
     })();
+  </script>
+  <script>
+    const loader = document.getElementById("page-loader");
+    window.addEventListener("beforeunload", () => loader.classList.add("active"));
+    window.addEventListener("pageshow", () => loader.classList.remove("active"));
   </script>
 </body>
 </html>
