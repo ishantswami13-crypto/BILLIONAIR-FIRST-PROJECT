@@ -1,0 +1,111 @@
+<svg width="1180" height="680" viewBox="0 0 1180 680" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1180" y2="680" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#10131A"/>
+      <stop offset="0.5" stop-color="#131722"/>
+      <stop offset="1" stop-color="#0C0F16"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#00FFD1"/>
+      <stop offset="1" stop-color="#007AFF"/>
+    </linearGradient>
+    <linearGradient id="accentSoft" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#00FFD1" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#007AFF" stop-opacity="0.08"/>
+    </linearGradient>
+    <linearGradient id="chartArea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1C2331" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#10131A" stop-opacity="0.2"/>
+    </linearGradient>
+    <filter id="softShadow" x="-8%" y="-12%" width="116%" height="128%">
+      <feDropShadow dx="0" dy="20" stdDeviation="24" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+    <filter id="cardShadow" x="-6%" y="-10%" width="112%" height="120%">
+      <feDropShadow dx="0" dy="16" stdDeviation="18" flood-color="#000000" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+  <rect width="1180" height="680" rx="36" fill="url(#bg)"/>
+  <rect x="40" y="40" width="1100" height="600" rx="28" fill="rgba(21,23,28,0.78)" stroke="rgba(255,255,255,0.06)" filter="url(#softShadow)"/>
+  <rect x="40" y="40" width="1100" height="64" rx="24" fill="#151924" opacity="0.9" stroke="rgba(255,255,255,0.05)"/>
+  <text x="80" y="82" fill="#F5F7FA" font-family="Inter, 'Segoe UI', sans-serif" font-weight="700" font-size="24">Evara Dashboard</text>
+  <text x="320" y="82" fill="#7C859B" font-family="Inter, 'Segoe UI', sans-serif" font-weight="500" font-size="16">Today • Wed, 5 Nov 2025</text>
+  <rect x="960" y="60" width="142" height="28" rx="14" fill="url(#accent)"/>
+  <text x="980" y="80" fill="#0D1116" font-family="Inter, 'Segoe UI', sans-serif" font-weight="700" font-size="14">Create Invoice</text>
+
+  <!-- KPI cards -->
+  <g filter="url(#cardShadow)">
+    <rect x="76" y="132" width="228" height="116" rx="20" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)"/>
+    <text x="100" y="170" fill="#8F98AD" font-family="Inter, 'Segoe UI', sans-serif" font-size="15" font-weight="500">Today's Revenue</text>
+    <text x="100" y="214" fill="#E7ECF6" font-family="Inter, 'Segoe UI', sans-serif" font-size="34" font-weight="700">₹82,430.50</text>
+    <text x="100" y="240" fill="#5AA8FF" font-family="Inter, 'Segoe UI', sans-serif" font-size="13" font-weight="600">▲ 12.4% vs yesterday</text>
+  </g>
+  <g filter="url(#cardShadow)">
+    <rect x="328" y="132" width="228" height="116" rx="20" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)"/>
+    <text x="352" y="170" fill="#8F98AD" font-family="Inter, 'Segoe UI', sans-serif" font-size="15" font-weight="500">Orders</text>
+    <text x="352" y="214" fill="#E7ECF6" font-family="Inter, 'Segoe UI', sans-serif" font-size="34" font-weight="700">184</text>
+    <text x="352" y="240" fill="#00FFD1" font-family="Inter, 'Segoe UI', sans-serif" font-size="13" font-weight="600">▲ 32 new repeat buyers</text>
+  </g>
+  <g filter="url(#cardShadow)">
+    <rect x="580" y="132" width="228" height="116" rx="20" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)"/>
+    <text x="604" y="170" fill="#8F98AD" font-family="Inter, 'Segoe UI', sans-serif" font-size="15" font-weight="500">Low stock alerts</text>
+    <text x="604" y="214" fill="#E7ECF6" font-family="Inter, 'Segoe UI', sans-serif" font-size="34" font-weight="700">9</text>
+    <text x="604" y="240" fill="#FFB347" font-family="Inter, 'Segoe UI', sans-serif" font-size="13" font-weight="600">Send reorder to supplier</text>
+  </g>
+  <g filter="url(#cardShadow)">
+    <rect x="832" y="132" width="228" height="116" rx="20" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)"/>
+    <text x="856" y="170" fill="#8F98AD" font-family="Inter, 'Segoe UI', sans-serif" font-size="15" font-weight="500">Credit recovered</text>
+    <text x="856" y="214" fill="#E7ECF6" font-family="Inter, 'Segoe UI', sans-serif" font-size="34" font-weight="700">₹18,210</text>
+    <text x="856" y="240" fill="#5AA8FF" font-family="Inter, 'Segoe UI', sans-serif" font-size="13" font-weight="600">WhatsApp reminders sent</text>
+  </g>
+
+  <!-- Chart panel -->
+  <g filter="url(#cardShadow)">
+    <rect x="76" y="276" width="640" height="320" rx="26" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)"/>
+    <rect x="76" y="276" width="640" height="72" rx="26" fill="rgba(20,24,33,0.9)" stroke="rgba(255,255,255,0.06)"/>
+    <text x="104" y="318" fill="#E9EEF8" font-family="Inter, 'Segoe UI', sans-serif" font-size="18" font-weight="600">Revenue vs Orders</text>
+    <text x="104" y="346" fill="#7C859B" font-family="Inter, 'Segoe UI', sans-serif" font-size="14" font-weight="500">Last 7 days</text>
+    <rect x="104" y="366" width="584" height="196" rx="18" fill="url(#chartArea)"/>
+    <polyline points="122,528 180,468 238,456 296,410 354,428 412,396 470,378 528,352 586,370 644,330" fill="none" stroke="#00FFD1" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.88"/>
+    <polyline points="122,550 180,520 238,502 296,470 354,482 412,456 470,438 528,420 586,432 644,398" fill="none" stroke="#3A7DFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.75"/>
+    <circle cx="644" cy="330" r="6.5" fill="#00FFD1"/>
+    <circle cx="528" cy="420" r="5.5" fill="#3A7DFF"/>
+    <text x="512" y="308" fill="#00FFD1" font-family="Inter, 'Segoe UI', sans-serif" font-size="13" font-weight="600">₹18.4L</text>
+    <text x="454" y="336" fill="#3A7DFF" font-family="Inter, 'Segoe UI', sans-serif" font-size="13" font-weight="600">206 orders</text>
+    <text x="502" y="570" fill="#63708A" font-family="Inter, 'Segoe UI', sans-serif" font-size="13">Mon</text>
+    <text x="562" y="570" fill="#63708A" font-family="Inter, 'Segoe UI', sans-serif" font-size="13">Tue</text>
+    <text x="620" y="570" fill="#63708A" font-family="Inter, 'Segoe UI', sans-serif" font-size="13">Wed</text>
+    <text x="678" y="570" fill="#63708A" font-family="Inter, 'Segoe UI', sans-serif" font-size="13">Thu</text>
+    <text x="736" y="570" fill="#63708A" font-family="Inter, 'Segoe UI', sans-serif" font-size="13">Fri</text>
+    <text x="794" y="570" fill="#63708A" font-family="Inter, 'Segoe UI', sans-serif" font-size="13">Sat</text>
+    <text x="852" y="570" fill="#63708A" font-family="Inter, 'Segoe UI', sans-serif" font-size="13">Sun</text>
+  </g>
+
+  <!-- Activity list -->
+  <g filter="url(#cardShadow)">
+    <rect x="748" y="276" width="312" height="320" rx="26" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)"/>
+    <rect x="748" y="276" width="312" height="72" rx="26" fill="rgba(20,24,33,0.9)" stroke="rgba(255,255,255,0.06)"/>
+    <text x="776" y="318" fill="#E9EEF8" font-family="Inter, 'Segoe UI', sans-serif" font-size="18" font-weight="600">Latest activity</text>
+    <text x="776" y="346" fill="#7C859B" font-family="Inter, 'Segoe UI', sans-serif" font-size="14" font-weight="500">Auto WhatsApp summary sent at 9:00 PM</text>
+    <g font-family="Inter, 'Segoe UI', sans-serif" font-size="15" font-weight="500" fill="#DDE3F1">
+      <text x="776" y="390">08:40  •  ₹1,240  •  POS #1182</text>
+      <text x="776" y="420">08:10  •  ₹3,920  •  Online UPI</text>
+      <text x="776" y="450">07:52  •  ₹980   •  Staff: Nisha</text>
+      <text x="776" y="480">07:21  •  Stock alert • Low on Amul 1L</text>
+      <text x="776" y="510">06:58  •  Credit recovered • ₹2,100</text>
+      <text x="776" y="540">06:32  •  Expense logged • Vendor payout</text>
+    </g>
+    <line x1="764" y1="398" x2="764" y2="538" stroke="url(#accentSoft)" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="764" cy="390" r="6" fill="#00FFD1"/>
+    <circle cx="764" cy="420" r="6" fill="#3A7DFF"/>
+    <circle cx="764" cy="480" r="6" fill="#FFD580"/>
+    <circle cx="764" cy="510" r="6" fill="#00FFD1"/>
+    <circle cx="764" cy="540" r="6" fill="#3A7DFF"/>
+  </g>
+
+  <!-- Glow accents -->
+  <ellipse cx="180" cy="170" rx="140" ry="56" fill="url(#accentSoft)" opacity="0.5"/>
+  <ellipse cx="980" cy="190" rx="130" ry="48" fill="url(#accentSoft)" opacity="0.45"/>
+  <ellipse cx="900" cy="560" rx="180" ry="120" fill="url(#accentSoft)" opacity="0.35"/>
+
+  <text x="76" y="636" fill="#596175" font-family="Inter, 'Segoe UI', sans-serif" font-size="14">Data refreshed 24 secs ago • All systems operational</text>
+</svg>
