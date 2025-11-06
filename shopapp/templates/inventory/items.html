@@ -1,68 +1,111 @@
 {% extends 'layout.html' %}
 {% block content %}
-<div class="card-glass p-4 mb-4">
-  <h1 class="h4 mb-3">Items</h1>
-  <form class="row g-3" method="POST">
-    <div class="col-md-4">
-      <input class="form-control" type="text" name="name" placeholder="Item name" required>
+<section class="hero-halo" data-animate="fade-up">
+  <div style="display:flex;align-items:center;gap:18px;">
+    <span class="glow-icon" aria-hidden="true">📦</span>
+    <div>
+      <h1 class="page-title" style="font-size:clamp(30px,4vw,40px);margin:0;">Inventory</h1>
+      <p class="lead">Refill fast, stay profitable. Update stock and pricing with a single tap.</p>
     </div>
-    <div class="col-md-3">
-      <input class="form-control" type="number" step="0.01" name="price" placeholder="Price" required>
-    </div>
-    <div class="col-md-3">
-      <input class="form-control" type="number" name="stock" placeholder="Opening stock" value="0">
-    </div>
-    <div class="col-md-2">
-      <button class="btn btn-primary w-100" type="submit">Add</button>
-    </div>
-  </form>
-</div>
-
-<div class="card-glass p-4">
-  <h2 class="h5 mb-3">Current catalog</h2>
-  <div class="table-responsive">
-    <table class="table table-dark table-striped">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Price</th>
-          <th>Stock</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in items %}
-        <tr>
-          <td>{{ item.id }}</td>
-          <td>{{ item.name }}</td>
-          <td>Rs {{ '%.2f'|format(item.price) }}</td>
-          <td>{{ item.current_stock }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
   </div>
-</div>
+</section>
 
-<div class="card-glass p-4 mt-4">
-  <h2 class="h5 mb-3">Add stock</h2>
-  <form class="row g-3 align-items-end" method="post" action="{{ url_for('inventory.add_stock') }}">
-    <div class="col-md-6">
-      <label class="form-label" for="stock_item">Item</label>
-      <select class="form-select" id="stock_item" name="item_id" required>
-        <option value="" disabled selected>Select item</option>
-        {% for item in items %}
-          <option value="{{ item.id }}">{{ item.name }} ({{ item.current_stock }} in stock)</option>
-        {% endfor %}
-      </select>
+<section class="grid grid-cols-1 grid-cols-md-2" data-animate="fade-up">
+  <div class="card" data-animate="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span class="glow-icon" style="font-size:18px;width:40px;height:40px;">➕</span>
+        <div>
+          <h2 style="margin:0;font-size:20px;">Add item</h2>
+          <p class="muted" style="margin:4px 0 0;">Create a new product in your catalog.</p>
+        </div>
+      </div>
     </div>
-    <div class="col-md-3">
-      <label class="form-label" for="stock_qty">Quantity to add</label>
-      <input class="form-control" id="stock_qty" type="number" name="quantity" min="1" placeholder="e.g. 10" required>
+    <form class="row g-3" method="POST">
+      <div class="col-md-4">
+        <input class="form-control" type="text" name="name" placeholder="Item name" required>
+      </div>
+      <div class="col-md-3">
+        <input class="form-control" type="number" step="0.01" name="price" placeholder="Price" required>
+      </div>
+      <div class="col-md-3">
+        <input class="form-control" type="number" name="stock" placeholder="Opening stock" value="0">
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-primary w-100" type="submit">Add item</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card" data-animate="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span class="glow-icon" style="font-size:18px;width:40px;height:40px;">🔄</span>
+        <div>
+          <h2 style="margin:0;font-size:20px;">Add stock</h2>
+          <p class="muted" style="margin:4px 0 0;">Keep quantities synced across counters.</p>
+        </div>
+      </div>
     </div>
-    <div class="col-md-3">
-      <button class="btn btn-primary w-100" type="submit">Update stock</button>
+    <form class="row g-3 align-items-end" method="post" action="{{ url_for('inventory.add_stock') }}">
+      <div class="col-md-6">
+        <label class="form-label" for="stock_item">Item</label>
+        <select class="form-select" id="stock_item" name="item_id" required>
+          <option value="" disabled selected>Select item</option>
+          {% for item in items %}
+            <option value="{{ item.id }}">{{ item.name }} ({{ item.current_stock }} in stock)</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="stock_qty">Quantity to add</label>
+        <input class="form-control" id="stock_qty" type="number" name="quantity" min="1" placeholder="e.g. 10" required>
+      </div>
+      <div class="col-md-3">
+        <button class="btn btn-primary w-100" type="submit">Update stock</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<section data-animate="fade-up">
+  <div class="card" data-animate="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span class="glow-icon" style="font-size:18px;width:40px;height:40px;">📋</span>
+        <div>
+          <h2 style="margin:0;font-size:20px;">Current catalog</h2>
+          <p class="muted" style="margin:4px 0 0;">Real-time snapshot of every SKU.</p>
+        </div>
+      </div>
+      <span class="badge-metric">{{ items|length }} active</span>
     </div>
-  </form>
-</div>
+    {% if items %}
+      <div class="table-responsive">
+        <table class="table table-dark table-striped" style="background:transparent;border-spacing:0 12px;border-collapse:separate;">
+          <thead>
+            <tr style="background:rgba(14,20,32,0.6);">
+              <th>ID</th>
+              <th>Name</th>
+              <th>Price</th>
+              <th>Stock</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in items %}
+            <tr class="inventory-row">
+              <td>{{ item.id }}</td>
+              <td style="font-weight:600;">{{ item.name }}</td>
+              <td>₹{{ '%.2f'|format(item.price) }}</td>
+              <td>{{ item.current_stock }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty">✨ Start by adding your first item</div>
+    {% endif %}
+  </div>
+</section>
 {% endblock %}

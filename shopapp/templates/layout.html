@@ -6,21 +6,33 @@
   <title>{% block title %}Evara &mdash; Ever simple. Ever powerful.{% endblock %}</title>
 
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap">
+
+  <link rel="icon" type="image/svg+xml" href="/assets/evara-icon.svg">
+  <link rel="apple-touch-icon" href="/assets/evara-icon.svg">
+  <meta name="theme-color" content="#0D0D0F">
 
   <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/loader.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/evara-polish.css') }}">
 
   {% block head %}{% endblock %}
 </head>
 <body class="{% block body_class %}{{ body_class|default('') }}{% endblock %}">
   {% set current_path = request.path %}
   <header class="navbar">
-    <nav class="container" style="max-width:1180px; margin:0 auto; padding:14px 18px; display:flex; align-items:center; gap:14px;">
-      <div class="brand">Evara</div>
-      <div style="display:flex; gap:6px; margin-left:8px;">
+    <nav class="container nav-shell">
+      <a href="/" class="brand" aria-label="Evara">
+        <span class="brand-mark">
+          <img src="/assets/evara-icon.svg" alt="" width="24" height="24" loading="eager">
+        </span>
+        <span class="brand-wordmark">
+          <img src="/assets/evara-wordmark.svg" alt="Evara" height="24" width="164" loading="eager">
+        </span>
+      </a>
+      <div class="nav-links">
         <a href="{{ url_for('sales.index') }}" class="{% if current_path in ['/', '/app', '/app/'] %}active{% endif %}">Dashboard</a>
         <a href="{{ url_for('sales.history') }}" class="{% if current_path.startswith('/app/sales') %}active{% endif %}">Sales</a>
         <a href="{{ url_for('inventory.items') }}" class="{% if current_path.startswith('/inventory') %}active{% endif %}">Inventory</a>
@@ -28,9 +40,11 @@
         <a href="{{ url_for('reports.analytics_view') }}" class="{% if current_path.startswith('/analytics') %}active{% endif %}">Analytics</a>
         <a href="{{ url_for('reports.zreport_view') }}" class="{% if current_path.startswith('/reports') or current_path.startswith('/zreport') %}active{% endif %}">Reports</a>
       </div>
-      <div style="margin-left:auto; display:flex; gap:10px;">
+      <div class="nav-actions">
         {% if session.get('user') %}
-          <a class="btn btn-ghost" href="{{ url_for('settings.overview') }}">Settings</a>
+          <a class="btn btn-ghost" href="{{ url_for('settings.overview') }}">
+            Settings <span class="sync-dot" data-heartbeat-dot data-state="hidden"></span>
+          </a>
           <a class="btn btn-primary" href="{{ url_for('auth.logout') }}">Logout</a>
         {% else %}
           <a class="btn btn-ghost" href="{{ url_for('auth.login') }}">Login</a>
@@ -40,12 +54,12 @@
     </nav>
   </header>
 
-  <main class="container" style="max-width:1180px; margin: 28px auto; padding: 0 18px;">
+  <main class="container content-shell">
     {% block content %}{% endblock %}
   </main>
 
   <footer class="footer">
-    © {{ config.get('COPYRIGHT_YEAR', 2025) }} <strong>Evara Technologies Pvt. Ltd.</strong> | Built for Indian Retail 🇮🇳
+    &copy; {{ config.get('COPYRIGHT_YEAR', 2025) }} <strong>Evara Technologies Pvt. Ltd.</strong> &middot; Powerful, simple, and built for Indian businesses.
   </footer>
 
   <div id="page-loader">
@@ -53,6 +67,7 @@
   </div>
 
   <script defer src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/evara-polish.js') }}"></script>
   {% block scripts %}{% endblock %}
   <script>
     (function(){

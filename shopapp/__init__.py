@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
 from decimal import Decimal
+from pathlib import Path
 
-from flask import Flask, redirect, url_for
+from flask import Flask, redirect, send_from_directory, url_for
 
 from .config import Config
 from .extensions import db, migrate, scheduler
@@ -376,6 +377,12 @@ def create_app(config_object: type[Config] | None = None) -> Flask:
     cfg = config_object or Config
     app.config.from_object(cfg)
     reset_plan_cache()
+
+    assets_dir = Path(app.root_path).parent / "public" / "assets"
+
+    @app.route("/assets/<path:filename>")
+    def serve_asset(filename: str):
+        return send_from_directory(assets_dir, filename)
 
     @app.context_processor
     def inject_globals() -> dict[str, object | None]:

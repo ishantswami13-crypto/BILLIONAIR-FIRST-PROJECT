@@ -1,63 +1,80 @@
 {% extends 'layout.html' %}
 {% block content %}
-<div class="card-glass p-4">
-  <h1 class="h4">Day close report - {{ report.display_date }}</h1>
-  <div class="row g-3 mt-2">
-    <div class="col-md-3">
-      <div class="card card-body" style="background: rgba(35,45,84,0.7); border-radius: 16px;">
-        <div class="small text-muted">Revenue</div>
-        <div class="fs-5">Rs {{ '%.2f'|format(report.totals.revenue) }}</div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card card-body" style="background: rgba(35,45,84,0.7); border-radius: 16px;">
-        <div class="small text-muted">Transactions</div>
-        <div class="fs-5">{{ report.totals.transactions }}</div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card card-body" style="background: rgba(35,45,84,0.7); border-radius: 16px;">
-        <div class="small text-muted">Discount</div>
-        <div class="fs-5">Rs {{ '%.2f'|format(report.totals.discount) }}</div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card card-body" style="background: rgba(35,45,84,0.7); border-radius: 16px;">
-        <div class="small text-muted">GST</div>
-        <div class="fs-5">Rs {{ '%.2f'|format(report.totals.tax) }}</div>
-      </div>
+<section class="hero-halo" data-animate="fade-up">
+  <div style="display:flex;align-items:center;gap:18px;">
+    <span class="glow-icon" aria-hidden="true">📜</span>
+    <div>
+      <h1 class="page-title" style="margin:0;font-size:clamp(30px,4vw,42px);">Day close · {{ report.display_date }}</h1>
+      <p class="lead">A glassy recap of revenue, payments, and udhar for the shift.</p>
     </div>
   </div>
-  <div class="mt-4 d-flex gap-2">
-    <a class="btn btn-outline-light" href="{{ url_for('reports.zreport_pdf', date=report.date) }}">Download PDF</a>
-    <a class="btn btn-outline-light" href="{{ url_for('sales.index') }}">Back to dashboard</a>
+</section>
+
+<section data-animate="fade-up">
+  <div class="card report-box" data-animate="card">
+    <div style="display:flex;flex-wrap:wrap;gap:18px;margin-bottom:24px;">
+      <div class="card stat" style="flex:1 1 180px;min-width:180px;">
+        <div class="stat-label">Revenue</div>
+        <div class="stat-value">₹{{ '%.2f'|format(report.totals.revenue) }}</div>
+      </div>
+      <div class="card stat" style="flex:1 1 160px;min-width:160px;">
+        <div class="stat-label">Transactions</div>
+        <div class="stat-value">{{ report.totals.transactions }}</div>
+      </div>
+      <div class="card stat" style="flex:1 1 160px;min-width:160px;">
+        <div class="stat-label">Discount</div>
+        <div class="stat-value">₹{{ '%.2f'|format(report.totals.discount) }}</div>
+      </div>
+      <div class="card stat" style="flex:1 1 160px;min-width:160px;">
+        <div class="stat-label">GST</div>
+        <div class="stat-value">₹{{ '%.2f'|format(report.totals.tax) }}</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px;">
+      <a class="btn btn-outline btn-sm" href="{{ url_for('reports.zreport_pdf', date=report.date) }}">⬇ Download PDF</a>
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('sales.index') }}">Back to dashboard</a>
+    </div>
+
+    <div style="display:grid;gap:24px;">
+      <div>
+        <h2 style="margin:0 0 12px;font-size:20px;">Payment split</h2>
+        <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;">
+          {% for row in report.payment_breakdown %}
+          <li style="background:rgba(255,255,255,0.03);border:1px solid rgba(0,255,209,0.16);border-radius:16px;padding:14px 18px;display:flex;justify-content:space-between;gap:12px;">
+            <span style="font-weight:600;text-transform:capitalize;">{{ row.method }}</span>
+            <span class="muted">{{ row.transactions }} tx</span>
+            <span style="font-weight:600;color:#00ffd1;">₹{{ '%.2f'|format(row.amount) }}</span>
+          </li>
+          {% else %}
+          <li class="muted">No sales for the selected day.</li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div>
+        <h2 style="margin:0 0 12px;font-size:20px;">Top items</h2>
+        <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;">
+          {% for item in report.top_items %}
+          <li style="background:rgba(255,255,255,0.03);border:1px solid rgba(14,165,255,0.16);border-radius:16px;padding:14px 18px;display:flex;justify-content:space-between;gap:12px;">
+            <span style="font-weight:600;">{{ item.item }}</span>
+            <span class="muted">{{ item.quantity }} pcs</span>
+            <span style="font-weight:600;color:#0ea5ff;">₹{{ '%.2f'|format(item.amount) }}</span>
+          </li>
+          {% else %}
+          <li class="muted">No items sold.</li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div>
+        <h2 style="margin:0 0 12px;font-size:20px;">Udhar</h2>
+        <div style="display:grid;gap:12px;">
+          <div class="badge-metric">Today · {{ report.udhar.count }} tx · ₹{{ '%.2f'|format(report.udhar.amount) }}</div>
+          <div class="badge-metric">Outstanding · ₹{{ '%.2f'|format(report.udhar.outstanding_total) }} · {{ report.udhar.outstanding_accounts }} accounts</div>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="mt-4">
-    <h2 class="h5">Payment split</h2>
-    <ul class="list-unstyled">
-      {% for row in report.payment_breakdown %}
-      <li>{{ row.method|capitalize }}: {{ row.transactions }} tx, Rs {{ '%.2f'|format(row.amount) }}</li>
-      {% endfor %}
-      {% if not report.payment_breakdown %}
-      <li class="text-muted">No sales for the selected day.</li>
-      {% endif %}
-    </ul>
-  </div>
-  <div class="mt-4">
-    <h2 class="h5">Top items</h2>
-    <ul class="list-unstyled">
-      {% for item in report.top_items %}
-      <li>{{ item.item }}: {{ item.quantity }} pcs, Rs {{ '%.2f'|format(item.amount) }}</li>
-      {% endfor %}
-      {% if not report.top_items %}
-      <li class="text-muted">No items sold.</li>
-      {% endif %}
-    </ul>
-  </div>
-  <div class="mt-4">
-    <h2 class="h5">Udhar</h2>
-    <p>Today: {{ report.udhar.count }} tx, Rs {{ '%.2f'|format(report.udhar.amount) }}</p>
-    <p>Outstanding: Rs {{ '%.2f'|format(report.udhar.outstanding_total) }} across {{ report.udhar.outstanding_accounts }} accounts</p>
-  </div>
-</div>
+</section>
 {% endblock %}

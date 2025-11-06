@@ -2,6 +2,7 @@
 import io
 import json
 from datetime import datetime, timedelta
+from decimal import Decimal, ROUND_HALF_UP
 
 from flask import (Blueprint, current_app, flash, make_response, redirect, render_template,
                    request, send_file, session, url_for)
@@ -10,14 +11,16 @@ from sqlalchemy.orm import joinedload
 
 from ..extensions import db
 from ..models import (AuditLog, Credit, Customer, EInvoiceSubmission, Expense, Item, PaymentIntent,
-                      PaymentTransaction, Sale, Setting, ShopProfile)
+                      PaymentTransaction, Sale, SaleItem, Setting, ShopProfile)
 from ..utils.decorators import login_required
 from ..utils.audit import log_event
 from ..utils.invoices import next_invoice_number
 from ..utils.mail import send_mail
 from ..utils.pdfs import create_invoice_pdf
+from ..utils_gst import calc_gst
 from ..compliance.services import GSTIntegrationError, get_gst_service
 from ..payments import get_payments_service
+from ..pdf_service import render_sale_pdf
 
 sales_bp = Blueprint('sales', __name__)
 
@@ -534,16 +537,43 @@ def sell():
             db.session.add(customer)
             db.session.flush()
 
-    subtotal = item.price * quantity
-    gst_rate = item.gst_rate or 0
-    taxable = max(subtotal - discount, 0)
-    tax = round(taxable * (gst_rate / 100), 2)
-    net_total = round(taxable + tax, 2)
+    profile = ShopProfile.query.get(1)
+
+    seller_state_form = (request.form.get('seller_state') or '').strip().upper()
+    seller_state = seller_state_form or 'DL'
+    seller_gstin = profile.gst if profile and profile.gst else None
+
+    buyer_state_form = (request.form.get('buyer_state') or request.form.get('customer_state') or '').strip().upper()
+    if customer and buyer_state_form and not customer.state:
+        customer.state = buyer_state_form
+    buyer_state = buyer_state_form or (customer.state.upper() if customer and customer.state else seller_state)
+    buyer_gstin = customer.gstin if customer and customer.gstin else (request.form.get('buyer_gstin') or None)
+
+    items_payload = [{
+        "description": item.name,
+        "hsn_sac": getattr(item, 'hsn', None),
+        "qty": quantity,
+        "rate": item.price or 0,
+        "gst_rate": item.gst_rate or 0,
+        "tax_rate": item.gst_rate or 0,
+    }]
+
+    gst_breakdown = calc_gst(items_payload, seller_state, buyer_state)
+    quant = Decimal("0.01")
+    subtotal_decimal = gst_breakdown["subtotal"].quantize(quant, rounding=ROUND_HALF_UP)
+    tax_total_decimal = gst_breakdown["tax_total"].quantize(quant, rounding=ROUND_HALF_UP)
+    cgst_decimal = gst_breakdown["cgst"].quantize(quant, rounding=ROUND_HALF_UP)
+    sgst_decimal = gst_breakdown["sgst"].quantize(quant, rounding=ROUND_HALF_UP)
+    igst_decimal = gst_breakdown["igst"].quantize(quant, rounding=ROUND_HALF_UP)
+    roundoff_decimal = gst_breakdown["roundoff"].quantize(quant, rounding=ROUND_HALF_UP)
+    total_decimal = gst_breakdown["total"].quantize(quant, rounding=ROUND_HALF_UP)
+
+    tax = float(tax_total_decimal)
+    net_total = float(total_decimal)
 
     item.current_stock -= quantity
 
     location_id = None
-    profile = ShopProfile.query.get(1)
     if profile:
         default_location = profile.default_location
         if not default_location and getattr(profile, "locations", None):
@@ -562,9 +592,37 @@ def sell():
         net_total=net_total,
         invoice_number=next_invoice_number(),
         location_id=location_id,
+        subtotal=subtotal_decimal,
+        tax_total=tax_total_decimal,
+        roundoff=roundoff_decimal,
+        cgst=cgst_decimal,
+        sgst=sgst_decimal,
+        igst=igst_decimal,
+        seller_gstin=seller_gstin,
+        buyer_gstin=buyer_gstin,
+        seller_state=seller_state,
+        buyer_state=buyer_state,
+        place_of_supply=buyer_state or seller_state,
+        notes=request.form.get('notes'),
     )
     db.session.add(sale)
     db.session.flush()
+
+    breakdown = gst_breakdown["items"][0] if gst_breakdown["items"] else None
+    line_total_decimal = (
+        breakdown["gross"].quantize(quant, rounding=ROUND_HALF_UP) if breakdown else total_decimal
+    )
+    sale_item = SaleItem(
+        sale_id=sale.id,
+        description=item.name,
+        hsn_sac=getattr(item, 'hsn', None),
+        qty=Decimal(str(quantity)),
+        rate=Decimal(str(item.price or 0)),
+        gst_rate=Decimal(str(item.gst_rate or 0)),
+        tax_rate=Decimal(str(item.gst_rate or 0)),
+        line_total=line_total_decimal,
+    )
+    db.session.add(sale_item)
 
     if sale_type == 'udhar':
         credit_name = customer.name if customer else customer_name
@@ -618,6 +676,32 @@ def invoice(sale_id: int):
         as_attachment=True,
         download_name=f'invoice_{sale_id}.pdf',
         mimetype='application/pdf'
+    )
+
+
+@sales_bp.route('/invoice/pdf')
+@login_required
+def invoice_pdf_v2():
+    sale_id = request.args.get('id', type=int)
+    if not sale_id:
+        return {"error": "sale id required"}, 400
+
+    sale = (
+        Sale.query.options(joinedload(Sale.line_items), joinedload(Sale.customer))
+        .filter_by(id=sale_id)
+        .first()
+    )
+    if not sale:
+        return {"error": "sale not found"}, 404
+
+    items = sale.line_items or [sale]
+    customer = getattr(sale, "customer", None)
+    pdf_bytes, filename = render_sale_pdf(sale, items, customer)
+    return send_file(
+        io.BytesIO(pdf_bytes),
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name=filename
     )
 
 

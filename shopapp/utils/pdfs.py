@@ -80,20 +80,35 @@ def create_invoice_pdf(sale_id: int) -> str | None:
     pdf.drawString(40, height - 130, 'Invoice summary')
     pdf.drawString(40, height - 148, f'Invoice: {invoice_number}')
     pdf.drawString(40, height - 166, f'Date: {sale.date.strftime("%d %b %Y %H:%M")}')
-    if shop and shop.gst:
-        pdf.drawString(40, height - 184, f'GSTIN: {shop.gst}')
+    seller_gstin_value = sale.seller_gstin or (shop.gst if shop and shop.gst else None)
+    seller_state_value = sale.seller_state or None
+    if seller_gstin_value:
+        pdf.drawString(40, height - 184, f'GSTIN: {seller_gstin_value}')
+    if seller_state_value:
+        pdf.drawString(40, height - 202, f'State: {seller_state_value}')
+        text_offset = 220
+    else:
+        text_offset = 202
 
     pdf.setFont('Helvetica-Bold', 11)
-    pdf.drawString(40, height - 210, 'Billed to:')
+    pdf.drawString(40, height - text_offset, 'Billed to:')
     pdf.setFont('Helvetica', 10)
     if customer:
-        pdf.drawString(40, height - 226, customer.name)
+        pdf.drawString(40, height - (text_offset + 16), customer.name)
+        cursor = text_offset + 32
         if customer.phone:
-            pdf.drawString(40, height - 242, f'Phone: {customer.phone}')
+            pdf.drawString(40, height - cursor, f'Phone: {customer.phone}')
+            cursor += 16
         if customer.email:
-            pdf.drawString(40, height - 258, f'Email: {customer.email}')
+            pdf.drawString(40, height - cursor, f'Email: {customer.email}')
+            cursor += 16
+        if sale.buyer_gstin:
+            pdf.drawString(40, height - cursor, f'GSTIN: {sale.buyer_gstin}')
+            cursor += 16
+        if sale.buyer_state:
+            pdf.drawString(40, height - cursor, f'State: {sale.buyer_state}')
     else:
-        pdf.drawString(40, height - 226, 'Walk-in customer')
+        pdf.drawString(40, height - (text_offset + 16), 'Walk-in customer')
 
     pdf.setFont('Helvetica-Bold', 10)
     table_top = height - 300
@@ -102,27 +117,64 @@ def create_invoice_pdf(sale_id: int) -> str | None:
     pdf.drawRightString(width - 80, table_top, 'Amount')
 
     pdf.setFont('Helvetica', 10)
-    pdf.drawString(40, table_top - 16, sale.item)
-    pdf.drawString(320, table_top - 16, str(sale.quantity))
-    pdf.drawRightString(width - 80, table_top - 16, f'Rs {sale.total:,.2f}')
+    row_gap = 16
+    y_cursor = table_top - row_gap
+    if getattr(sale, "line_items", None):
+        for line in sale.line_items:
+            pdf.drawString(40, y_cursor, line.description or sale.item)
+            pdf.drawString(320, y_cursor, str(line.qty or 0))
+            pdf.drawRightString(width - 80, y_cursor, f'Rs {float(line.line_total or 0):,.2f}')
+            y_cursor -= row_gap
+    else:
+        pdf.drawString(40, y_cursor, sale.item)
+        pdf.drawString(320, y_cursor, str(sale.quantity))
+        pdf.drawRightString(width - 80, y_cursor, f'Rs {sale.total:,.2f}')
+        y_cursor -= row_gap
 
-    subtotal = sale.net_total - sale.tax + sale.discount
+    subtotal_value = float(sale.subtotal or (sale.net_total - sale.tax + sale.discount))
+    discount_value = float(sale.discount or 0)
+    cgst_value = float(sale.cgst or 0)
+    sgst_value = float(sale.sgst or 0)
+    igst_value = float(sale.igst or 0)
+    tax_total_value = float(sale.tax_total or sale.tax or 0)
+    roundoff_value = float(sale.roundoff or 0)
+    total_value = float(sale.total or sale.net_total or 0)
 
-    summary_y = table_top - 70
+    summary_y = y_cursor - 24
     pdf.setFont('Helvetica', 10)
     pdf.drawString(320, summary_y, 'Subtotal')
-    pdf.drawRightString(width - 80, summary_y, f'Rs {subtotal:,.2f}')
-    summary_y -= 16
-    pdf.drawString(320, summary_y, 'Discount')
-    pdf.drawRightString(width - 80, summary_y, f'Rs {sale.discount:,.2f}')
-    summary_y -= 16
-    pdf.drawString(320, summary_y, 'GST')
-    pdf.drawRightString(width - 80, summary_y, f'Rs {sale.tax:,.2f}')
-    summary_y -= 20
+    pdf.drawRightString(width - 80, summary_y, f'Rs {subtotal_value:,.2f}')
+    summary_y -= row_gap
+    if discount_value:
+        pdf.drawString(320, summary_y, 'Discount')
+        pdf.drawRightString(width - 80, summary_y, f'Rs {discount_value:,.2f}')
+        summary_y -= row_gap
+    if cgst_value or sgst_value:
+        if cgst_value:
+            pdf.drawString(320, summary_y, 'CGST')
+            pdf.drawRightString(width - 80, summary_y, f'Rs {cgst_value:,.2f}')
+            summary_y -= row_gap
+        if sgst_value:
+            pdf.drawString(320, summary_y, 'SGST')
+            pdf.drawRightString(width - 80, summary_y, f'Rs {sgst_value:,.2f}')
+            summary_y -= row_gap
+    if igst_value:
+        pdf.drawString(320, summary_y, 'IGST')
+        pdf.drawRightString(width - 80, summary_y, f'Rs {igst_value:,.2f}')
+        summary_y -= row_gap
+    if not (cgst_value or sgst_value or igst_value):
+        pdf.drawString(320, summary_y, 'GST')
+        pdf.drawRightString(width - 80, summary_y, f'Rs {tax_total_value:,.2f}')
+        summary_y -= row_gap
+    if roundoff_value:
+        pdf.drawString(320, summary_y, 'Round-off')
+        pdf.drawRightString(width - 80, summary_y, f'Rs {roundoff_value:,.2f}')
+        summary_y -= row_gap
+    summary_y -= row_gap
     pdf.setFont('Helvetica-Bold', 12)
     pdf.drawString(320, summary_y, 'Total')
     pdf.setFillColor(secondary_color)
-    pdf.drawRightString(width - 80, summary_y, f'Rs {sale.net_total:,.2f}')
+    pdf.drawRightString(width - 80, summary_y, f'Rs {total_value:,.2f}')
     pdf.setFillColor(text_color)
 
     if shop and shop.signature_path:

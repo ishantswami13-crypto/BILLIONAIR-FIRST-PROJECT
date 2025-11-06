@@ -41,26 +41,112 @@ body {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  font-weight: 600;
-  font-size: 1.15rem;
+  text-decoration: none;
+  color: inherit;
 }
 
-.brand-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-weight: 700;
+.brand img {
+  display: block;
+  height: 28px;
+  width: auto;
 }
 
 .nav-ctas {
   display: flex;
   gap: 0.75rem;
   align-items: center;
+}
+
+.btn {
+  --h: 50px;
+  min-height: var(--h);
+  height: var(--h);
+  padding: 0 22px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(90deg, #007AFF, #00FFD1);
+  color: #0a0a0a;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 8px 24px rgba(0, 255, 209, 0.18), 0 10px 26px rgba(0, 122, 255, 0.22);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease, background 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  filter: saturate(1.05);
+  box-shadow: 0 12px 32px rgba(0, 255, 209, 0.22), 0 16px 36px rgba(0, 122, 255, 0.28);
+}
+
+.btn:focus-visible {
+  outline: 2px solid rgba(0, 255, 209, 0.55);
+  outline-offset: 2px;
+}
+
+.btn.ghost,
+.btn.btn-ghost {
+  background: transparent;
+  color: #F5F7FA;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: none;
+}
+
+.btn.ghost:hover,
+.btn.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: none;
+}
+
+.btn.btn-link {
+  --h: auto;
+  min-height: auto;
+  height: auto;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  box-shadow: none;
+  font-weight: 600;
+}
+
+.btn.btn-link:hover {
+  text-decoration: underline;
+  color: #F5F7FA;
+  transform: none;
+  filter: none;
+}
+
+.btn.btn-outline-light {
+  background: transparent;
+  color: #E9FCFF;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: none;
+}
+
+.btn.btn-outline-light:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #0a0a0a;
+}
+
+.btn.btn-lg {
+  --h: 58px;
+  padding: 0 28px;
+  font-size: 1rem;
+}
+
+.btn.btn-sm {
+  --h: 36px;
+  padding: 0 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 10px;
+  box-shadow: none;
 }
 
 .hero {
@@ -306,6 +392,13 @@ body {
 .plan-card .price span {
   font-size: 0.9rem;
   color: var(--muted);
+}
+
+.plan-card .plan-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: auto;
 }
 
 .plan-featured {

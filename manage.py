@@ -1,12 +1,6 @@
-from flask_migrate import Migrate
-
-from shopapp import create_app
-from shopapp.extensions import db
-from shopapp.models import *  # noqa
+from app import create_app
 
 app = create_app()
-Migrate(app, db)
 
-
-if __name__ == '__main__':
-    app.run()
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)

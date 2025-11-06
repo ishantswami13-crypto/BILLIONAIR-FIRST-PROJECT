@@ -2,38 +2,51 @@
 {% block title %}Settings{% endblock %}
 
 {% block content %}
-<section class="hero fade-in" style="padding:70px 10% 30px">
-  <h1>Settings</h1>
-  <p>Configure how your store looks, who can access it, and the integrations you rely on.</p>
+<section class="hero-halo" data-animate="fade-up">
+  <div style="display:flex;align-items:center;gap:18px;">
+    <span class="glow-icon" aria-hidden="true">⚙️</span>
+    <div>
+      <h1 class="page-title" style="margin:0;">Settings</h1>
+      <p class="lead">Your command center for branding, access, and integrations.</p>
+    </div>
+  </div>
 </section>
 
-<div class="grid">
-  <div class="card fade-in" style="grid-column: span 2;">
-    <h2>Store snapshot</h2>
-    <p style="margin-top:6px;">
-      {% set shop_name = (profile.shop_name or profile.name) if profile else None %}
-      {% if shop_name %}
-        {{ shop_name }}
-      {% else %}
-        Complete your profile to personalise invoices and communications.
-      {% endif %}
-    </p>
-    <div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:24px;">
+<section class="grid grid-cols-1 grid-cols-md-2" data-animate="fade-up">
+  <div class="card" data-animate="card" style="grid-column:span 2;">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:24px;">
+      <div style="display:flex;gap:16px;align-items:center;">
+        <span class="glow-icon" style="font-size:20px;width:46px;height:46px;">🛰️</span>
+        <div>
+          <h2 style="margin:0;font-size:22px;">Store snapshot</h2>
+          <p class="muted" style="margin:6px 0 0;">Key identity details that sync across invoices and reports.</p>
+        </div>
+      </div>
+      <span class="badge-metric">Plan: 
+        {% if active_plan %}
+          {{ active_plan.name or active_plan.slug|upper }}
+        {% elif profile and profile.trial_active %}
+          Trial · {{ profile.trial_days_remaining }} days left
+        {% else %}
+          Not set
+        {% endif %}
+      </span>
+    </div>
+    <div style="margin-top:24px;display:flex;flex-wrap:wrap;gap:28px;">
       <div>
-        <small class="text-muted">Plan</small>
-        <div style="font-size:20px;font-weight:600;">
-          {% if active_plan %}
-            {{ active_plan.name or active_plan.slug|upper }}
-          {% elif profile and profile.trial_active %}
-            Trial ({{ profile.trial_days_remaining }} days left)
+        <small class="muted" style="text-transform:uppercase;letter-spacing:.08em;">Store name</small>
+        <div style="font-weight:600;font-size:18px;">
+          {% set shop_name = (profile.shop_name or profile.name) if profile else None %}
+          {% if shop_name %}
+            {{ shop_name }}
           {% else %}
-            Not set
+            Complete your profile to personalise invoices.
           {% endif %}
         </div>
       </div>
       <div>
-        <small class="text-muted">Default currency</small>
-        <div style="font-size:20px;font-weight:600;">
+        <small class="muted" style="text-transform:uppercase;letter-spacing:.08em;">Currency</small>
+        <div style="font-weight:600;font-size:18px;">
           {% if profile and profile.currency %}
             {{ profile.currency }}
           {% else %}
@@ -42,8 +55,8 @@
         </div>
       </div>
       <div>
-        <small class="text-muted">Timezone</small>
-        <div style="font-size:20px;font-weight:600;">
+        <small class="muted" style="text-transform:uppercase;letter-spacing:.08em;">Timezone</small>
+        <div style="font-weight:600;font-size:18px;">
           {% if profile and profile.timezone %}
             {{ profile.timezone }}
           {% else %}
@@ -55,14 +68,20 @@
   </div>
 
   {% for section in sections %}
-  <a class="card fade-in" href="{{ url_for(section.endpoint) }}" style="text-decoration:none;color:inherit;display:block;">
-    <h3 style="margin-bottom:8px;">{{ section.title }}</h3>
-    <p style="color:var(--ink-60);">{{ section.description }}</p>
-    <span class="text-muted" style="display:inline-flex;align-items:center;gap:6px;margin-top:16px;">
+  {% set icon = '🎨' if 'Branding' in section.title else '👥' if 'Team' in section.title else '🔗' %}
+  <a class="card" data-animate="card" href="{{ url_for(section.endpoint) }}" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:18px;">
+    <div style="display:flex;align-items:flex-start;gap:14px;">
+      <span class="glow-icon" style="font-size:18px;width:40px;height:40px;">{{ icon }}</span>
+      <div>
+        <h3 style="margin:0 0 6px;font-size:20px;">{{ section.title }}</h3>
+        <p class="muted" style="margin:0;">{{ section.description }}</p>
+      </div>
+    </div>
+    <span class="btn btn-outline btn-sm" style="align-self:flex-start;display:inline-flex;align-items:center;gap:8px;">
       Open {{ section.title }}
-      <span aria-hidden="true">→</span>
+      <span aria-hidden="true" style="display:inline-flex;width:18px;height:18px;border-radius:6px;background:linear-gradient(135deg, rgba(14,165,255,.6), rgba(0,255,209,.5));color:#05121c;justify-content:center;align-items:center;">›</span>
     </span>
   </a>
   {% endfor %}
-</div>
+</section>
 {% endblock %}

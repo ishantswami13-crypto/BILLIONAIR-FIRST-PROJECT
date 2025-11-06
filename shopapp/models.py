@@ -252,6 +252,7 @@ class Customer(db.Model):
     email = db.Column(db.String(255))
     address = db.Column(db.Text)
     gstin = db.Column(db.String(50))
+    state = db.Column(db.String(32))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -272,6 +273,18 @@ class Sale(db.Model):
     tax = db.Column(db.Float, default=0)
     net_total = db.Column(db.Float, default=0)
     invoice_number = db.Column(db.String(64), unique=True)
+    subtotal = db.Column(db.Numeric(12, 2), default=0)
+    tax_total = db.Column(db.Numeric(12, 2), default=0)
+    roundoff = db.Column(db.Numeric(12, 2), default=0)
+    cgst = db.Column(db.Numeric(12, 2), default=0)
+    sgst = db.Column(db.Numeric(12, 2), default=0)
+    igst = db.Column(db.Numeric(12, 2), default=0)
+    seller_gstin = db.Column(db.String(20))
+    buyer_gstin = db.Column(db.String(20))
+    seller_state = db.Column(db.String(32))
+    buyer_state = db.Column(db.String(32))
+    place_of_supply = db.Column(db.String(32))
+    notes = db.Column(db.Text)
     locked = db.Column(db.Boolean, default=False, nullable=False)
     location_id = db.Column(db.Integer, db.ForeignKey('shop_locations.id'))
     gst_status = db.Column(db.String(20), default='pending', nullable=False)
@@ -285,6 +298,21 @@ class Sale(db.Model):
     customer = db.relationship('Customer', back_populates='sales', lazy=True)
     location = db.relationship('ShopLocation', backref=db.backref('sales', lazy=True))
     payment_intents = db.relationship('PaymentIntent', backref='sale', lazy=True)
+    line_items = db.relationship('SaleItem', backref='sale', lazy=True, cascade='all, delete-orphan')
+
+
+class SaleItem(db.Model):
+    __tablename__ = 'sale_items'
+
+    id = db.Column(db.Integer, primary_key=True)
+    sale_id = db.Column(db.Integer, db.ForeignKey('sales.id'), nullable=False)
+    description = db.Column(db.String(255))
+    hsn_sac = db.Column(db.String(12))
+    qty = db.Column(db.Numeric(12, 3), default=1)
+    rate = db.Column(db.Numeric(12, 2), default=0)
+    gst_rate = db.Column(db.Numeric(5, 2), default=0)
+    tax_rate = db.Column(db.Numeric(5, 2), default=0)
+    line_total = db.Column(db.Numeric(12, 2), default=0)
 
 
 class EInvoiceSubmission(db.Model):

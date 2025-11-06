@@ -8,12 +8,13 @@
   <meta name="description" content="Evara is the modern retail OS for Indian stores — billing, insights, GST exports, WhatsApp alerts and offline-first POS." />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/evara-polish.css">
   <meta property="og:title" content="Evara — Make every sale feel effortless" />
   <meta property="og:description" content="Billing, insights, GST exports, and growth — built for Indian businesses." />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="https://dummyimage.com/1200x630/0d0d0f/ffffff&text=Evara" />
-  <link rel="icon" href="/public/favicon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="/public/evara-logo.svg">
+  <link rel="icon" type="image/svg+xml" href="/assets/evara-icon.svg">
+  <link rel="apple-touch-icon" href="/assets/evara-icon.svg">
   <link rel="manifest" href="/public/site.webmanifest">
   <script src="/public/checkout.js" defer></script>
   <style>
@@ -95,13 +96,13 @@
       border-bottom:1px solid rgba(255,255,255,.06);
     }
     .nav-inner{display:flex;align-items:center;justify-content:space-between;height:72px}
-    .brand{display:flex;align-items:center;gap:12px}
+    .brand{display:flex;align-items:center;gap:12px;color:inherit;text-decoration:none}
     .logo{
       width:36px;height:36px;border-radius:10px;
       background:conic-gradient(from 180deg, var(--primary), var(--accent), var(--primary));
       filter: drop-shadow(0 10px 24px rgba(0,255,209,.25));
     }
-    .brand h1{font-size:18px;margin:0;font-weight:800;letter-spacing:.1px}
+    .brand img{display:block;height:28px;width:auto}
     .nav a{color:var(--text);text-decoration:none;opacity:.9}
     .nav-links{display:flex;gap:22px;align-items:center}
     .nav-cta{display:flex;gap:14px;align-items:center}
@@ -184,10 +185,10 @@
   <!-- NAV -->
   <nav class="nav">
     <div class="container nav-inner">
-      <div class="brand">
+      <a class="brand" href="/" aria-label="Evara">
         <div class="logo" aria-hidden="true"></div>
-        <h1>Evara</h1>
-      </div>
+        <img src="/assets/evara-wordmark.svg" alt="Evara" height="28" width="168" loading="eager">
+      </a>
       <div class="nav-links">
         <a href="#features">Features</a>
         <a href="#pricing">Pricing</a>
@@ -251,7 +252,7 @@
       <div class="row cols-2">
         <div class="card glass reveal">
           <span class="pill">Case study</span>
-          <h3 style="margin:10px 0 8px">“+18% repeat customers in 60 days.”</h3>
+          <h3 style="margin:10px 0 8px">+<span class="stat-number" data-count="18">0</span>% repeat customers in <span class="stat-number" data-count="60">0</span> days.</h3>
           <p class="muted">Ramesh General Store used Evara’s WhatsApp reminders and loyalty nudges to bring buyers back.</p>
           <a class="link" href="#">Read the story →</a>
         </div>
@@ -273,9 +274,9 @@
       <div class="row cols-3">
         <div class="plan reveal">
           <h3>Free</h3>
-          <div class="price">₹0</div>
+          <div class="price">₹<span class="stat-number" data-count="0">0</span></div>
           <ul>
-            <li><span class="tick"></span>30 invoices / month</li>
+            <li><span class="tick"></span><span class="stat-number" data-count="30">0</span> invoices / month</li>
             <li><span class="tick"></span>Dashboard & daily email</li>
             <li><span class="tick"></span>Basic exports</li>
           </ul>
@@ -284,23 +285,23 @@
         <div class="plan recommended reveal">
           <span class="badge">Most Popular</span>
           <h3>Pro</h3>
-          <div class="price">&#8377;199<span class="muted" style="font-size:16px"> / month</span></div>
+          <div class="price">₹<span class="stat-number" data-count="199">0</span><span class="muted" style="font-size:16px"> / month</span></div>
           <ul>
             <li><span class="tick"></span>Unlimited billing</li>
             <li><span class="tick"></span>WhatsApp summaries</li>
             <li><span class="tick"></span>GST exports</li>
           </ul>
-          <button class="btn" type="button" onclick="openCheckout('pro')">Start Pro &mdash; &#8377;199/mo</button>
+          <button class="btn" type="button" onclick="openCheckout('pro')">Start Pro &mdash; ₹<span class="stat-number" data-count="199">0</span>/mo</button>
         </div>
         <div class="plan reveal">
           <h3>Elite</h3>
-          <div class="price">&#8377;499<span class="muted" style="font-size:16px"> / month</span></div>
+          <div class="price">₹<span class="stat-number" data-count="499">0</span><span class="muted" style="font-size:16px"> / month</span></div>
           <ul>
             <li><span class="tick"></span>Multi-store sync</li>
             <li><span class="tick"></span>Staff roles & audit</li>
             <li><span class="tick"></span>AI predictions</li>
           </ul>
-          <button class="btn ghost" type="button" onclick="openCheckout('elite')">Go Elite &mdash; &#8377;499/mo</button>
+          <button class="btn ghost" type="button" onclick="openCheckout('elite')">Go Elite &mdash; ₹<span class="stat-number" data-count="499">0</span>/mo</button>
         </div>
       </div>
     </div>
@@ -367,5 +368,6 @@
     }, {threshold:.12});
     document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
   </script>
+  <script src="/static/js/evara-polish.js"></script>
 </body>
 </html>

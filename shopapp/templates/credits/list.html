@@ -2,57 +2,101 @@
 {% block title %}Credits · Evara{% endblock %}
 
 {% block content %}
-<section class="hero fade-in" style="padding:70px 10% 30px">
-  <h1>Credits</h1>
-  <p>Track unpaid credits, send reminders, and mark payments.</p>
+<section class="hero-halo" data-animate="fade-up">
+  <div style="display:flex;align-items:center;gap:18px;">
+    <span class="glow-icon" aria-hidden="true">💳</span>
+    <div>
+      <h1 class="page-title" style="margin:0;font-size:clamp(30px,4vw,42px);">Credits</h1>
+      <p class="lead">Stay on top of udhar. Send reminders, mark recoveries, and keep cash flow honest.</p>
+    </div>
+  </div>
 </section>
 
-<div class="grid">
-  <div class="card fade-in">
-    <h2>Actions</h2>
-    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px">
-      <a class="btn" href="{{ url_for('credits.new') }}">+ New Credit</a>
-      <a class="btn ghost" href="{{ url_for('credits.send_reminders') }}">Send all reminders</a>
+<section class="grid grid-cols-1 grid-cols-md-3" data-animate="fade-up">
+  <div class="card stat" data-animate="card">
+    <div class="stat-label">Unpaid count</div>
+    <div class="stat-value count-up" data-value="{{ unpaid_count or 0 }}">0</div>
+  </div>
+  <div class="card stat" data-animate="card">
+    <div class="stat-label">Unpaid total</div>
+    <div class="stat-value count-up" data-prefix="₹" data-decimals="2" data-value="{{ '%.2f'|format(total_unpaid or 0) }}">₹0</div>
+  </div>
+  <div class="card stat" data-animate="card">
+    <div class="stat-label">Reminders · 30d</div>
+    <div class="stat-value count-up" data-value="{{ reminders_30d or 0 }}">0</div>
+  </div>
+</section>
+
+<section class="grid grid-cols-1 grid-cols-md-2" data-animate="fade-up">
+  <div class="card" data-animate="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span class="glow-icon" style="font-size:18px;width:40px;height:40px;">➕</span>
+        <div>
+          <h2 style="margin:0;font-size:20px;">Quick actions</h2>
+          <p class="muted" style="margin:4px 0 0;">Issue new credit or chase pending dues.</p>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <a class="btn btn-primary" href="{{ url_for('credits.new') }}">New credit</a>
+      <a class="btn btn-ghost" href="{{ url_for('credits.send_reminders') }}">Send all reminders</a>
     </div>
   </div>
 
-  <div class="card fade-in">
-    <small>Unpaid count</small>
-    <div style="font-size:34px;font-weight:800">{{ unpaid_count or 0 }}</div>
-  </div>
-  <div class="card fade-in">
-    <small>Unpaid total</small>
-    <div style="font-size:34px;font-weight:800">₹{{ (total_unpaid or 0)|int }}</div>
-  </div>
-  <div class="card fade-in">
-    <small>Reminders (30d)</small>
-    <div style="font-size:34px;font-weight:800">{{ reminders_30d or 0 }}</div>
-  </div>
-
-  <div class="card fade-in" style="grid-column: span 2;">
-    <h2>Ledger</h2>
-    <div class="table-wrap" style="overflow:auto;margin-top:10px">
-      <table class="table">
-        <thead><tr><th>#</th><th>Date</th><th>Customer</th><th>Item</th><th>Qty</th><th>Total</th><th>Status</th><th></th></tr></thead>
-        <tbody>
-        {% for c in credits %}
-          <tr>
-            <td>{{ c.id }}</td><td>{{ c.date }}</td><td>{{ c.customer }}</td><td>{{ c.item }}</td><td>{{ c.quantity }}</td>
-            <td>₹{{ '%.0f'|format(c.total) }}</td>
-            <td>{% if c.status=='paid' %}Paid{% else %}Unpaid{% endif %}</td>
-            <td style="white-space:nowrap">
-              {% if c.status!='paid' %}
-                <a class="btn ghost" href="{{ url_for('credits.pay', credit_id=c.id) }}">Mark paid</a>
-                <a class="btn" href="{{ url_for('credits.send_one', credit_id=c.id) }}">Send</a>
-              {% endif %}
-            </td>
-          </tr>
-        {% else %}
-          <tr><td colspan="8"><small>No credits yet.</small></td></tr>
-        {% endfor %}
-        </tbody>
-      </table>
+  <div class="card" data-animate="card">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+      <span class="glow-icon" style="font-size:18px;width:40px;height:40px;">🧾</span>
+      <div>
+        <h2 style="margin:0;font-size:20px;">Ledger snapshot</h2>
+        <p class="muted" style="margin:4px 0 0;">Automatic reminder logs and follow-ups.</p>
+      </div>
     </div>
+    {% if credits %}
+      <div class="table-responsive">
+        <table class="table table-dark table-striped ledger-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Date</th>
+              <th>Customer</th>
+              <th>Item</th>
+              <th>Qty</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in credits %}
+            <tr class="ledger-row">
+              <td>{{ c.id }}</td>
+              <td>{{ c.date }}</td>
+              <td style="font-weight:600;">{{ c.customer }}</td>
+              <td>{{ c.item }}</td>
+              <td>{{ c.quantity }}</td>
+              <td>₹{{ '%.0f'|format(c.total) }}</td>
+              <td>
+                {% if c.status == 'paid' %}
+                  <span class="badge badge-paid">Paid</span>
+                {% else %}
+                  <span class="badge badge-due">Unpaid</span>
+                {% endif %}
+              </td>
+              <td style="white-space:nowrap;display:flex;gap:8px;justify-content:flex-end;">
+                {% if c.status != 'paid' %}
+                  <a class="btn btn-ghost btn-sm" href="{{ url_for('credits.pay', credit_id=c.id) }}">Mark paid</a>
+                  <a class="btn btn-primary btn-sm" href="{{ url_for('credits.send_one', credit_id=c.id) }}">Send</a>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty">✨ Start by adding your first credit</div>
+    {% endif %}
   </div>
-</div>
+</section>
 {% endblock %}

@@ -1,25 +1,27 @@
 :root{
   /* Neutrals (Apple-ish contrast) */
-  --bg: #0b0f14;
-  --bg-elev: #11161d;
-  --surface: #0f141a;
-  --text: #e8eef6;
-  --muted: #98a2ad;
+  --bg: #070b11;
+  --bg-elev: #0e131b;
+  --surface: #101720;
+  --text: #e7eef8;
+  --muted: #8e9aae;
   --hairline: rgba(255,255,255,.08);
 
   /* Accents */
-  --accent: #0A84FF;
-  --accent-2: #34C759;
-  --accent-3: #FF2D55;
-  --accent-4: #FFD60A;
+  --accent: #0ea5ff;
+  --accent-2: #00ffd1;
+  --accent-3: #ff8a8a;
+  --accent-4: #ffd166;
+  --brand-gradient: linear-gradient(90deg, #0ea5ff, #00ffd1);
 
   /* Radiance for gradients */
-  --glow-1: 0,132,255;
-  --glow-2: 52,199,89;
-  --glow-3: 255,45,85;
+  --glow-1: 14,165,255;
+  --glow-2: 0,255,209;
+  --glow-3: 255,138,138;
 
   /* Typography */
-  --font-sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+  --font-display: "Manrope", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
   --h1: 48px;
   --h2: 34px;
   --h3: 24px;

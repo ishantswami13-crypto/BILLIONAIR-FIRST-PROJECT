@@ -2,60 +2,59 @@
 {% block title %}Dashboard &middot; Evara{% endblock %}
 
 {% block content %}
-<section class="ev-hero">
-  <div class="ev-hero__copy">
-    <h1>Make every sale feel effortless</h1>
-    <p class="sub">Clear numbers. Calm design. Nightly WhatsApp & email reports on autopilot.</p>
-    <div class="cta-row">
-      <a href="{{ url_for('sales.index') }}" class="ev-btn">Start quick sale</a>
-      <a href="{{ url_for('reports.zreport_view') }}" class="ev-btn ev-btn--ghost">All activity</a>
-    </div>
-  </div>
-  <div class="ev-hero__ambient" aria-hidden="true">
-    <span class="blob b1"></span>
-    <span class="blob b2"></span>
-    <span class="blob b3"></span>
+<section class="hero-halo" data-animate="fade-up">
+  <h1 class="page-title">Make every sale feel effortless</h1>
+  <p class="lead">Clear numbers. Calm design. Nightly WhatsApp &amp; email reports on autopilot.</p>
+  <div class="action-row" style="display:flex;gap:12px;flex-wrap:wrap;margin-top:24px;">
+    <a href="{{ url_for('sales.index') }}" class="btn btn-primary">Start quick sale</a>
+    <a href="{{ url_for('reports.zreport_view') }}" class="btn btn-ghost">All activity</a>
   </div>
 </section>
 
-<section class="dashboard-stats">
-  <div class="stat-box">
-    <h3>Today's Revenue</h3>
-    <p class="value">₹{{ '%.2f'|format(todays_revenue or 0) }}</p>
-    <span class="sub">Updated just now</span>
+<section class="grid grid-cols-1 grid-cols-md-3">
+  <div class="card stat" data-animate="card">
+    <div class="stat-label">Today's revenue</div>
+    <div class="stat-value count-up" data-prefix="₹" data-decimals="2" data-value="{{ '%.2f'|format(todays_revenue or 0) }}">₹0</div>
+    <span class="muted">Updated seconds ago</span>
   </div>
-  <div class="stat-box">
-    <h3>Today's Orders</h3>
-    <p class="value">{{ todays_orders or 0 }}</p>
-    <span class="sub">Across all items</span>
+  <div class="card stat" data-animate="card">
+    <div class="stat-label">Today's orders</div>
+    <div class="stat-value count-up" data-value="{{ todays_orders or 0 }}">0</div>
+    <span class="muted">Across all items</span>
   </div>
-  <div class="stat-box">
-    <h3>Low Stock</h3>
-    <p class="value">{{ low_stock_count or 0 }}</p>
-    <span class="sub">Items running low</span>
+  <div class="card stat" data-animate="card">
+    <div class="stat-label">Low stock</div>
+    <div class="stat-value count-up" data-value="{{ low_stock_count or 0 }}">0</div>
+    <span class="muted">Items running low</span>
   </div>
 </section>
 
-<section class="ev-panels">
-  <article class="ev-card chart">
-    <div class="card-head">
-      <h3>Last 7 days</h3>
-      <span class="muted">Revenue &middot; Orders</span>
+<section class="grid grid-cols-1 grid-cols-md-2">
+  <article class="card" data-animate="card">
+    <div class="card-head" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+      <div>
+        <h3 style="margin:0;">Last 7 days</h3>
+        <span class="muted">Revenue &middot; Orders</span>
+      </div>
+      <span class="badge-metric">
+        <span class="dot" style="width:6px;height:6px;border-radius:50%;background:#00ffd1;"></span>
+        Live sync
+      </span>
     </div>
-    <canvas id="evChart" height="140"></canvas>
+    <canvas id="evChart" height="180"></canvas>
   </article>
 
-  <article class="ev-card list">
-    <div class="card-head">
-      <h3>Recent sales</h3>
-      <a class="ev-link small" href="{{ url_for('sales.history') }}">View all</a>
+  <article class="card" data-animate="card">
+    <div class="card-head" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+      <h3 style="margin:0;">Recent sales</h3>
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('sales.history') }}">View all</a>
     </div>
-    <ul class="ev-list">
+    <ul class="ev-list" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:14px;">
       {% for s in sales[:8] if sales %}
-        <li>
-          <span class="item">{{ s[2] }}</span>
-          <span class="meta">x{{ s[3] }}</span>
-          <span class="amt">&#8377;{{ '%.2f'|format(s[4]) }}</span>
+        <li class="recent-sale">
+          <span class="item" style="font-weight:600;">{{ s[2] }}</span>
+          <span class="meta" style="color:var(--muted);">x{{ s[3] }}</span>
+          <span class="amt" style="font-weight:600;color:#00ffd1;">&#8377;{{ '%.2f'|format(s[4]) }}</span>
         </li>
       {% else %}
         <li class="muted">No sales yet. Create your first sale.</li>
@@ -74,21 +73,57 @@
 
   const ctx = document.getElementById('evChart');
   if (ctx && labels.length) {
+    const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 220);
+    gradient.addColorStop(0, 'rgba(14,165,255,0.35)');
+    gradient.addColorStop(1, 'rgba(14,165,255,0)');
+
     new Chart(ctx, {
       type: 'line',
       data: {
         labels,
         datasets: [
-          { label: 'Revenue', data: revenue, borderColor: '#21c997', fill: true, backgroundColor: 'rgba(33,201,151,.12)', tension:.35 },
-          { label: 'Orders',  data: orders,  borderColor: '#007aff', fill: false, tension:.35 },
+          {
+            label: 'Revenue',
+            data: revenue,
+            borderColor: '#00ffd1',
+            borderWidth: 3,
+            fill: true,
+            backgroundColor: gradient,
+            tension: .35
+          },
+          {
+            label: 'Orders',
+            data: orders,
+            borderColor: '#0ea5ff',
+            borderDash: [6, 6],
+            borderWidth: 2,
+            pointRadius: 3,
+            pointBackgroundColor: '#0ea5ff',
+            fill: false,
+            tension: .35
+          },
         ]
       },
       options: {
-        plugins: { legend: { labels: { color: '#5c6270' } } },
+        plugins: {
+          legend: { labels: { color: '#a9b4c4', boxWidth: 12, usePointStyle: true } },
+          tooltip: {
+            mode: 'index',
+            intersect: false,
+            callbacks: {
+              label: (ctx) => {
+                const value = ctx.parsed.y || 0;
+                const prefix = ctx.dataset.label === 'Revenue' ? '₹' : '';
+                return `${ctx.dataset.label}: ${prefix}${value.toLocaleString('en-IN')}`;
+              }
+            }
+          }
+        },
         scales: {
-          x: { ticks: { color: '#7a8091' }, grid: { color: 'rgba(0,0,0,.05)' } },
-          y: { ticks: { color: '#7a8091' }, grid: { color: 'rgba(0,0,0,.05)' } }
-        }
+          x: { ticks: { color: '#6c7b92' }, grid: { color: 'rgba(255,255,255,0.04)' } },
+          y: { ticks: { color: '#6c7b92' }, grid: { color: 'rgba(255,255,255,0.04)' } }
+        },
+        interaction: { intersect: false, mode: 'nearest' }
       }
     });
   }
